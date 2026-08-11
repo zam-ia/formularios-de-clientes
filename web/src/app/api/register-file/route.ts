@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 
 export async function POST(req: Request) {
   try {
@@ -7,6 +7,14 @@ export async function POST(req: Request) {
     const { submission_id, category, storage_path, original_name, mime_type, size_bytes } = payload;
     if (!submission_id || !storage_path || !original_name) {
       return NextResponse.json({ error: 'missing fields' }, { status: 400 });
+    }
+
+    let supabaseServer;
+    try {
+      supabaseServer = getSupabaseServer();
+    } catch (err: any) {
+      console.error('Supabase server client error', err);
+      return NextResponse.json({ error: err.message ?? String(err) }, { status: 500 });
     }
 
     const { data, error } = await supabaseServer

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 
 export async function POST(req: Request) {
   try {
     const payload = await req.json();
-    // Minimal mapping: insert payload as appropriate fields
     const insert = {
       draft_id: payload.draft_id ?? null,
       submission_code: payload.submission_code ?? null,
@@ -65,6 +64,14 @@ export async function POST(req: Request) {
       started_at: payload.started_at ?? null,
       submitted_at: new Date().toISOString(),
     };
+
+    let supabaseServer;
+    try {
+      supabaseServer = getSupabaseServer();
+    } catch (err: any) {
+      console.error('Supabase server client error', err);
+      return NextResponse.json({ error: err.message ?? String(err) }, { status: 500 });
+    }
 
     const { data, error } = await supabaseServer
       .from('onboarding_submissions')
