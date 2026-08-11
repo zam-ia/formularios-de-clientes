@@ -1,0 +1,90 @@
+[
+  {
+    "path": "MASTER_SPEC.md",
+    "bytes": 2156
+  },
+  {
+    "path": "README.md",
+    "bytes": 3566
+  },
+  {
+    "path": "assets/avatar-female-grid.png",
+    "bytes": 2752071
+  },
+  {
+    "path": "assets/avatar-male-grid.png",
+    "bytes": 2453232
+  },
+  {
+    "path": "config/.env.example",
+    "bytes": 404
+  },
+  {
+    "path": "config/design-tokens.css",
+    "bytes": 981
+  },
+  {
+    "path": "config/form-schema.json",
+    "bytes": 12698
+  },
+  {
+    "path": "config/supabase-schema.sql",
+    "bytes": 3763
+  },
+  {
+    "path": "docs/01_PRODUCT_STRATEGY.md",
+    "bytes": 2901
+  },
+  {
+    "path": "docs/02_UX_FLOW.md",
+    "bytes": 4786
+  },
+  {
+    "path": "docs/03_FORM_CONTENT.md",
+    "bytes": 7300
+  },
+  {
+    "path": "docs/04_UI_DESIGN_SYSTEM.md",
+    "bytes": 4275
+  },
+  {
+    "path": "docs/05_RESPONSIVE_ACCESSIBILITY.md",
+    "bytes": 2161
+  },
+  {
+    "path": "docs/06_TECH_ARCHITECTURE.md",
+    "bytes": 3750
+  },
+  {
+    "path": "docs/07_API_INTEGRATIONS.md",
+    "bytes": 3953
+  },
+  {
+    "path": "docs/08_SECURITY_PRIVACY.md",
+    "bytes": 2298
+  },
+  {
+    "path": "docs/09_ANALYTICS.md",
+    "bytes": 1418
+  },
+  {
+    "path": "docs/10_DEPLOYMENT.md",
+    "bytes": 1838
+  },
+  {
+    "path": "docs/11_QA_ACCEPTANCE.md",
+    "bytes": 2011
+  },
+  {
+    "path": "docs/12_COPY_EMAIL_WHATSAPP.md",
+    "bytes": 2835
+  },
+  {
+    "path": "docs/13_AVATAR_USAGE.md",
+    "bytes": 1278
+  },
+  {
+    "path": "docs/SOURCE_NOTES.md",
+    "bytes": 954
+  }
+]
