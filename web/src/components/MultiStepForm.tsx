@@ -139,7 +139,7 @@ export default function MultiStepForm() {
                       <label className="block text-base font-medium mb-2 text-[var(--color-black-secondary)]">{f.label}{f.required ? ' *' : ''}</label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {f.options.map((o: any) => (
-                          <button key={o} type="button" onClick={() => setField(f.id, o)} className={`text-left p-3 rounded-xl border ${values[f.id] === o ? 'border-[var(--color-yellow)] bg-[var(--color-yellow)] text-black' : 'border-gray-200 bg-white text-[var(--color-black-secondary)]`}>{o}</button>
+                                                  <button key={o} type="button" onClick={() => setField(f.id, o)} className={`text-left p-3 rounded-xl border ${values[f.id] === o ? 'border-[var(--color-yellow)] bg-[var(--color-yellow)] text-black' : 'border-gray-200 bg-white text-[var(--color-black-secondary)]'}`}>{o}</button>
                         ))}
                       </div>
                     </div>
