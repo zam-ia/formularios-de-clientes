@@ -1,0 +1,31 @@
+{
+  "formVersion": "1.0",
+  "title": "Radiografía de Marca",
+  "estimatedMinutes": "6-8",
+  "notificationEmail": "crisdalagency@gmail.com",
+  "whatsappE164": "51987088359",
+  "steps": [
+    {
+      "id": "business",
+      "title": "Tu negocio",
+      "fields": [
+        {
+          "id": "service_types",
+          "type": "multiselect_cards",
+          "required": true,
+          "maxSelections": 2,
+          "label": "¿Qué vamos a trabajar primero?",
+          "options": [
+            "Diseño / flyer",
+            "Video / reel",
+            "Catálogo / brochure",
+            "Landing / web",
+            "Campaña publicitaria",
+            "Branding / identidad",
+            "Otro"
+          ]
+        }
+      ]
+    }
+  ]
+}
