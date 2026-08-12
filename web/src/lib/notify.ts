@@ -39,9 +39,24 @@ export async function sendSubmissionNotification(submission: IntakePayload) {
   const subject = `Nueva Radiografía — ${submission.business_name} — ${submission.submission_code}`;
   const html = emailHtml(submission);
 
+  return sendEmail({ to, subject, html, replyTo: submission.contact_email || undefined });
+}
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  replyTo,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+}) {
+
   if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const result = await resend.emails.send({ from: process.env.RESEND_FROM, to, subject, html });
+    const result = await resend.emails.send({ from: process.env.RESEND_FROM, to, subject, html, replyTo });
     if (result.error) throw new Error(result.error.message);
     return { provider: 'resend' as const, id: result.data?.id };
   }
@@ -59,7 +74,7 @@ export async function sendSubmissionNotification(submission: IntakePayload) {
       to,
       subject,
       html,
-      replyTo: submission.contact_email || undefined,
+      replyTo,
     });
     return { provider: 'smtp' as const, id: result.messageId };
   }
