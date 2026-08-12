@@ -41,20 +41,20 @@ export type BrochureContent = z.infer<typeof brochureContentSchema>;
 export type BrochureMedia = z.infer<typeof mediaSchema>;
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 1,
-  kicker: 'Crisdal Agency · Estrategia, creatividad y tecnología',
-  title: 'Hacemos que tu marca se vea, conecte y crezca.',
-  lead: 'Diseñamos experiencias que convierten ideas en marcas claras, contenido memorable y herramientas digitales que ayudan a vender.',
-  storyTitle: 'Antes de diseñar, entendemos. Antes de publicar, ordenamos.',
-  story: 'En Crisdal combinamos estrategia, diseño, producción audiovisual y tecnología para que cada pieza tenga una razón de existir. No entregamos contenido aislado: construimos un sistema visual y comercial que tu negocio pueda sostener.',
-  ctaLabel: 'Cuéntanos sobre tu proyecto',
+  version: 2,
+  kicker: 'Estrategia · Procesos · Cultura · Tecnología',
+  title: 'Crecer con orden.',
+  lead: 'Transformamos el crecimiento desordenado en una estructura más clara, rentable y preparada para escalar.',
+  storyTitle: 'un sistema roto.',
+  story: 'Por eso diagnosticamos antes de proponer, ordenamos antes de automatizar y medimos antes de escalar.',
+  ctaLabel: 'Solicitar diagnóstico',
   ctaUrl: '/',
   whatsappNumber: '51987088359',
   services: [
-    { id: 'branding', title: 'Branding e identidad', description: 'Una marca coherente, reconocible y lista para crecer.', tag: 'Identidad' },
-    { id: 'content', title: 'Contenido y campañas', description: 'Piezas que comunican con intención y mueven a la acción.', tag: 'Estrategia' },
-    { id: 'video', title: 'Video y motion', description: 'Historias visuales pensadas para captar atención en segundos.', tag: 'Producción' },
-    { id: 'digital', title: 'Web, catálogos y automatización', description: 'Experiencias rápidas y simples que convierten visitas en oportunidades.', tag: 'Tecnología' },
+    { id: 'strategy', title: 'Strategy', description: 'Diagnóstico, posicionamiento, objetivos y roadmap para convertir problemas dispersos en prioridades claras.', tag: 'Dirección' },
+    { id: 'growth', title: 'Growth', description: 'Contenido, campañas, pauta y embudos conectados con una ruta medible hacia oportunidades comerciales.', tag: 'Demanda' },
+    { id: 'systems', title: 'Systems', description: 'Procesos, CRM, automatización, IA, web, dashboards e integraciones para reducir fricción.', tag: 'Sistema' },
+    { id: 'culture', title: 'Culture', description: 'Funciones, comunicación interna, cultura y gestión del cambio para sostener las mejoras.', tag: 'Adopción' },
   ],
   media: [],
   updatedAt: new Date(0).toISOString(),
@@ -79,7 +79,11 @@ export async function getBrochureContent(): Promise<BrochureContent> {
     const { data, error } = await getSupabaseServer().storage.from(BROCHURE_BUCKET).download(BROCHURE_CONTENT_PATH);
     if (error || !data) return defaultBrochureContent;
     const parsed = brochureContentSchema.safeParse(JSON.parse(await data.text()));
-    return parsed.success ? parsed.data : defaultBrochureContent;
+    if (!parsed.success) return defaultBrochureContent;
+    if (parsed.data.version < defaultBrochureContent.version) {
+      return { ...defaultBrochureContent, media: parsed.data.media, whatsappNumber: parsed.data.whatsappNumber, updatedAt: parsed.data.updatedAt };
+    }
+    return parsed.data;
   } catch {
     return defaultBrochureContent;
   }

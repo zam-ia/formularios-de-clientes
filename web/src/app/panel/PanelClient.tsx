@@ -15,13 +15,12 @@ import {
   Link2,
   LoaderCircle,
   LogOut,
-  Mail,
+  LockKeyhole,
   Menu,
   MonitorPlay,
   Plus,
   QrCode,
   Save,
-  Send,
   Settings2,
   Sparkles,
   Trash2,
@@ -32,6 +31,7 @@ import {
 import { BROCHURE_BUCKET, defaultBrochureContent, type BrochureContent, type BrochureMedia } from '@/lib/brochure';
 import { getSupabaseBrowser } from '@/lib/supabaseClient';
 import styles from './panel.module.css';
+import authStyles from './auth.module.css';
 
 type Tab = 'links' | 'content' | 'media';
 type Notice = { kind: 'success' | 'error' | 'info'; text: string } | null;
@@ -50,7 +50,8 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 export default function PanelClient() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [username, setUsername] = useState('crisdal');
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<Tab>('links');
   const [content, setContent] = useState<BrochureContent>(defaultBrochureContent);
@@ -82,14 +83,17 @@ export default function PanelClient() {
   const brochureUrl = origin ? `${origin}/brochure` : '';
   const activePreview = useMemo(() => tab === 'links' ? brochureUrl : `${brochureUrl}?preview=panel`, [brochureUrl, tab]);
 
-  async function requestAccess() {
+  async function login(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setBusy(true);
     setNotice(null);
     try {
-      await api('/api/admin/auth/request', { method: 'POST', body: '{}' });
-      setEmailSent(true);
+      await api('/api/admin/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+      setAuthenticated(true);
+      setPassword('');
+      await loadContent();
     } catch (error) {
-      setNotice({ kind: 'error', text: error instanceof Error ? error.message : 'No pudimos enviar el acceso.' });
+      setNotice({ kind: 'error', text: error instanceof Error ? error.message : 'No pudimos iniciar sesión.' });
     } finally {
       setBusy(false);
     }
@@ -194,11 +198,12 @@ export default function PanelClient() {
     <div className={styles.loginGlow} />
     <section className={styles.loginCard}>
       <div className={styles.loginBrand}><span>C</span><strong>CRISDAL<small>AGENCY</small></strong></div>
-      <div className={styles.loginIcon}><Sparkles size={26} /></div>
+      <div className={styles.loginIcon}><LockKeyhole size={26} /></div>
       <p className={styles.eyebrow}>Panel privado</p>
       <h1>Tu centro de enlaces y brochure.</h1>
-      <p>Recibirás un enlace seguro en <strong>crisdalagency@gmail.com</strong>. No necesitas recordar otra contraseña.</p>
-      {emailSent ? <div className={styles.mailSent}><Mail size={24} /><div><strong>Revisa tu correo</strong><span>El enlace estará disponible durante 15 minutos.</span></div></div> : <button className={styles.primaryButton} onClick={requestAccess} disabled={busy}>{busy ? <LoaderCircle className={styles.spin} /> : <Send size={18} />} Enviar enlace de acceso</button>}
+      <p>Acceso exclusivo para administración. Los enlaces del formulario y brochure permanecen públicos.</p>
+      <form onSubmit={login}><div className={authStyles.fields}><label>Usuario<input value={username} autoComplete="username" onChange={(event) => setUsername(event.target.value)} required /></label><label>Contraseña<input type="password" value={password} autoComplete="current-password" onChange={(event) => setPassword(event.target.value)} required minLength={12} /></label></div><button className={styles.primaryButton} type="submit" disabled={busy}>{busy ? <LoaderCircle className={styles.spin} /> : <LockKeyhole size={18} />} Ingresar al panel</button></form>
+      <p className={authStyles.securityNote}><LockKeyhole size={14} /> La URL no concede acceso. Se requiere una sesión firmada y segura.</p>
       {notice ? <div className={`${styles.notice} ${styles[notice.kind]}`}>{notice.text}</div> : null}
       <Link className={styles.backLink} href="/">Volver al formulario</Link>
     </section>
@@ -232,19 +237,19 @@ export default function PanelClient() {
       </div> : null}
 
       {tab === 'content' ? <div className={styles.contentArea}>
-        <div className={styles.pageHeading}><p className={styles.eyebrow}>Contenido editable</p><h1>La historia detrás de Crisdal.</h1><p>Los cambios aparecen en el brochure cuando presionas guardar.</p></div>
+        <div className={styles.pageHeading}><p className={styles.eyebrow}>Contenido editable</p><h1>Posicionamiento de Crisdal 2026.</h1><p>Los cambios aparecen en el brochure cuando presionas guardar.</p></div>
         <section className={styles.formCard}>
           <h2>Portada</h2><div className={styles.formGrid}><label>Frase superior<input value={content.kicker} maxLength={80} onChange={(e) => setContent({ ...content, kicker: e.target.value })} /></label><label className={styles.full}>Título principal<textarea value={content.title} maxLength={140} rows={2} onChange={(e) => setContent({ ...content, title: e.target.value })} /></label><label className={styles.full}>Introducción<textarea value={content.lead} maxLength={500} rows={3} onChange={(e) => setContent({ ...content, lead: e.target.value })} /></label></div>
         </section>
-        <section className={styles.formCard}><h2>Nuestra manera de trabajar</h2><div className={styles.formGrid}><label className={styles.full}>Título<textarea value={content.storyTitle} maxLength={120} rows={2} onChange={(e) => setContent({ ...content, storyTitle: e.target.value })} /></label><label className={styles.full}>Historia<textarea value={content.story} maxLength={900} rows={5} onChange={(e) => setContent({ ...content, story: e.target.value })} /></label></div></section>
-        <section className={styles.formCard}><div className={styles.formCardHeader}><div><h2>Servicios</h2><p>Puedes mostrar hasta 12.</p></div><button className={styles.secondaryButton} onClick={addService}><Plus size={16} /> Añadir</button></div><div className={styles.serviceEditor}>{content.services.map((service, index) => <div className={styles.serviceRow} key={service.id}><span>{String(index + 1).padStart(2, '0')}</span><label>Etiqueta<input value={service.tag} maxLength={40} onChange={(e) => updateService(index, 'tag', e.target.value)} /></label><label>Servicio<input value={service.title} maxLength={80} onChange={(e) => updateService(index, 'title', e.target.value)} /></label><label className={styles.serviceDescription}>Descripción<textarea value={service.description} maxLength={240} rows={2} onChange={(e) => updateService(index, 'description', e.target.value)} /></label><button onClick={() => content.services.length > 1 && setContent({ ...content, services: content.services.filter((_, itemIndex) => itemIndex !== index) })} aria-label={`Eliminar ${service.title}`}><Trash2 size={17} /></button></div>)}</div></section>
+        <section className={styles.formCard}><h2>Manifiesto de transición</h2><div className={styles.formGrid}><label className={styles.full}>Título<textarea value={content.storyTitle} maxLength={120} rows={2} onChange={(e) => setContent({ ...content, storyTitle: e.target.value })} /></label><label className={styles.full}>Historia<textarea value={content.story} maxLength={900} rows={5} onChange={(e) => setContent({ ...content, story: e.target.value })} /></label></div></section>
+        <section className={styles.formCard}><div className={styles.formCardHeader}><div><h2>Soluciones integradas</h2><p>Puedes mostrar hasta 12.</p></div><button className={styles.secondaryButton} onClick={addService}><Plus size={16} /> Añadir</button></div><div className={styles.serviceEditor}>{content.services.map((service, index) => <div className={styles.serviceRow} key={service.id}><span>{String(index + 1).padStart(2, '0')}</span><label>Etiqueta<input value={service.tag} maxLength={40} onChange={(e) => updateService(index, 'tag', e.target.value)} /></label><label>Servicio<input value={service.title} maxLength={80} onChange={(e) => updateService(index, 'title', e.target.value)} /></label><label className={styles.serviceDescription}>Descripción<textarea value={service.description} maxLength={240} rows={2} onChange={(e) => updateService(index, 'description', e.target.value)} /></label><button onClick={() => content.services.length > 1 && setContent({ ...content, services: content.services.filter((_, itemIndex) => itemIndex !== index) })} aria-label={`Eliminar ${service.title}`}><Trash2 size={17} /></button></div>)}</div></section>
         <section className={styles.formCard}><h2>Llamada a la acción</h2><div className={styles.formGrid}><label>Texto del botón<input value={content.ctaLabel} maxLength={60} onChange={(e) => setContent({ ...content, ctaLabel: e.target.value })} /></label><label>Enlace<input value={content.ctaUrl} maxLength={600} onChange={(e) => setContent({ ...content, ctaUrl: e.target.value })} /></label><label>WhatsApp<input value={content.whatsappNumber} maxLength={15} onChange={(e) => setContent({ ...content, whatsappNumber: e.target.value.replace(/\D/g, '') })} /></label></div></section>
         <div className={styles.stickySave}><span>Última edición: {new Date(content.updatedAt).getTime() > 0 ? new Date(content.updatedAt).toLocaleString('es-PE') : 'contenido inicial'}</span><button className={styles.primaryButton} onClick={() => save()} disabled={busy}>{busy ? <LoaderCircle className={styles.spin} /> : <Save size={17} />} Guardar y publicar</button></div>
       </div> : null}
 
       {tab === 'media' ? <div className={styles.contentArea}>
         <div className={styles.pageHeading}><p className={styles.eyebrow}>Biblioteca multimedia</p><h1>Imágenes, videos y documentos.</h1><p>Los archivos se publican directamente en el brochure y puedes ordenar cómo aparecen.</p></div>
-        <label className={styles.uploadZone}><input type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,application/pdf" onChange={(event) => { void uploadFile(event.target.files?.[0]); event.currentTarget.value = ''; }} disabled={uploading} />{uploading ? <LoaderCircle className={styles.spin} size={30} /> : <UploadCloud size={32} />}<strong>{uploading ? `Subiendo… ${uploadProgress}%` : 'Selecciona o arrastra un archivo'}</strong><span>Imágenes hasta 15 MB · PDF hasta 30 MB · video MP4/WebM hasta 200 MB</span>{uploadProgress > 0 ? <i><b style={{ width: `${uploadProgress}%` }} /></i> : null}</label>
+        <label className={styles.uploadZone}><input type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,application/pdf" onChange={(event) => { void uploadFile(event.target.files?.[0]); event.currentTarget.value = ''; }} disabled={uploading} />{uploading ? <LoaderCircle className={styles.spin} size={30} /> : <UploadCloud size={32} />}<strong>{uploading ? `Subiendo… ${uploadProgress}%` : 'Selecciona o arrastra un archivo'}</strong><span>Imágenes hasta 15 MB · PDF hasta 30 MB · video MP4/WebM hasta 50 MB</span>{uploadProgress > 0 ? <i><b style={{ width: `${uploadProgress}%` }} /></i> : null}</label>
         {content.media.length ? <div className={styles.mediaList}>{content.media.map((item, index) => <article key={item.id} className={styles.mediaItem}><div className={styles.mediaThumb}>{item.kind === 'image' ? <Image src={item.url} alt="" fill unoptimized sizes="96px" /> : item.kind === 'video' ? <Video /> : <FileText />}</div><div className={styles.mediaFields}><span>{item.kind === 'image' ? <><ImageIcon size={13} /> IMAGEN</> : item.kind === 'video' ? <><Video size={13} /> VIDEO</> : <><FileText size={13} /> PDF</>}</span><input value={item.title} placeholder="Título" maxLength={100} onChange={(e) => setContent({ ...content, media: content.media.map((media) => media.id === item.id ? { ...media, title: e.target.value } : media) })} /><input value={item.caption} placeholder="Descripción opcional" maxLength={240} onChange={(e) => setContent({ ...content, media: content.media.map((media) => media.id === item.id ? { ...media, caption: e.target.value } : media) })} /></div><div className={styles.mediaActions}><button onClick={() => moveMedia(index, -1)} disabled={index === 0} aria-label="Mover arriba"><ArrowUp /></button><button onClick={() => moveMedia(index, 1)} disabled={index === content.media.length - 1} aria-label="Mover abajo"><ArrowDown /></button><button className={styles.deleteButton} onClick={() => void removeMedia(item)} aria-label="Eliminar"><Trash2 /></button></div></article>)}</div> : <div className={styles.emptyState}><MonitorPlay size={34} /><h2>Tu biblioteca está lista.</h2><p>Sube el primer proyecto, reel o PDF para llenar el brochure de vida.</p></div>}
         {content.media.length ? <div className={styles.stickySave}><span>{content.media.length} archivo{content.media.length === 1 ? '' : 's'} publicado{content.media.length === 1 ? '' : 's'}</span><button className={styles.primaryButton} onClick={() => save()} disabled={busy}><Save size={17} /> Guardar orden y textos</button></div> : null}
       </div> : null}

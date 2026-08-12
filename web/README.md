@@ -31,11 +31,11 @@ El destinatario final se define en `NOTIFY_EMAIL` y por defecto es `crisdalagenc
 
 ## Panel y brochure
 
-- `/panel`: acceso privado mediante enlace temporal enviado a `ADMIN_EMAIL`.
+- `/panel`: acceso privado mediante `ADMIN_USERNAME` y `ADMIN_PASSWORD`.
 - `/brochure`: landing multimedia pública y responsive.
 - `/api/qr`: ticket QR descargable en SVG o PNG, con el isotipo de Crisdal.
 
-Define preferentemente `ADMIN_SESSION_SECRET` con un valor aleatorio de al menos 32 caracteres. Si no existe, el servidor usa `SUPABASE_SERVICE_ROLE_KEY` como secreto de firma. La sesión se guarda en una cookie firmada, `HttpOnly`, `SameSite=Lax` y segura en producción.
+Define `ADMIN_PASSWORD` con al menos 12 caracteres y preferentemente `ADMIN_SESSION_SECRET` con un valor aleatorio de al menos 32 caracteres. Si este último no existe, el servidor usa `SUPABASE_SERVICE_ROLE_KEY` como secreto de firma. La sesión se guarda en una cookie firmada, `HttpOnly`, `SameSite=Lax` y segura en producción. La URL o el parámetro `access=ok` no conceden acceso.
 
 Desde el panel puedes editar textos y servicios, generar enlaces identificables por campaña, subir hasta 40 recursos y reordenar o eliminar la biblioteca. Las cargas grandes se envían directamente a Supabase mediante URLs firmadas, sin pasar por el límite de archivos de Vercel. El límite es de 15 MB por imagen, 30 MB por PDF y 50 MB por video.
 
@@ -47,7 +47,7 @@ Al importar el repositorio, define **Root Directory** como `web`. Copia las vari
 - archivo privado asociado en `onboarding_files`;
 - correo recibido;
 - enlace de WhatsApp correcto.
-- acceso por correo a `/panel`;
+- acceso con usuario y contraseña a `/panel`;
 - edición persistente del brochure;
 - lectura y descarga del QR.
 

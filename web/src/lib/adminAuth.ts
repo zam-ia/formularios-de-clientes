@@ -1,12 +1,16 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { NextRequest, NextResponse } from 'next/server';
 
 export const ADMIN_COOKIE = 'crisdal_admin_session';
 const ADMIN_SESSION_SECONDS = 60 * 60 * 12;
-const MAGIC_LINK_SECONDS = 60 * 15;
+const SESSION_VERSION = 'v2';
 
 export function getAdminEmail() {
   return (process.env.ADMIN_EMAIL || 'crisdalagency@gmail.com').trim().toLowerCase();
+}
+
+export function getAdminUsername() {
+  return (process.env.ADMIN_USERNAME || 'crisdal').trim().toLowerCase();
 }
 
 function getSecret() {
@@ -27,30 +31,25 @@ function safeEqual(left: string, right: string) {
   return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
 }
 
-export function createMagicLinkToken() {
-  const expires = Math.floor(Date.now() / 1000) + MAGIC_LINK_SECONDS;
-  const nonce = randomBytes(24).toString('base64url');
-  return `${expires}.${nonce}.${sign(`${getAdminEmail()}.${expires}.${nonce}`)}`;
-}
-
-export function verifyMagicLinkToken(token: string) {
-  const [expiresRaw, nonce, signature] = token.split('.');
-  const expires = Number(expiresRaw);
-  if (!expires || expires < Math.floor(Date.now() / 1000) || !nonce || !signature) return false;
-  return safeEqual(signature, sign(`${getAdminEmail()}.${expires}.${nonce}`));
+export function verifyAdminCredentials(username: string, password: string) {
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  if (!configuredPassword || configuredPassword.length < 12) {
+    throw new Error('ADMIN_PASSWORD debe tener al menos 12 caracteres.');
+  }
+  return safeEqual(username.trim().toLowerCase(), getAdminUsername()) && safeEqual(password, configuredPassword);
 }
 
 export function createSessionToken() {
   const expires = Math.floor(Date.now() / 1000) + ADMIN_SESSION_SECONDS;
-  return `${expires}.${sign(`${getAdminEmail()}.${expires}`)}`;
+  return `${SESSION_VERSION}.${expires}.${sign(`${SESSION_VERSION}.${getAdminUsername()}.${expires}`)}`;
 }
 
 export function verifySessionToken(token: string | undefined) {
   if (!token) return false;
-  const [expiresRaw, signature] = token.split('.');
+  const [version, expiresRaw, signature] = token.split('.');
   const expires = Number(expiresRaw);
-  if (!expires || expires < Math.floor(Date.now() / 1000) || !signature) return false;
-  return safeEqual(signature, sign(`${getAdminEmail()}.${expires}`));
+  if (version !== SESSION_VERSION || !expires || expires < Math.floor(Date.now() / 1000) || !signature) return false;
+  return safeEqual(signature, sign(`${SESSION_VERSION}.${getAdminUsername()}.${expires}`));
 }
 
 export function isAdminRequest(request: NextRequest, requireSameOrigin = false) {
