@@ -1,11 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string;
+let browserClient: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  // Allow build-time but warn
-  console.warn('Supabase client env vars missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+export function getSupabaseBrowser() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) throw new Error('La carga de archivos aún no está configurada.');
+  browserClient ??= createClient(url, key, { auth: { persistSession: false } });
+  return browserClient;
 }
-
-export const supabase = createClient(supabaseUrl ?? '', supabaseKey ?? '');

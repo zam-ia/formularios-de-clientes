@@ -1,10 +1,5 @@
-import React from 'react';
 import MultiStepForm from '@/components/MultiStepForm';
 
 export default function Page() {
-  return (
-    <main>
-      <MultiStepForm />
-    </main>
-  );
+  return <MultiStepForm />;
 }

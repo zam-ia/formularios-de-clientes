@@ -1,0 +1,38 @@
+:root {
+  --crisdal-black: #080807;
+  --crisdal-black-2: #11100E;
+  --crisdal-black-3: #181612;
+  --crisdal-yellow: #FFB800;
+  --crisdal-yellow-2: #F29F05;
+  --crisdal-paper: #EEE4D2;
+  --crisdal-paper-2: #D9CCB6;
+  --crisdal-white: #FFFAF0;
+  --crisdal-muted: #BCB5A8;
+
+  --app-bg: #F7F7F5;
+  --surface: #FFFFFF;
+  --surface-glass: rgba(255,255,255,.78);
+  --text: #080807;
+  --text-muted: #6C6963;
+  --border: rgba(8,8,7,.08);
+  --focus-ring: rgba(255,184,0,.28);
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  --shadow-sm: 0 6px 22px rgba(8,8,7,.06);
+  --shadow-md: 0 20px 60px rgba(8,8,7,.10);
+
+  --font-body: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+
+  --form-max: 760px;
+  --content-max: 1240px;
+
+  --tap-min: 44px;
+  --input-h: 54px;
+  --transition-fast: 180ms cubic-bezier(.2,.8,.2,1);
+  --transition: 220ms cubic-bezier(.2,.8,.2,1);
+}

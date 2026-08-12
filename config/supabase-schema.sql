@@ -123,9 +123,17 @@ create trigger trg_onboarding_updated_at
 before update on public.onboarding_submissions
 for each row execute function public.set_updated_at();
 
--- Storage bucket:
--- Create a PRIVATE bucket in Supabase dashboard:
--- id/name: brand-intake-files
--- allowed MIME: image/jpeg, image/png, image/webp, application/pdf, video/mp4
--- recommended bucket file size limit: 20MB.
+-- Private Storage bucket used by signed upload URLs.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'brand-intake-files',
+  'brand-intake-files',
+  false,
+  20971520,
+  array['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/mp4']
+)
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 -- For a multi-file submission, validate total size in application code.

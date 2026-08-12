@@ -1,92 +1,114 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabaseServer';
+import { intakeSchema } from '@/lib/intake';
+import { sendSubmissionNotification } from '@/lib/notify';
 
-export async function POST(req: Request) {
+export const runtime = 'nodejs';
+export const maxDuration = 20;
+
+async function verifyTurnstile(token: string | undefined, ip: string | null) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return true;
+  if (!token) return false;
+
+  const body = new FormData();
+  body.set('secret', secret);
+  body.set('response', token);
+  if (ip) body.set('remoteip', ip);
+
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body,
+    cache: 'no-store',
+  });
+  const result = await response.json() as { success?: boolean };
+  return result.success === true;
+}
+
+export async function POST(request: Request) {
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > 250_000) {
+    return NextResponse.json({ error: 'La solicitud es demasiado grande.' }, { status: 413 });
+  }
+
   try {
-    const payload = await req.json();
+    const raw = await request.json();
+    const parsed = intakeSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({
+        error: 'Revisa los datos del formulario.',
+        fields: parsed.error.flatten().fieldErrors,
+      }, { status: 400 });
+    }
+
+    const payload = parsed.data;
+    if (payload.website) {
+      return NextResponse.json({ success: true, submission: { code: payload.submission_code } });
+    }
+
+    const elapsed = Date.now() - new Date(payload.started_at).getTime();
+    if (!Number.isFinite(elapsed) || elapsed < 3_000) {
+      return NextResponse.json({ error: 'Espera un momento antes de enviar.' }, { status: 429 });
+    }
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+    if (!(await verifyTurnstile(payload.turnstile_token, ip))) {
+      return NextResponse.json({ error: 'No pudimos verificar que seas una persona. Inténtalo otra vez.' }, { status: 400 });
+    }
+
+    const supabase = getSupabaseServer();
+    const { files, turnstile_token: _turnstile, website: _website, ...submissionInput } = payload;
+    void _turnstile;
+    void _website;
     const insert = {
-      draft_id: payload.draft_id ?? null,
-      submission_code: payload.submission_code ?? null,
-      form_version: payload.form_version ?? '1.0',
-      service_types: payload.service_types ?? [],
-      business_name: payload.business_name ?? null,
-      sector: payload.sector ?? null,
-      location: payload.location ?? null,
-      business_age: payload.business_age ?? null,
-      social_links: payload.social_links ?? null,
-
-      brand_words: payload.brand_words ?? [],
-      brand_assets_status: payload.brand_assets_status ?? null,
-      brand_colors_text: payload.brand_colors_text ?? null,
-      brand_tone: payload.brand_tone ?? null,
-      brand_avoid: payload.brand_avoid ?? null,
-
-      primary_goal: payload.primary_goal ?? null,
-      four_week_result: payload.four_week_result ?? null,
-      primary_cta: payload.primary_cta ?? null,
-
-      ideal_customer: payload.ideal_customer ?? null,
-      customer_problem: payload.customer_problem ?? null,
-      customer_channels: payload.customer_channels ?? [],
-      main_objection: payload.main_objection ?? null,
-
-      star_offer: payload.star_offer ?? null,
-      average_price: payload.average_price ?? null,
-      differentiator: payload.differentiator ?? null,
-      current_promo: payload.current_promo ?? null,
-      competitors: payload.competitors ?? null,
-      competitor_notes: payload.competitor_notes ?? null,
-
-      marketing_invested: payload.marketing_invested ?? null,
-      marketing_history: payload.marketing_history ?? null,
-      ad_budget: payload.ad_budget ?? null,
-      own_materials: payload.own_materials ?? null,
-      materials_link: payload.materials_link ?? null,
-
-      deadline_type: payload.deadline_type ?? null,
-      deadline_date: payload.deadline_date ?? null,
-      key_date: payload.key_date ?? null,
-
-      contact_name: payload.contact_name ?? null,
-      contact_whatsapp: payload.contact_whatsapp ?? null,
-      contact_email: payload.contact_email ?? null,
-      best_contact_time: payload.best_contact_time ?? null,
-      consent: payload.consent ?? false,
-
-      utm_source: payload.utm_source ?? null,
-      utm_medium: payload.utm_medium ?? null,
-      utm_campaign: payload.utm_campaign ?? null,
-      utm_content: payload.utm_content ?? null,
-      utm_term: payload.utm_term ?? null,
-      referrer: payload.referrer ?? null,
-      landing_path: payload.landing_path ?? null,
-
-      started_at: payload.started_at ?? null,
+      ...submissionInput,
+      marketing_invested: payload.marketing_invested,
+      contact_email: payload.contact_email || null,
+      deadline_date: payload.deadline_date || null,
+      status: 'submitted',
       submitted_at: new Date().toISOString(),
     };
 
-    let supabaseServer;
-    try {
-      supabaseServer = getSupabaseServer();
-    } catch (err: any) {
-      console.error('Supabase server client error', err);
-      return NextResponse.json({ error: err.message ?? String(err) }, { status: 500 });
-    }
-
-    const { data, error } = await supabaseServer
+    const { data: submission, error } = await supabase
       .from('onboarding_submissions')
       .insert(insert)
-      .select('*')
+      .select('id, draft_id, submission_code, business_name, contact_whatsapp, contact_email')
       .single();
 
-    if (error) {
-      console.error('Supabase insert error', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error?.code === '23505') {
+      const { data: existing } = await supabase
+        .from('onboarding_submissions')
+        .select('id, draft_id, submission_code, business_name, contact_whatsapp, contact_email')
+        .eq('draft_id', payload.draft_id)
+        .single();
+      if (existing) return NextResponse.json({ success: true, submission: existing, duplicate: true });
     }
 
-    return NextResponse.json({ success: true, submission: data });
-  } catch (err: any) {
-    console.error(err);
-    return NextResponse.json({ error: err.message ?? String(err) }, { status: 500 });
+    if (error || !submission) {
+      console.error('Submission insert failed', { code: error?.code });
+      return NextResponse.json({ error: 'No pudimos guardar la radiografía. Inténtalo nuevamente.' }, { status: 500 });
+    }
+
+    if (files.length) {
+      const fileRows = files.map((file) => ({ ...file, submission_id: submission.id }));
+      const { error: fileError } = await supabase.from('onboarding_files').insert(fileRows);
+      if (fileError) console.error('File metadata insert failed', { code: fileError.code });
+    }
+
+    let notified = false;
+    try {
+      await sendSubmissionNotification(payload);
+      notified = true;
+      await supabase.from('onboarding_submissions').update({ email_status: 'sent', email_error_code: null }).eq('id', submission.id);
+    } catch (notifyError) {
+      const code = notifyError instanceof Error ? notifyError.message.slice(0, 100) : 'email_failed';
+      console.error('Notification failed', { code });
+      await supabase.from('onboarding_submissions').update({ email_status: 'failed', email_error_code: code }).eq('id', submission.id);
+    }
+
+    return NextResponse.json({ success: true, submission, notified }, { status: 201 });
+  } catch (error) {
+    console.error('Submit route failed', { message: error instanceof Error ? error.message : 'unknown' });
+    return NextResponse.json({ error: 'Ocurrió un error inesperado. Inténtalo nuevamente.' }, { status: 500 });
   }
 }

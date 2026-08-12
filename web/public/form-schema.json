@@ -1,5 +1,5 @@
 {
-  "formVersion": "1.0",
+  "formVersion": "1.1",
   "title": "Radiografía de Marca",
   "estimatedMinutes": "6-8",
   "notificationEmail": "crisdalagency@gmail.com",
@@ -24,6 +24,437 @@
             "Branding / identidad",
             "Otro"
           ]
+        },
+        {
+          "id": "business_name",
+          "type": "text",
+          "required": true,
+          "label": "Nombre del negocio",
+          "maxLength": 120
+        },
+        {
+          "id": "sector",
+          "type": "single_select",
+          "required": true,
+          "label": "¿En qué rubro estás?",
+          "options": [
+            "Salud / clínica / consultorio",
+            "Belleza / estética / bienestar",
+            "Educación / capacitación",
+            "Restaurante / pollería / gastronomía",
+            "Retail / tienda",
+            "Servicios profesionales",
+            "Otro"
+          ]
+        },
+        {
+          "id": "location",
+          "type": "text",
+          "required": true,
+          "label": "¿Dónde atiendes principalmente?",
+          "maxLength": 120
+        },
+        {
+          "id": "business_age",
+          "type": "single_select",
+          "required": true,
+          "label": "¿Cuánto tiempo lleva funcionando?",
+          "options": [
+            "Menos de 1 año",
+            "1–3 años",
+            "Más de 3 años"
+          ]
+        },
+        {
+          "id": "social_links",
+          "type": "textarea",
+          "required": false,
+          "label": "Redes sociales o web",
+          "maxLength": 800
+        }
+      ]
+    },
+    {
+      "id": "brand",
+      "title": "Tu marca",
+      "fields": [
+        {
+          "id": "brand_words",
+          "type": "three_tags",
+          "required": true,
+          "label": "Si tu negocio fuera una persona, ¿qué 3 palabras lo describirían?",
+          "count": 3
+        },
+        {
+          "id": "brand_assets_status",
+          "type": "single_select",
+          "required": true,
+          "label": "¿Qué tan definida está hoy tu identidad?",
+          "options": [
+            "Tengo logo y colores listos",
+            "Tengo logo, pero los colores/estilo aún no están claros",
+            "Quiero ordenar o renovar mi identidad",
+            "Empezamos desde cero"
+          ]
+        },
+        {
+          "id": "brand_assets",
+          "type": "file_upload",
+          "required": false,
+          "label": "Comparte tu logo, colores o manual de marca",
+          "showIf": {
+            "field": "brand_assets_status",
+            "notEquals": "Empezamos desde cero"
+          },
+          "limits": {
+            "maxFiles": 3,
+            "maxFileMB": 10,
+            "allowed": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "application/pdf"
+            ]
+          }
+        },
+        {
+          "id": "brand_colors_text",
+          "type": "text",
+          "required": false,
+          "label": "Colores o referencias que debemos considerar",
+          "maxLength": 300
+        },
+        {
+          "id": "brand_tone",
+          "type": "single_select_cards",
+          "required": true,
+          "label": "¿Cómo quieres que suene tu marca?",
+          "options": [
+            "Cercana y familiar",
+            "Profesional y clara",
+            "Divertida y juvenil",
+            "Elegante y exclusiva",
+            "Directa y comercial",
+            "Técnica pero fácil de entender"
+          ]
+        },
+        {
+          "id": "brand_avoid",
+          "type": "textarea",
+          "required": false,
+          "label": "¿Hay algo que NO quieres que hagamos o digamos?",
+          "maxLength": 500
+        }
+      ]
+    },
+    {
+      "id": "goal",
+      "title": "Tu prioridad",
+      "fields": [
+        {
+          "id": "primary_goal",
+          "type": "single_select_cards",
+          "required": true,
+          "label": "¿Qué necesitas conseguir primero?",
+          "options": [
+            "Más ventas directas",
+            "Más citas / reservas",
+            "Más consultas calificadas",
+            "Más reconocimiento",
+            "Recuperar clientes",
+            "Mejorar imagen de marca",
+            "Lanzar un producto/servicio",
+            "Otro"
+          ]
+        },
+        {
+          "id": "four_week_result",
+          "type": "text",
+          "required": true,
+          "label": "Si en 4 semanas solo pudiéramos mejorar UNA cosa, ¿cuál sería?",
+          "maxLength": 240
+        },
+        {
+          "id": "primary_cta",
+          "type": "single_select",
+          "required": true,
+          "label": "Después de ver el trabajo, ¿qué debería hacer la persona?",
+          "options": [
+            "Escribir por WhatsApp",
+            "Reservar / agendar",
+            "Comprar",
+            "Completar un formulario",
+            "Visitar el local",
+            "Seguir la cuenta",
+            "Recordar la marca",
+            "Otro"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "audience",
+      "title": "Tu cliente",
+      "fields": [
+        {
+          "id": "ideal_customer",
+          "type": "textarea",
+          "required": true,
+          "label": "Describe a tu cliente ideal",
+          "maxLength": 700
+        },
+        {
+          "id": "customer_problem",
+          "type": "textarea",
+          "required": true,
+          "label": "¿Qué problema importante le resuelves?",
+          "maxLength": 700
+        },
+        {
+          "id": "customer_channels",
+          "type": "multiselect",
+          "required": true,
+          "label": "¿Dónde suele encontrarte o informarse?",
+          "options": [
+            "Facebook",
+            "Instagram",
+            "WhatsApp",
+            "TikTok",
+            "Google",
+            "Recomendaciones",
+            "Local físico",
+            "No lo tengo claro"
+          ]
+        },
+        {
+          "id": "main_objection",
+          "type": "single_select",
+          "required": false,
+          "label": "¿Qué duda suele frenar la compra?",
+          "options": [
+            "Precio",
+            "Confianza",
+            "Tiempo",
+            "Distancia",
+            "No entiende el beneficio",
+            "Compara demasiado",
+            "Otro"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "offer",
+      "title": "Tu oferta",
+      "fields": [
+        {
+          "id": "star_offer",
+          "type": "text",
+          "required": true,
+          "label": "¿Cuál es tu producto o servicio estrella?",
+          "maxLength": 200
+        },
+        {
+          "id": "average_price",
+          "type": "text",
+          "required": true,
+          "label": "¿Cuál es su precio promedio?",
+          "maxLength": 120
+        },
+        {
+          "id": "differentiator",
+          "type": "textarea",
+          "required": true,
+          "label": "¿Por qué deberían elegirte a ti?",
+          "maxLength": 700
+        },
+        {
+          "id": "current_promo",
+          "type": "text",
+          "required": false,
+          "label": "¿Tienes una promoción u oferta vigente?",
+          "maxLength": 300
+        },
+        {
+          "id": "competitors",
+          "type": "text",
+          "required": false,
+          "label": "Menciona 1–2 competidores directos",
+          "maxLength": 300
+        },
+        {
+          "id": "competitor_notes",
+          "type": "textarea",
+          "required": false,
+          "label": "¿Qué admiras o qué NO quieres copiar de cómo se promocionan?",
+          "maxLength": 600
+        }
+      ]
+    },
+    {
+      "id": "experience",
+      "title": "Lo que ya probaste",
+      "fields": [
+        {
+          "id": "marketing_invested",
+          "type": "boolean",
+          "required": true,
+          "label": "¿Ya invertiste en publicidad, influencers o agencia?"
+        },
+        {
+          "id": "marketing_history",
+          "type": "textarea",
+          "required": true,
+          "label": "¿Qué resultado tuviste y qué no quieres que se repita?",
+          "showIf": {
+            "field": "marketing_invested",
+            "equals": true
+          },
+          "maxLength": 800
+        },
+        {
+          "id": "ad_budget",
+          "type": "single_select",
+          "required": false,
+          "label": "¿Cuánto podrías destinar a pauta al mes, aparte del servicio?",
+          "showIfAny": [
+            {
+              "field": "service_types",
+              "contains": "Campaña publicitaria"
+            },
+            {
+              "field": "service_types",
+              "contains": "Landing / web"
+            },
+            {
+              "field": "primary_goal",
+              "in": [
+                "Más ventas directas",
+                "Más citas / reservas",
+                "Más consultas calificadas",
+                "Recuperar clientes"
+              ]
+            }
+          ],
+          "options": [
+            "Menos de S/150",
+            "S/150–300",
+            "S/300–600",
+            "Más de S/600",
+            "Aún no sé",
+            "No aplica por ahora"
+          ]
+        },
+        {
+          "id": "own_materials",
+          "type": "single_select",
+          "required": true,
+          "label": "¿Tienes fotos o videos propios que podamos usar?",
+          "options": [
+            "Sí, tengo material",
+            "Tengo algo, pero falta completar",
+            "No, hay que producir"
+          ]
+        },
+        {
+          "id": "materials_upload",
+          "type": "file_upload",
+          "required": false,
+          "label": "Comparte tu material",
+          "showIf": {
+            "field": "own_materials",
+            "notEquals": "No, hay que producir"
+          },
+          "limits": {
+            "maxFiles": 4,
+            "maxFileMB": 20,
+            "maxTotalMB": 60,
+            "allowed": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "video/mp4",
+              "application/pdf"
+            ]
+          }
+        },
+        {
+          "id": "materials_link",
+          "type": "url_or_text",
+          "required": false,
+          "label": "Link de Drive/Dropbox si tienes material pesado",
+          "maxLength": 800
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Fechas y contacto",
+      "fields": [
+        {
+          "id": "deadline_type",
+          "type": "single_select",
+          "required": true,
+          "label": "¿Para cuándo necesitas el primer entregable?",
+          "options": [
+            "Tengo una fecha",
+            "Aún no tengo fecha fija"
+          ]
+        },
+        {
+          "id": "deadline_date",
+          "type": "date",
+          "required": true,
+          "label": "Fecha objetivo",
+          "showIf": {
+            "field": "deadline_type",
+            "equals": "Tengo una fecha"
+          }
+        },
+        {
+          "id": "key_date",
+          "type": "text",
+          "required": false,
+          "label": "¿Hay una fecha comercial importante?",
+          "maxLength": 200
+        },
+        {
+          "id": "contact_name",
+          "type": "text",
+          "required": true,
+          "label": "Persona de contacto",
+          "maxLength": 160
+        },
+        {
+          "id": "contact_whatsapp",
+          "type": "tel",
+          "required": true,
+          "label": "WhatsApp"
+        },
+        {
+          "id": "contact_email",
+          "type": "email",
+          "required": false,
+          "label": "Correo de contacto"
+        },
+        {
+          "id": "best_contact_time",
+          "type": "single_select",
+          "required": true,
+          "label": "Mejor horario para escribirte",
+          "options": [
+            "9 am–12 pm",
+            "12 pm–3 pm",
+            "3 pm–6 pm",
+            "6 pm–9 pm",
+            "Cualquiera"
+          ]
+        },
+        {
+          "id": "consent",
+          "type": "checkbox",
+          "required": true,
+          "label": "Autorizo a Crisdal Agency a usar esta información para evaluar y gestionar mi solicitud y contactarme por WhatsApp o correo."
         }
       ]
     }

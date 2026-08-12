@@ -1,4 +1,6 @@
 # Radiografía de Marca — Crisdal Agency
+
+La aplicación lista para desplegar se encuentra en [`web/`](web/README.md). En Vercel selecciona `web` como Root Directory.
 ## Paquete de especificación funcional, UX/UI y técnica — v1.0
 
 Este ZIP es un handoff para desarrollo. Define cómo construir una mini landing/formulario multi-paso de onboarding para clientes nuevos de Crisdal Agency.
