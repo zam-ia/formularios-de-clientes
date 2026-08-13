@@ -43,6 +43,9 @@ yarn-error.log*
 /visual-*.png
 /henko-frame.png
 /dev-v2.*.log
+/dev-v3.*.log
+/dev-v4.*.log
+/dev-v5.*.log
 /public/avatar-crisdal.png
 /public/avatar-crisdal-key.png
 /public/avatar-crisdal-cutout.png

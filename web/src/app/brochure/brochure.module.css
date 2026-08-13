@@ -1503,6 +1503,71 @@
     transition: none;
   }
 }
+
+/* Multimedia problem widgets */
+.problemSection { background: var(--ivory); }
+.problemFlow { grid-template-columns: repeat(12,minmax(0,1fr)); }
+.problemFlow > button,
+.problemFlow > .problemWidgetSmall { grid-column: span 4; }
+.problemFlow > .problemWidgetMedium { grid-column: span 6; }
+.problemFlow > .problemWidgetWide { grid-column: span 8; }
+.problemFlow > .problemWidgetFull { grid-column: 1/-1; }
+.problemCardWithMedia .problemCardFront { color: white; border-color: rgba(255,255,255,.16); background: var(--graphite); }
+.problemCardMedia { position:absolute; inset:0; overflow:hidden; }
+.problemCardMedia img,
+.problemCardMedia video { width:100%; height:100%; object-fit:cover; transition:transform .7s cubic-bezier(.2,.8,.2,1); }
+.problemCardWithMedia:hover .problemCardMedia img,
+.problemCardWithMedia:hover .problemCardMedia video { transform:scale(1.035); }
+.problemMediaShade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(18,18,18,.05) 20%,rgba(18,18,18,.76) 100%); }
+.problemCardWithMedia .problemCardFront > small,
+.problemCardWithMedia .problemCardFront > strong,
+.problemCardWithMedia .problemCardFront > em { position:relative; z-index:2; }
+.problemCardWithMedia .problemCardFront > strong { margin-top:auto; }
+.problemCardWithMedia .problemCardFront > em { margin-top:14px; color:var(--yellow); }
+.performanceScene i:nth-of-type(1) { animation:chartPulse 2.8s ease-in-out infinite alternate; }
+.performanceScene i:nth-of-type(2) { animation:chartPulse 2.8s .35s ease-in-out infinite alternate-reverse; }
+@keyframes chartPulse { from { scale:.25 1; opacity:.35; } to { scale:1; opacity:1; } }
+
+/* Expandable team profiles */
+.teamGrid > button { min-width:0; padding:0; overflow:hidden; border:1px solid rgba(36,36,36,.12); border-radius:24px; background:var(--ivory); color:inherit; font:inherit; text-align:left; cursor:pointer; transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s ease; }
+.teamGrid > button:hover,
+.teamGrid > button:focus-visible { transform:translateY(-9px); box-shadow:0 28px 75px rgba(51,43,28,.14); }
+.teamGrid > button:hover .teamPortrait img { transform:scale(1.035); }
+.teamOpenProfile { margin-top:16px; display:flex; align-items:center; gap:7px; color:#8a6000; font-size:9px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; }
+.teamOpenProfile svg { width:15px; }
+.teamModal { position:fixed; z-index:100; inset:0; padding:30px; display:grid; place-items:center; background:rgba(17,16,14,.76); backdrop-filter:blur(16px); animation:teamModalIn .25s ease both; }
+.teamModal > article { position:relative; width:min(960px,100%); max-height:min(760px,calc(100svh - 60px)); display:grid; grid-template-columns:.92fr 1.08fr; overflow:hidden; border:1px solid rgba(255,255,255,.13); border-radius:30px; background:var(--graphite); color:white; box-shadow:0 40px 120px rgba(0,0,0,.42); }
+.teamModalClose { position:absolute; z-index:3; top:16px; right:16px; width:44px; height:44px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.2); border-radius:50%; background:rgba(20,20,20,.65); color:white; cursor:pointer; backdrop-filter:blur(10px); }
+.teamModalClose svg { width:20px; }
+.teamModalPortrait { position:relative; min-height:570px; overflow:hidden; background:#dad4ca; }
+.teamModalPortrait img { object-fit:cover; }
+.teamModalCopy { padding:clamp(38px,6vw,78px); display:flex; flex-direction:column; justify-content:center; }
+.teamModalCopy h3 { margin:0; font-size:clamp(46px,6vw,76px); line-height:.92; letter-spacing:-.055em; text-transform:uppercase; }
+.teamModalCopy > strong { margin-top:18px; color:var(--yellow); font-size:11px; letter-spacing:.11em; text-transform:uppercase; }
+.teamModalCopy > p:not(.eyebrow) { margin:28px 0 0; color:rgba(255,255,255,.68); font-size:17px; line-height:1.75; }
+.teamModalCopy > span { margin-top:45px; display:flex; align-items:center; gap:10px; color:rgba(255,255,255,.42); font-size:8px; font-weight:850; letter-spacing:.11em; }
+.teamModalCopy > span i { width:4px; height:4px; border-radius:50%; background:var(--yellow); }
+@keyframes teamModalIn { from { opacity:0; } }
+
+@media(max-width:1050px){
+  .problemFlow > button,
+  .problemFlow > .problemWidgetMedium,
+  .problemFlow > .problemWidgetWide { grid-column:span 6; }
+  .problemFlow > button:last-child { grid-column:1/-1; }
+}
+@media(max-width:680px){
+  .problemFlow > button,
+  .problemFlow > .problemWidgetMedium,
+  .problemFlow > .problemWidgetWide,
+  .problemFlow > .problemWidgetFull { grid-column:1/-1; }
+  .teamModal { padding:10px; }
+  .teamModal > article { max-height:calc(100svh - 20px); grid-template-columns:1fr; overflow-y:auto; border-radius:24px; }
+  .teamModalPortrait { min-height:42svh; }
+  .teamModalCopy { padding:34px 24px 40px; }
+  .teamModalCopy h3 { font-size:42px; }
+  .teamModalCopy > p:not(.eyebrow) { font-size:15px; }
+  .teamModalCopy > span { margin-top:30px; flex-wrap:wrap; }
+}
 @media (max-width: 1050px) {
   .nav {
     position: fixed;

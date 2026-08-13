@@ -43,12 +43,6 @@ const problems = [
   },
 ];
 
-const problemVisuals = [
-  <div className={styles.inboxScene} key="inbox" aria-hidden="true"><i /><i /><i /><span>LEAD SIN RESPUESTA</span></div>,
-  <div className={styles.dependencyScene} key="dependency" aria-hidden="true"><i /><b /><b /><b /><b /><b /><b /><b /><b /></div>,
-  <div className={styles.performanceScene} key="performance" aria-hidden="true"><span>VENTAS ↑</span><i /><span>COMPLEJIDAD ↑</span><i /></div>,
-];
-
 const solutions = [
   {
     code: "VIDEO",
@@ -407,6 +401,18 @@ function SectionContent({
 }: SectionRendererProps) {
   const [activeMagic, setActiveMagic] = useState(0);
   const [openProblem, setOpenProblem] = useState<number | null>(null);
+  const [activeTeamMember, setActiveTeamMember] = useState<string | null>(null);
+  useEffect(() => {
+    if (!activeTeamMember) return;
+    const close = (event: KeyboardEvent) => event.key === "Escape" && setActiveTeamMember(null);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", close);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", close);
+    };
+  }, [activeTeamMember]);
   const selectedMedia = section.mediaIds
     .map((id) => mediaById.get(id))
     .filter(Boolean) as BrochureMedia[];
@@ -422,11 +428,21 @@ function SectionContent({
           </p>
         </div>
         <div className={styles.problemFlow}>
-          {problems.map((item, index) => (
+          {problems.map((item, index) => {
+            const media = selectedMedia[index];
+            const fallback = [
+              "/brochure/story/strategy.webp",
+              "/brochure/story/systems.webp",
+              "/brochure/story/culture.webp",
+            ][index];
+            const size = media ? section.mediaSizes[media.id] || "small" : "small";
+            return (
             <button
               type="button"
               key={item.number}
-              className={openProblem === index ? styles.problemCardOpen : ""}
+              className={`${openProblem === index ? styles.problemCardOpen : ""} ${
+                size === "full" ? styles.problemWidgetFull : size === "wide" ? styles.problemWidgetWide : size === "medium" ? styles.problemWidgetMedium : styles.problemWidgetSmall
+              } ${styles.problemCardWithMedia}`}
               onClick={() => {
                 setOpenProblem(openProblem === index ? null : index);
                 track("flip_problem_card", { card: item.title });
@@ -436,8 +452,9 @@ function SectionContent({
             >
               <span className={styles.problemCardInner}>
                 <span className={styles.problemCardFront}>
+                  <span className={styles.problemCardMedia}><VisualMedia item={media} fallback={fallback} alt={`Visual de ${item.title}`} sizes="(max-width: 680px) 92vw, 32vw" /></span>
+                  <span className={styles.problemMediaShade} aria-hidden="true" />
                   <small>{item.number}</small>
-                  {problemVisuals[index]}
                   <strong>{item.title}</strong>
                   <em>Toca para entenderlo</em>
                 </span>
@@ -449,7 +466,7 @@ function SectionContent({
                 </span>
               </span>
             </button>
-          ))}
+          )})}
         </div>
       </section>
     );
@@ -728,7 +745,7 @@ function SectionContent({
         </div>
         <div className={styles.teamGrid}>
           {content.teamMembers.filter((person) => person.visible).map((person, index) => (
-            <article key={person.name} data-reveal>
+            <button type="button" key={person.name} data-reveal onClick={() => { setActiveTeamMember(person.id); track("open_team_profile", { person: person.name }); }} aria-label={`Ver perfil de ${person.name}`}>
               <div className={styles.teamPortrait}>
                 <Image
                   src={person.imageUrl}
@@ -744,10 +761,28 @@ function SectionContent({
                 <h3>{person.name}</h3>
                 <strong>{person.role}</strong>
                 <p>{person.focus}</p>
+                <span className={styles.teamOpenProfile}>Ver perfil <ArrowRight /></span>
               </div>
-            </article>
+            </button>
           ))}
         </div>
+        {activeTeamMember ? (() => {
+          const person = content.teamMembers.find((item) => item.id === activeTeamMember);
+          if (!person) return null;
+          return <div className={styles.teamModal} role="dialog" aria-modal="true" aria-labelledby={`team-profile-${person.id}`} onMouseDown={(event) => event.target === event.currentTarget && setActiveTeamMember(null)}>
+            <article>
+              <button type="button" className={styles.teamModalClose} onClick={() => setActiveTeamMember(null)} aria-label="Cerrar perfil"><X /></button>
+              <div className={styles.teamModalPortrait}><Image src={person.imageUrl} alt={person.name} fill unoptimized sizes="(max-width: 680px) 100vw, 46vw" style={{ objectPosition: `${person.positionX}% ${person.positionY}%` }} /></div>
+              <div className={styles.teamModalCopy}>
+                <p className={styles.eyebrow}>Perfil Crisdal</p>
+                <h3 id={`team-profile-${person.id}`}>{person.name}</h3>
+                <strong>{person.role}</strong>
+                <p>{person.focus}</p>
+                <span>ESTRATEGIA <i /> CREATIVIDAD <i /> EJECUCIÓN</span>
+              </div>
+            </article>
+          </div>;
+        })() : null}
         <div className={styles.integrationMap} aria-label="Video, diseño, redes y publicidad conectados por Crisdal">
           <span>Video</span><span>Diseño</span><strong>CRISDAL</strong><span>Redes</span><span>Publicidad</span>
         </div>

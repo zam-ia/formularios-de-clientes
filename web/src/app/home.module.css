@@ -336,3 +336,14 @@
 @media (max-width: 680px) {
   .caseQuickLinks { grid-template-columns: 1fr; }
 }
+
+/* Compact capabilities */
+.serviceGrid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
+.serviceGrid > a { min-height:210px; padding:20px 16px; }
+.serviceGrid > a > span { top:17px; right:17px; }
+.serviceGrid > a > svg:first-of-type { width:28px; height:28px; }
+.serviceGrid h3 { margin:auto 0 8px; font-size:clamp(17px,1.55vw,22px); line-height:1.05; }
+.serviceGrid p { min-height:0; font-size:10px; line-height:1.55; }
+.serviceGrid > a > svg:last-child { width:16px; margin-top:14px; }
+@media(max-width:1199px){.serviceGrid{grid-template-columns:repeat(3,minmax(0,1fr));}.serviceGrid > a{min-height:190px;}}
+@media(max-width:767px){.serviceGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.serviceGrid > a{min-height:190px;padding:18px 15px}.serviceGrid h3{font-size:18px}.serviceGrid p{font-size:9px}.serviceGrid > a > svg:first-of-type{width:25px;height:25px}}

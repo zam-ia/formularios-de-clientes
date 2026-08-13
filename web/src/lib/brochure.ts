@@ -232,6 +232,9 @@ export const defaultBrochureMedia = [
 
 export const defaultBrochureStoryMedia = [
   ["story-overview", "Crisdal en una mirada", "Equipo, contenido y sistema visual", "/brochure/story/brand-overview.webp"],
+  ["story-problem-rhythm", "Ritmo de contenido", "Planificación y constancia de marca", "/brochure/story/strategy.webp"],
+  ["story-problem-direction", "Dirección de contenido", "Estrategia antes de producir", "/brochure/story/systems.webp"],
+  ["story-problem-dependency", "Trabajo en equipo", "Una operación que no depende de una sola persona", "/brochure/story/culture.webp"],
 ].map(([id, title, caption, url]) => ({
   id,
   kind: "image" as const,
@@ -328,7 +331,12 @@ export const defaultBrochureSections = [
     eyebrow: "Trabajo reciente",
     title: "Mira lo que ya hicimos.",
     body: "Contenido, campañas, identidad y piezas creadas junto a negocios reales.",
-    mediaIds: [],
+    mediaIds: ["story-problem-rhythm", "story-problem-direction", "story-problem-dependency"],
+    mediaSizes: {
+      "story-problem-rhythm": "small" as const,
+      "story-problem-direction": "small" as const,
+      "story-problem-dependency": "small" as const,
+    },
   },
   {
     id: "solutions",
@@ -432,7 +440,7 @@ export const defaultBrochureSections = [
 ].map((section) => ({
   ...section,
   mediaLayout: "grid" as const,
-  mediaSizes: {},
+  mediaSizes: "mediaSizes" in section ? section.mediaSizes ?? {} : {},
 }));
 
 export const defaultBrochureCases = [
@@ -495,7 +503,7 @@ export const defaultBrochureCases = [
 ];
 
 export const brochureContentSchema = z.object({
-  version: z.number().int().positive().default(7),
+  version: z.number().int().positive().default(8),
   kicker: z.string().min(1).max(80),
   title: z.string().min(1).max(140),
   lead: z.string().min(1).max(500),
@@ -536,7 +544,7 @@ export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
 export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 7,
+  version: 8,
   kicker: "Contenido · Video · Redes · Publicidad",
   title: "Contenido que vende, no solo que se ve bonito.",
   lead: "Creamos y movemos contenido para que tu negocio deje de publicar por cumplir y empiece a generar conversaciones.",
@@ -710,6 +718,18 @@ export async function getBrochureContent(): Promise<BrochureContent> {
         })
         .sort((a, b) => (order[String(a.type)] || 99) - (order[String(b.type)] || 99));
     }
+    if (storedVersion < 8) {
+      const defaultProblems = defaultBrochureSections.find((section) => section.type === "problems");
+      migratedSections = migratedSections.map((section) =>
+        section.type === "problems" && defaultProblems
+          ? {
+              ...section,
+              mediaIds: defaultProblems.mediaIds,
+              mediaSizes: defaultProblems.mediaSizes,
+            }
+          : section,
+      );
+    }
     const migratedTestimonials = Array.isArray(raw.testimonials)
       ? (raw.testimonials as Array<Record<string, unknown>>)
           .filter((item) => item.id !== "testimonial-placeholder" && item.name !== "Próximo testimonio")
@@ -733,7 +753,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
       : [...defaultBrochureMedia, ...defaultBrochureStoryMedia];
     const parsed = brochureContentSchema.safeParse({
       ...raw,
-      version: 7,
+      version: 8,
       kicker: storedVersion < 7 ? defaultBrochureContent.kicker : raw.kicker,
       title: storedVersion < 7 ? defaultBrochureContent.title : raw.title,
       lead: storedVersion < 7 ? defaultBrochureContent.lead : raw.lead,
@@ -772,7 +792,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
 export async function saveBrochureContent(input: unknown) {
   const content = brochureContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 7,
+    version: 8,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

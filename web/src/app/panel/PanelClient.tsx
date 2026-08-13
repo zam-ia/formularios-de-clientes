@@ -1375,8 +1375,9 @@ export default function PanelClient() {
                         </>
                       ) : (
                         <p className={styles.widgetHelp}>
-                          El texto de este bloque pertenece al diseño base. Puedes
-                          añadir contenido visual debajo y organizarlo libremente.
+                          {section.type === "problems"
+                            ? "Asigna hasta tres imágenes o videos: el orden corresponde a Contenido sin ritmo, Contenido sin dirección y Todo depende de ti. Puedes encuadrarlos y cambiar el ancho de cada tarjeta."
+                            : "El texto de este bloque pertenece al diseño base. Puedes añadir contenido visual y organizarlo libremente."}
                         </p>
                       )}
                       <MediaPicker
@@ -1384,9 +1385,20 @@ export default function PanelClient() {
                         selected={section.mediaIds}
                         onToggle={(id) => {
                           const selected = section.mediaIds.includes(id);
+                          if (
+                            section.type === "problems" &&
+                            !selected &&
+                            section.mediaIds.length >= 3
+                          ) {
+                            setNotice({
+                              kind: "info",
+                              text: "Este bloque admite tres widgets: uno por cada problema.",
+                            });
+                            return;
+                          }
                           const nextSizes = { ...section.mediaSizes };
                           if (selected) delete nextSizes[id];
-                          else nextSizes[id] = "medium";
+                          else nextSizes[id] = section.type === "problems" ? "small" : "medium";
                           updateSection(section.id, {
                             mediaIds: toggleMedia(section.mediaIds, id),
                             mediaSizes: nextSizes,
