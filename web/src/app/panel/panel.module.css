@@ -207,6 +207,7 @@
   margin-top: 50px;
 }
 .sidebar nav button,
+.sidebar nav a,
 .sidebarFoot a,
 .sidebarFoot button {
   display: flex;
@@ -222,11 +223,13 @@
   text-decoration: none;
   text-align: left;
 }
-.sidebar nav button svg {
+.sidebar nav button svg,
+.sidebar nav a svg {
   width: 18px;
 }
 .sidebar nav button:hover,
-.sidebar nav button.active {
+.sidebar nav button.active,
+.sidebar nav a:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
 }

@@ -22,6 +22,7 @@ import {
   LockKeyhole,
   Menu,
   MonitorPlay,
+  Network,
   Plus,
   QrCode,
   Save,
@@ -571,6 +572,9 @@ export default function PanelClient() {
             icon={<MonitorPlay />}
             label="Multimedia"
           />
+          <Link href="/panel/aliados">
+            <Network /> Red de Aliados
+          </Link>
         </nav>
         <div className={styles.sidebarFoot}>
           <Link href="/brochure" target="_blank">

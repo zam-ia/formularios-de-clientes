@@ -2,6 +2,14 @@
 
 Ecosistema responsive de Crisdal construido con Next.js 16, Supabase Storage/Database y notificaciones por Resend o Gmail SMTP. Incluye el formulario de onboarding, un brochure multimedia público y un panel privado para gestionar contenido, enlaces y el QR de impresión.
 
+## Red de Aliados
+
+- Acceso y registro: `/aliados`.
+- Aprobación administrativa: `/panel/aliados`.
+- El DNI o RUC es el usuario y la contraseña temporal inicial.
+- En el primer acceso se exige crear una contraseña privada nueva.
+- El directorio, los datos y los logos permanecen privados para miembros aprobados.
+
 ## Desarrollo
 
 1. Copia `.env.example` como `.env.local` y completa las credenciales.
