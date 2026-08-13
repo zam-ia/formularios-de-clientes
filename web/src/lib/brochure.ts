@@ -16,7 +16,10 @@ const mediaSchema = z.object({
   id: z.string().min(1).max(100),
   kind: z.enum(["image", "video", "document"]),
   path: z.string().min(1).max(500),
-  url: z.string().url().max(1500),
+  url: z
+    .string()
+    .max(1500)
+    .refine((value) => value.startsWith("/") || /^https:\/\//.test(value), "URL inválida"),
   title: z.string().max(100).default(""),
   caption: z.string().max(320).default(""),
   mimeType: z.string().max(100),
@@ -89,6 +92,9 @@ const testimonialSchema = z.object({
   role: z.string().max(100).default(""),
   company: z.string().max(100).default(""),
   rating: z.number().int().min(1).max(5).default(5),
+  before: z.string().max(500).default(""),
+  after: z.string().max(500).default(""),
+  mediaId: z.string().max(100).default(""),
   visible: z.boolean().default(true),
 });
 
@@ -112,9 +118,9 @@ export const defaultBrochureTeam = [
   {
     id: "aldair",
     name: "Aldair Pérez",
-    role: "Estrategia & Procesos",
-    focus: "Administración, operación y estructura.",
-    imageUrl: "/team/aldair.webp",
+    role: "Strategy / Systems · 01",
+    focus: "ORDENAR COMPLEJIDAD · Administración · Operación · Procesos",
+    imageUrl: "/brochure/team/aldair-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
     visible: true,
@@ -122,9 +128,9 @@ export const defaultBrochureTeam = [
   {
     id: "milagros",
     name: "Milagros Ríos",
-    role: "Cultura & Personas",
-    focus: "Psicología organizacional, cultura y gestión del cambio.",
-    imageUrl: "/team/milagros.webp",
+    role: "Culture / People · 02",
+    focus: "ACTIVAR EQUIPOS · Cultura · Personas · Gestión del cambio",
+    imageUrl: "/brochure/team/milagros-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
     visible: true,
@@ -132,9 +138,9 @@ export const defaultBrochureTeam = [
   {
     id: "abi",
     name: "Abi",
-    role: "Comunicación & Growth",
-    focus: "Comunicación estratégica, publicidad y marca.",
-    imageUrl: "/team/abi.webp",
+    role: "Growth / Communication · 03",
+    focus: "CONECTAR OPORTUNIDADES · Comunicación · Publicidad · Marca",
+    imageUrl: "/brochure/team/abi-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
     visible: true,
@@ -143,20 +149,11 @@ export const defaultBrochureTeam = [
 
 export const defaultBrochureMetrics = [
   {
-    id: "metric-availability",
-    value: 24,
-    prefix: "",
-    suffix: "/7",
-    label: "Atención conectada",
-    description: "Una experiencia preparada para acompañar cada oportunidad.",
-    visible: true,
-  },
-  {
     id: "metric-capabilities",
     value: 4,
     prefix: "",
-    suffix: " áreas",
-    label: "Bajo una misma ruta",
+    suffix: "",
+    label: "Frentes conectados",
     description: "Strategy, Growth, Systems y Culture trabajando juntas.",
     visible: true,
   },
@@ -173,25 +170,70 @@ export const defaultBrochureMetrics = [
     id: "metric-route",
     value: 1,
     prefix: "",
-    suffix: " ruta",
-    label: "Sin proveedores aislados",
-    description: "Un equipo que entiende el problema completo y mide el avance.",
+    suffix: "",
+    label: "Ruta integrada",
+    description: "Sin coordinar múltiples proveedores aislados.",
     visible: true,
   },
 ];
 
-export const defaultBrochureTestimonials = [
-  {
-    id: "testimonial-placeholder",
-    quote:
-      "Este espacio está listo para publicar una experiencia real cuando el cliente autorice el uso de su testimonio.",
-    name: "Próximo testimonio",
-    role: "Caso en preparación",
-    company: "Cliente Crisdal",
-    rating: 5,
-    visible: true,
-  },
-];
+export const defaultBrochureMedia = [
+  ["vitalis", "Clínica Vitalis", "Identidad, sitio web y presencia digital", "/brochure/portfolio/clinica-vitalis.webp"],
+  ["sonrie", "Sonríe Dental", "Identidad y experiencia digital", "/brochure/portfolio/sonrie-dental.webp"],
+  ["don-fuego", "Pollería Don Fuego", "Marca, empaque, fotografía y sitio web", "/brochure/portfolio/don-fuego.webp"],
+  ["lima-brasa", "Lima Brasa", "Identidad y presencia digital para gastronomía", "/brochure/portfolio/lima-brasa.webp"],
+  ["aura", "Aura Skin Studio", "Branding, website y ecosistema de contenido", "/brochure/portfolio/aura-skin-studio.webp"],
+  ["nova", "Instituto Nova Gestión", "Identidad, web y campaña de admisión", "/brochure/portfolio/nova-gestion.webp"],
+  ["change", "Change The Slim Studio", "Sistema de marca y experiencia digital", "/brochure/portfolio/change-slim-studio.webp"],
+  ["training", "Personal Training", "Identidad y presencia comercial", "/brochure/portfolio/personal-training-case.webp"],
+  ["change-system", "Change · Sistema de marca", "Redes, espacio, uniformes y aplicaciones", "/brochure/portfolio/change-brand-system.webp"],
+  ["patron", "El Patrón Pollos & Parrillas", "Sistema de comunicación y contenido comercial", "/brochure/portfolio/el-patron.webp"],
+  ["san-juan", "Colegio San Juan", "Identidad, señalética y campaña educativa", "/brochure/portfolio/colegio-san-juan.webp"],
+  ["training-social", "Personal Training · Contenido", "Estrategia social, historias y piezas de conversión", "/brochure/portfolio/personal-training-social.webp"],
+].map(([id, title, caption, url]) => ({
+  id: `portfolio-${id}`,
+  kind: "image" as const,
+  path: `static${url}`,
+  url,
+  title,
+  caption,
+  mimeType: "image/webp",
+  sizeBytes: 0,
+  width: 1448,
+  height: 1086,
+  positionX: 50,
+  positionY: 50,
+  zoom: 1,
+}));
+
+export const defaultBrochureStoryMedia = [
+  ["story-hero", "De desorden a crecimiento", "Visual de portada Crisdal", "/brochure/story/hero-system.webp"],
+  ["story-overview", "Crisdal en una mirada", "Equipo, servicios y sistema de marca", "/brochure/story/brand-overview.webp"],
+  ["story-problems", "Crecer no debería desordenarte", "Los tres problemas que frenan el crecimiento", "/brochure/story/problems.webp"],
+  ["story-manifesto", "Más conexión", "Más marketing no arregla un negocio desconectado", "/brochure/story/manifesto.webp"],
+  ["story-strategy", "Crisdal Strategy", "Diagnóstico, claridad y priorización", "/brochure/story/strategy.webp"],
+  ["story-growth", "Crisdal Growth", "Contenido, campaña, conversación, lead y seguimiento", "/brochure/story/growth.webp"],
+  ["story-systems", "Crisdal Systems", "Flujo integrado y automatización", "/brochure/story/systems.webp"],
+  ["story-culture", "Crisdal Culture", "Roles, acuerdos y adopción", "/brochure/story/culture.webp"],
+  ["story-nexo", "Marco NEXO", "Cómo conectamos estrategia, experiencia y optimización", "/brochure/story/nexo.webp"],
+  ["story-rebagliati", "Caso Rebagliati", "Evidencias, proceso y modelo operativo", "/brochure/story/caso-rebagliati.webp"],
+].map(([id, title, caption, url]) => ({
+  id,
+  kind: "image" as const,
+  path: `static${url}`,
+  url,
+  title,
+  caption,
+  mimeType: "image/webp",
+  sizeBytes: 0,
+  width: 1586,
+  height: 992,
+  positionX: 50,
+  positionY: 50,
+  zoom: 1,
+}));
+
+export const defaultBrochureTestimonials: Array<z.infer<typeof testimonialSchema>> = [];
 
 export const defaultBrochureSections = [
   {
@@ -234,9 +276,9 @@ export const defaultBrochureSections = [
     id: "metrics",
     type: "metrics" as const,
     visible: true,
-    eyebrow: "Avance visible",
-    title: "Los números también cuentan la historia.",
-    body: "Indicadores claros para entender el sistema que estamos construyendo.",
+    eyebrow: "Modelo integrado",
+    title: "Un sistema pensado como uno solo.",
+    body: "No son resultados prometidos: describen cómo conectamos el negocio para avanzar con una sola ruta.",
     mediaIds: [],
   },
   {
@@ -335,10 +377,11 @@ export const defaultBrochureCases = [
 ];
 
 export const brochureContentSchema = z.object({
-  version: z.number().int().positive().default(4),
+  version: z.number().int().positive().default(5),
   kicker: z.string().min(1).max(80),
   title: z.string().min(1).max(140),
   lead: z.string().min(1).max(500),
+  heroMediaId: z.string().max(100).default("story-hero"),
   storyTitle: z.string().min(1).max(120),
   story: z.string().min(1).max(900),
   ctaLabel: z.string().min(1).max(60),
@@ -373,15 +416,16 @@ export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
 export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 4,
+  version: 5,
   kicker: "Estrategia · Procesos · Cultura · Tecnología",
   title: "Crecer con orden.",
   lead: "Ayudamos a convertir un crecimiento que se siente pesado en una empresa más clara, rentable y preparada para lo que viene.",
+  heroMediaId: "story-hero",
   storyTitle: "un negocio que trabaja desconectado.",
   story:
     "No creemos en sumar herramientas por sumar. Primero entendemos qué está pasando, luego ordenamos lo esencial y recién entonces construimos una solución que el equipo pueda sostener.",
-  ctaLabel: "Cuéntanos sobre tu empresa",
-  ctaUrl: "/",
+  ctaLabel: "Solicitar diagnóstico",
+  ctaUrl: "#contacto",
   whatsappNumber: "51987088359",
   services: [
     {
@@ -413,7 +457,7 @@ export const defaultBrochureContent: BrochureContent = {
       tag: "Adopción",
     },
   ],
-  media: [],
+  media: [...defaultBrochureMedia, ...defaultBrochureStoryMedia],
   sections: defaultBrochureSections,
   cases: defaultBrochureCases,
   metrics: defaultBrochureMetrics,
@@ -487,11 +531,12 @@ export async function getBrochureContent(): Promise<BrochureContent> {
         updatedAt: raw.updatedAt || defaultBrochureContent.updatedAt,
       });
     }
+    const storedVersion = Number(raw.version || 1);
     const storedSections = Array.isArray(raw.sections)
       ? (raw.sections as Array<Record<string, unknown>>)
       : defaultBrochureSections;
-    const migratedSections =
-      Number(raw.version || 1) < 4
+    let migratedSections =
+      storedVersion < 4
         ? (() => {
             const next = [...storedSections];
             const newWidgets = defaultBrochureSections.filter(
@@ -510,16 +555,77 @@ export async function getBrochureContent(): Promise<BrochureContent> {
             return next;
           })()
         : storedSections;
+    if (storedVersion < 5) {
+      const order: Record<string, number> = {
+        problems: 1,
+        manifesto: 2,
+        solutions: 3,
+        nexo: 4,
+        cases: 5,
+        showcase: 6,
+        industries: 7,
+        team: 8,
+        route: 9,
+        metrics: 10,
+        testimonials: 11,
+        faq: 12,
+        contact: 13,
+        custom: 14,
+      };
+      migratedSections = migratedSections
+        .map((section) => {
+          if (section.type === "metrics")
+            return {
+              ...section,
+              eyebrow: "Modelo integrado",
+              title: "Un sistema pensado como uno solo.",
+              body: "No son resultados prometidos: describen cómo conectamos el negocio para avanzar con una sola ruta.",
+            };
+          if (section.type === "nexo")
+            return { ...section, eyebrow: "Marco de pensamiento" };
+          if (section.type === "route")
+            return { ...section, eyebrow: "Ciclo de implementación" };
+          return section;
+        })
+        .sort((a, b) => (order[String(a.type)] || 99) - (order[String(b.type)] || 99));
+    }
+    const migratedTestimonials = Array.isArray(raw.testimonials)
+      ? (raw.testimonials as Array<Record<string, unknown>>)
+          .filter((item) => item.id !== "testimonial-placeholder" && item.name !== "Próximo testimonio")
+          .map((item) => ({ ...item, before: item.before || "", after: item.after || "", mediaId: item.mediaId || "" }))
+      : [];
+    const existingMedia = Array.isArray(raw.media) ? raw.media : [];
+    const migratedMedia = [
+      ...existingMedia,
+      ...[...defaultBrochureMedia, ...defaultBrochureStoryMedia].filter(
+        (fallback) => !existingMedia.some((item) => (item as { id?: string }).id === fallback.id),
+      ),
+    ];
+    const migratedTeam = Array.isArray(raw.teamMembers)
+      ? (raw.teamMembers as Array<Record<string, unknown>>).map((person) => {
+          const updated = defaultBrochureTeam.find((item) => item.id === person.id);
+          return storedVersion < 5 && updated ? { ...person, role: updated.role, focus: updated.focus, imageUrl: updated.imageUrl } : person;
+        })
+      : defaultBrochureTeam;
     const parsed = brochureContentSchema.safeParse({
       ...raw,
-      version: 4,
+      version: 5,
+      heroMediaId: raw.heroMediaId || "story-hero",
+      ctaLabel:
+        storedVersion < 5
+          ? defaultBrochureContent.ctaLabel
+          : raw.ctaLabel || defaultBrochureContent.ctaLabel,
+      ctaUrl:
+        storedVersion < 5 && raw.ctaUrl === "/"
+          ? defaultBrochureContent.ctaUrl
+          : raw.ctaUrl || defaultBrochureContent.ctaUrl,
       sections: migratedSections,
       cases: raw.cases || defaultBrochureCases,
-      metrics: raw.metrics || defaultBrochureMetrics,
-      testimonials: raw.testimonials || defaultBrochureTestimonials,
-      teamMembers: raw.teamMembers || defaultBrochureTeam,
-      media: Array.isArray(raw.media)
-        ? raw.media.map((item) => ({
+      metrics: storedVersion < 5 ? defaultBrochureMetrics : raw.metrics || defaultBrochureMetrics,
+      testimonials: migratedTestimonials,
+      teamMembers: migratedTeam,
+      media: migratedMedia.length
+        ? migratedMedia.map((item) => ({
             ...(item as object),
             sizeBytes: (item as { sizeBytes?: number }).sizeBytes || 0,
             positionX: (item as { positionX?: number }).positionX ?? 50,
@@ -537,7 +643,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
 export async function saveBrochureContent(input: unknown) {
   const content = brochureContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 4,
+    version: 5,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

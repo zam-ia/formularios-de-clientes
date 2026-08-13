@@ -394,7 +394,10 @@ export default function PanelClient() {
           role: "Cargo",
           company: "Empresa",
           rating: 5,
-          visible: true,
+          before: "",
+          after: "",
+          mediaId: "",
+          visible: false,
         },
       ],
     }));
@@ -879,6 +882,27 @@ export default function PanelClient() {
                     }
                   />
                 </label>
+                <label className={styles.full}>
+                  Imagen o video de portada
+                  <select
+                    value={content.heroMediaId}
+                    onChange={(e) =>
+                      setContent({ ...content, heroMediaId: e.target.value })
+                    }
+                  >
+                    {content.media
+                      .filter((item) => item.kind !== "document")
+                      .map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.title || item.path}
+                        </option>
+                      ))}
+                  </select>
+                  <small>
+                    Recomendado: horizontal 16:10, 1600 × 1000 px o video MP4
+                    corto. El encuadre se ajusta desde Biblioteca.
+                  </small>
+                </label>
               </div>
             </section>
             <section className={styles.formCard}>
@@ -975,7 +999,7 @@ export default function PanelClient() {
               <div className={styles.formCardHeader}>
                 <div>
                   <h2>Datos y números</h2>
-                  <p>Se animan al entrar en pantalla y puedes organizarlos como un widget.</p>
+                  <p>Describe el modelo Crisdal, no resultados prometidos. El valor final siempre queda visible para buscadores y accesibilidad.</p>
                 </div>
                 <button className={styles.secondaryButton} onClick={addMetric}>
                   <Plus size={16} /> Añadir indicador
@@ -1036,7 +1060,7 @@ export default function PanelClient() {
               <div className={styles.formCardHeader}>
                 <div>
                   <h2>Testimonios</h2>
-                  <p>Usa únicamente testimonios reales que el cliente haya autorizado.</p>
+                  <p>La sección se oculta por completo mientras no haya un testimonio real, autorizado y marcado como visible.</p>
                 </div>
                 <button className={styles.secondaryButton} onClick={addTestimonial}>
                   <Plus size={16} /> Añadir testimonio
@@ -1064,6 +1088,16 @@ export default function PanelClient() {
                       <label>Empresa<input value={testimonial.company} maxLength={100} onChange={(event) => updateTestimonial(testimonial.id, { company: event.target.value })} /></label>
                       <label>Estrellas<select value={testimonial.rating} onChange={(event) => updateTestimonial(testimonial.id, { rating: Number(event.target.value) })}>{[5, 4, 3, 2, 1].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
                     </div>
+                    <div className={styles.testimonialInputs}>
+                      <label>Situación inicial<textarea rows={3} value={testimonial.before} maxLength={500} onChange={(event) => updateTestimonial(testimonial.id, { before: event.target.value })} /></label>
+                      <label>Cambio obtenido<textarea rows={3} value={testimonial.after} maxLength={500} onChange={(event) => updateTestimonial(testimonial.id, { after: event.target.value })} /></label>
+                    </div>
+                    <label>Foto o video del cliente
+                      <select value={testimonial.mediaId} onChange={(event) => updateTestimonial(testimonial.id, { mediaId: event.target.value })}>
+                        <option value="">Sin recurso todavía</option>
+                        {content.media.filter((item) => item.kind !== "document").map((item) => <option key={item.id} value={item.id}>{item.title || "Recurso multimedia"}</option>)}
+                      </select>
+                    </label>
                   </article>
                 ))}
               </div>
@@ -1116,6 +1150,10 @@ export default function PanelClient() {
                           <option value="/team/milagros.webp">Perfil Milagros</option>
                           <option value="/team/abi.webp">Perfil Abi</option>
                           <option value="/team/equipo-crisdal.webp">Foto grupal</option>
+                          <option value="/brochure/team/aldair-crisdal-2026.webp">Aldair 2026</option>
+                          <option value="/brochure/team/milagros-crisdal-2026.webp">Milagros 2026</option>
+                          <option value="/brochure/team/abi-crisdal-2026.webp">Abi 2026</option>
+                          <option value="/brochure/team/equipo-crisdal-2026.webp">Equipo Crisdal 2026</option>
                           {content.media.filter((item) => item.kind === "image").map((item) => (
                             <option key={item.id} value={item.url}>{item.title || "Imagen de multimedia"}</option>
                           ))}
@@ -1567,13 +1605,15 @@ export default function PanelClient() {
                       >
                         <ArrowDown />
                       </button>
-                      <button
-                        className={styles.deleteButton}
-                        onClick={() => void removeMedia(item)}
-                        aria-label="Eliminar"
-                      >
-                        <Trash2 />
-                      </button>
+                      {item.path.startsWith("static/") ? null : (
+                        <button
+                          className={styles.deleteButton}
+                          onClick={() => void removeMedia(item)}
+                          aria-label="Eliminar"
+                        >
+                          <Trash2 />
+                        </button>
+                      )}
                     </div>
                   </article>
                 ))}

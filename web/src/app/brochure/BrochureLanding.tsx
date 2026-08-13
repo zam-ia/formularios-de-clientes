@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -9,11 +9,8 @@ import {
   CircleDot,
   Menu,
   MessageCircle,
-  Quote,
   RefreshCw,
   Route,
-  Star,
-  TrendingUp,
   Users,
   Workflow,
   X,
@@ -47,6 +44,12 @@ const problems = [
   },
 ];
 
+const problemVisuals = [
+  <div className={styles.inboxScene} key="inbox" aria-hidden="true"><i /><i /><i /><span>LEAD SIN RESPUESTA</span></div>,
+  <div className={styles.dependencyScene} key="dependency" aria-hidden="true"><i /><b /><b /><b /><b /><b /><b /><b /><b /></div>,
+  <div className={styles.performanceScene} key="performance" aria-hidden="true"><span>VENTAS ↑</span><i /><span>COMPLEJIDAD ↑</span><i /></div>,
+];
+
 const solutions = [
   {
     code: "STRATEGY",
@@ -75,6 +78,19 @@ const solutions = [
     text: "Aclaramos funciones, comunicación y formas de trabajo para que el cambio también funcione para las personas.",
     result: "De depender de alguien → a trabajar en equipo.",
   },
+];
+
+const solutionVisuals = [
+  ["Problema", "Prioridad", "Ruta"],
+  ["Contenido", "Campaña", "Lead"],
+  ["Formulario", "CRM", "Seguimiento"],
+  ["Personas", "Roles", "Adopción"],
+];
+const solutionStoryImages = [
+  "/brochure/story/strategy.webp",
+  "/brochure/story/growth.webp",
+  "/brochure/story/systems.webp",
+  "/brochure/story/culture.webp",
 ];
 
 const nexo = [
@@ -106,7 +122,7 @@ const nexo = [
 
 const steps = [
   "Diagnóstico",
-  "Mapa de solución",
+  "Diseño de solución",
   "Implementación",
   "Medición",
   "Optimización",
@@ -161,6 +177,13 @@ export default function BrochureLanding({
   const whatsappUrl = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent("Hola Crisdal, vi su brochure y quiero solicitar un diagnóstico.")}`;
   const diagnosticUrl = content.ctaUrl || "/";
   const mediaById = new Map(content.media.map((item) => [item.id, item]));
+  const heroMedia = mediaById.get(content.heroMediaId);
+  const visibleSections = content.sections.filter((section) => {
+    if (!section.visible) return false;
+    if (section.type === "testimonials")
+      return content.testimonials.some((testimonial) => testimonial.visible);
+    return true;
+  });
 
   async function submitContact(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -299,6 +322,15 @@ export default function BrochureLanding({
           aria-label="Del caos al orden"
           data-reveal
         >
+          <VisualMedia
+            item={heroMedia}
+            fallback="/brochure/story/hero-system.webp"
+            alt="Equipo Crisdal conectando estrategia, sistemas y ejecución"
+            className={styles.heroStoryImage}
+            sizes="(max-width: 1050px) 92vw, 44vw"
+            priority
+          />
+          <div className={styles.heroStoryShade} aria-hidden="true" />
           <div className={styles.systemLabel}>
             <span>CAOS</span>
             <span>ORDEN</span>
@@ -328,8 +360,7 @@ export default function BrochureLanding({
         </div>
       </section>
 
-      {content.sections
-        .filter((section) => section.visible)
+      {visibleSections
         .map((section) => (
           <div
             key={section.id}
@@ -395,7 +426,7 @@ function SectionRenderer(props: SectionRendererProps) {
   const selectedMedia = section.mediaIds
     .map((id) => mediaById.get(id))
     .filter(Boolean) as BrochureMedia[];
-  const hasInternalMedia = ["showcase", "custom", "cases"].includes(
+  const hasInternalMedia = ["problems", "solutions", "nexo", "showcase", "custom", "cases", "testimonials"].includes(
     section.type,
   );
 
@@ -419,7 +450,6 @@ function SectionContent({
   section,
   content,
   mediaById,
-  diagnosticUrl,
   whatsappUrl,
   submitContact,
   contactState,
@@ -442,9 +472,10 @@ function SectionContent({
           </p>
         </div>
         <div className={styles.problemFlow}>
-          {problems.map((item) => (
+          {problems.map((item, index) => (
             <article key={item.number} data-reveal>
               <span>{item.number}</span>
+              {problemVisuals[index]}
               <h3>{item.title}</h3>
               <p>{item.text}</p>
               <strong>Resultado</strong>
@@ -452,6 +483,9 @@ function SectionContent({
             </article>
           ))}
         </div>
+        <figure className={styles.storyFigure} data-reveal>
+          <VisualMedia item={selectedMedia[0]} fallback="/brochure/story/problems.webp" alt="Los tres problemas que aparecen cuando una empresa crece sin sistemas" sizes="92vw" />
+        </figure>
       </section>
     );
 
@@ -459,9 +493,10 @@ function SectionContent({
     return (
       <section className={styles.manifesto}>
         <div data-reveal>
-          <span>Más marketing</span>
-          <span>no arregla</span>
-          <strong>{content.storyTitle}</strong>
+          <span className={styles.strikeCopy}>Más marketing</span>
+          <span>No arregla</span>
+          <strong>Más conexión.</strong>
+          <h2>{content.storyTitle}</h2>
           <p>{content.story}</p>
         </div>
       </section>
@@ -488,13 +523,20 @@ function SectionContent({
             };
             return (
               <article key={editable.id} data-reveal>
+                <figure className={styles.solutionStory}>
+                  <VisualMedia item={selectedMedia[index]} fallback={solutionStoryImages[index] || "/brochure/story/strategy.webp"} alt={`Visual de Crisdal ${editable.title}`} sizes="(max-width: 900px) 92vw, 45vw" />
+                </figure>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <p className={styles.solutionCode}>
                   CRISDAL {editable.title.toUpperCase() || item.code}
                 </p>
                 <h3>{item.question}</h3>
                 <p>{editable.description || item.text}</p>
+                <div className={styles.solutionDiagram} aria-hidden="true">
+                  {(solutionVisuals[index] || ["Entrada", "Sistema", "Avance"]).map((label) => <span key={label}>{label}</span>)}
+                </div>
                 <strong>{item.result}</strong>
+                <a href="#contacto" onClick={() => track("solution_open", { solution: editable.title })}>Explorar solución <ArrowRight /></a>
               </article>
             );
           })}
@@ -510,12 +552,14 @@ function SectionContent({
     return (
       <section id="nexo" className={styles.nexoSection}>
         <div className={styles.nexoIntro} data-reveal>
-          <p className={styles.eyebrow}>Método propio</p>
+          <p className={styles.eyebrow}>Marco de pensamiento</p>
           <h2>NEXO</h2>
           <p>
-            Nuestro método para conectar el problema real con una solución que
-            pueda sostenerse.
+            Cómo pensamos antes de ejecutar: conectamos el problema real con una solución que el negocio pueda sostener.
           </p>
+          <figure className={styles.nexoStory}>
+            <VisualMedia item={selectedMedia[0]} fallback="/brochure/story/nexo.webp" alt="Diagrama del marco NEXO de Crisdal" sizes="(max-width: 1050px) 92vw, 35vw" />
+          </figure>
         </div>
         <div className={styles.nexoRoute}>
           {nexo.map((item) => {
@@ -587,12 +631,10 @@ function SectionContent({
             .filter((metric) => metric.visible)
             .map((metric, index) => (
               <article key={metric.id} data-reveal>
-                <TrendingUp aria-hidden="true" />
-                <AnimatedNumber
-                  value={metric.value}
-                  prefix={metric.prefix}
-                  suffix={metric.suffix}
-                />
+                <span className={styles.metricIndex}>0{index + 1}</span>
+                <strong className={styles.animatedNumber}>
+                  {metric.prefix}{metric.value.toLocaleString("es-PE")}{metric.suffix}
+                </strong>
                 <h3>{metric.label}</h3>
                 <p>{metric.description}</p>
                 <i style={{ animationDelay: `${index * 0.35}s` }} />
@@ -603,7 +645,7 @@ function SectionContent({
     );
 
   if (section.type === "testimonials")
-    return (
+    return content.testimonials.some((testimonial) => testimonial.visible) ? (
       <section className={styles.testimonialsSection}>
         <div className={styles.sectionHead} data-reveal>
           <p className={styles.eyebrow}>
@@ -626,15 +668,17 @@ function SectionContent({
         >
           {content.testimonials
             .filter((testimonial) => testimonial.visible)
-            .map((testimonial) => (
-              <article key={testimonial.id} data-reveal>
-                <Quote aria-hidden="true" />
-                <div className={styles.testimonialStars} aria-label={`${testimonial.rating} de 5 estrellas`}>
-                  {Array.from({ length: testimonial.rating }).map((_, index) => (
-                    <Star key={index} aria-hidden="true" />
-                  ))}
-                </div>
-                <blockquote>“{testimonial.quote}”</blockquote>
+            .map((testimonial) => {
+              const testimonialMedia = testimonial.mediaId ? mediaById.get(testimonial.mediaId) : undefined;
+              return <article key={testimonial.id} data-reveal>
+                {testimonialMedia ? <TestimonialMedia item={testimonialMedia} name={testimonial.name} /> : null}
+                <div className={styles.testimonialCopy}>
+                  <p className={styles.testimonialCompany}>{testimonial.company}</p>
+                  <blockquote>“{testimonial.quote}”</blockquote>
+                  {testimonial.before || testimonial.after ? <dl>
+                    {testimonial.before ? <div><dt>Antes</dt><dd>{testimonial.before}</dd></div> : null}
+                    {testimonial.after ? <div><dt>Después</dt><dd>{testimonial.after}</dd></div> : null}
+                  </dl> : null}
                 <footer>
                   <span>{testimonial.name.slice(0, 1).toUpperCase()}</span>
                   <div>
@@ -646,17 +690,18 @@ function SectionContent({
                     </small>
                   </div>
                 </footer>
-              </article>
-            ))}
+                </div>
+              </article>;
+            })}
         </div>
       </section>
-    );
+    ) : null;
 
   if (section.type === "showcase")
     return (
       <MediaShowcase
         section={section}
-        media={selectedMedia.length ? selectedMedia : content.media}
+        media={selectedMedia.length ? selectedMedia : content.media.filter((item) => item.path.startsWith("static/portfolio/"))}
       />
     );
   if (section.type === "custom")
@@ -697,7 +742,7 @@ function SectionContent({
           <h2>Una firma construida desde disciplinas diferentes.</h2>
         </div>
         <div className={styles.teamGrid}>
-          {content.teamMembers.filter((person) => person.visible).map((person) => (
+          {content.teamMembers.filter((person) => person.visible).map((person, index) => (
             <article key={person.name} data-reveal>
               <div className={styles.teamPortrait}>
                 <Image
@@ -708,7 +753,7 @@ function SectionContent({
                   sizes="(max-width: 680px) 92vw, (max-width: 1050px) 70vw, 30vw"
                   style={{ objectPosition: `${person.positionX}% ${person.positionY}%` }}
                 />
-                <span>CRISDAL / TEAM</span>
+                <span>CRISDAL / {String(index + 1).padStart(2, "0")}</span>
               </div>
               <div className={styles.teamCardCopy}>
                 <h3>{person.name}</h3>
@@ -718,10 +763,9 @@ function SectionContent({
             </article>
           ))}
         </div>
-        <p className={styles.teamFormula}>
-          Empresa <span>+</span> personas <span>+</span> comunicación{" "}
-          <span>+</span> tecnología.
-        </p>
+        <div className={styles.integrationMap} aria-label="Empresa, personas, comunicación y tecnología conectadas por Crisdal">
+          <span>Empresa</span><span>Personas</span><strong>CRISDAL</strong><span>Tecnología</span><span>Comunicación</span>
+        </div>
       </section>
     );
 
@@ -729,8 +773,9 @@ function SectionContent({
     return (
       <section id="ruta" className={styles.routeSection}>
         <div className={styles.sectionHead} data-reveal>
-          <p className={styles.eyebrow}>Cómo trabajamos</p>
-          <h2>No empezamos diseñando. Empezamos entendiendo.</h2>
+          <p className={styles.eyebrow}>Ciclo de implementación</p>
+          <h2>Así ejecutamos cada proyecto.</h2>
+          <p>NEXO define cómo pensamos. Este ciclo convierte esa claridad en entregables, responsables y mejora continua.</p>
         </div>
         <ol className={styles.projectRoute}>
           {steps.map((step, index) => (
@@ -776,7 +821,7 @@ function SectionContent({
 
   if (section.type === "contact")
     return (
-      <section className={styles.finalCta} data-reveal>
+      <section id="contacto" className={styles.finalCta} data-reveal>
         <div>
           <p className={styles.eyebrow}>Conversemos</p>
           <h2>
@@ -785,29 +830,29 @@ function SectionContent({
             <em>Busquemos juntos por dónde empezar.</em>
           </h2>
           <p>
-            Puedes escribirnos directamente por WhatsApp, completar la
-            Radiografía de Marca o dejarnos tus datos aquí.
+            Solicita un diagnóstico para identificar qué conviene ordenar primero. Si prefieres, también puedes hablarnos directamente por WhatsApp.
           </p>
           <div className={styles.contactButtons}>
             <a
-              className={styles.whatsappPrimary}
+              className={styles.primary}
+              href="#formulario-diagnostico"
+              onClick={() => track("diagnostic_click", { placement: "final" })}
+            >
+              Solicitar diagnóstico <ArrowRight />
+            </a>
+            <a
+              className={styles.secondaryLight}
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
               onClick={() => track("whatsapp_click", { placement: "final" })}
             >
-              <MessageCircle /> Escribir por WhatsApp
-            </a>
-            <a
-              className={styles.secondaryLight}
-              href={diagnosticUrl}
-              onClick={() => track("diagnostic_click", { placement: "final" })}
-            >
-              {content.ctaLabel} <ArrowRight />
+              <MessageCircle /> Hablar por WhatsApp
             </a>
           </div>
         </div>
         <form
+          id="formulario-diagnostico"
           className={styles.quickForm}
           onSubmit={(event) => void submitContact(event)}
         >
@@ -844,14 +889,15 @@ function SectionContent({
             />
           </label>
           <label>
-            ¿En qué podemos ayudarte?
-            <textarea
-              name="message"
-              required
-              maxLength={600}
-              rows={4}
-              placeholder="Cuéntanos brevemente qué necesitas"
-            />
+            ¿Qué necesitas ordenar primero?
+            <select name="message" required defaultValue="">
+              <option value="" disabled>Selecciona una opción</option>
+              <option>Necesito ordenar mi estrategia.</option>
+              <option>Necesito generar demanda.</option>
+              <option>Necesito ordenar procesos o sistemas.</option>
+              <option>Necesito trabajar equipo o cultura.</option>
+              <option>No estoy seguro todavía.</option>
+            </select>
           </label>
           <input
             className={styles.honeypot}
@@ -883,58 +929,14 @@ function SectionContent({
   return null;
 }
 
-function AnimatedNumber({
-  value,
-  prefix,
-  suffix,
-}: {
-  value: number;
-  prefix: string;
-  suffix: string;
-}) {
-  const node = useRef<HTMLElement>(null);
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    const element = node.current;
-    if (!element) return;
-    let frame = 0;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          setDisplay(value);
-          return;
-        }
-        const startedAt = performance.now();
-        const tick = (now: number) => {
-          const progress = Math.min((now - startedAt) / 1200, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          setDisplay(value * eased);
-          if (progress < 1) frame = requestAnimationFrame(tick);
-        };
-        frame = requestAnimationFrame(tick);
-      },
-      { threshold: 0.4 },
-    );
-    observer.observe(element);
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [value]);
-
-  const formatted = Number.isInteger(value)
-    ? Math.round(display).toLocaleString("es-PE")
-    : display.toLocaleString("es-PE", { maximumFractionDigits: 1 });
-  return (
-    <strong ref={node} className={styles.animatedNumber}>
-      {prefix}
-      {formatted}
-      {suffix}
-    </strong>
-  );
+function TestimonialMedia({ item, name }: { item: BrochureMedia; name: string }) {
+  return <div className={styles.testimonialMedia}>
+    {item.kind === "video" ? (
+      <video src={item.url} controls playsInline preload="metadata" />
+    ) : item.kind === "image" ? (
+      <Image src={item.url} alt={`Testimonio de ${name}`} fill unoptimized sizes="(max-width: 800px) 92vw, 40vw" />
+    ) : null}
+  </div>;
 }
 
 function CaseStudy({
@@ -963,6 +965,10 @@ function CaseStudy({
       <div className={styles.caseEvidence} data-reveal>
         {media.length ? (
           <MediaGrid media={media} />
+        ) : project.id === "rebagliati" ? (
+          <figure className={styles.caseStoryFigure}>
+            <Image src="/brochure/story/caso-rebagliati.webp" alt="Caso Rebagliati: organigrama, talleres, entregables y modelo operativo" fill sizes="(max-width: 1050px) 92vw, 50vw" />
+          </figure>
         ) : (
           <div
             className={styles.processMap}
@@ -998,6 +1004,16 @@ function MediaShowcase({
   media: BrochureMedia[];
 }) {
   if (!media.length) return null;
+  const editorialSizes = Object.fromEntries(
+    media.map((item, index) => [
+      item.id,
+      index % 6 === 0 || index % 6 === 5
+        ? "wide"
+        : index % 6 === 1 || index % 6 === 4
+          ? "small"
+          : "medium",
+    ]),
+  ) as BrochureSection["mediaSizes"];
   return (
     <section className={styles.showcaseSection}>
       <div className={styles.sectionHead}>
@@ -1008,9 +1024,61 @@ function MediaShowcase({
       <MediaGrid
         media={media}
         layout={section.mediaLayout}
-        sizes={section.mediaSizes}
+        sizes={{ ...editorialSizes, ...section.mediaSizes }}
       />
     </section>
+  );
+}
+
+function VisualMedia({
+  item,
+  fallback,
+  alt,
+  className,
+  sizes,
+  priority = false,
+}: {
+  item?: BrochureMedia;
+  fallback: string;
+  alt: string;
+  className?: string;
+  sizes: string;
+  priority?: boolean;
+}) {
+  if (item?.kind === "video") {
+    return (
+      <video
+        className={className}
+        src={item.url}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-label={alt}
+        style={{
+          objectPosition: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+          transform: `scale(${item.zoom ?? 1})`,
+          transformOrigin: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+        }}
+      />
+    );
+  }
+  return (
+    <Image
+      className={className}
+      src={item?.kind === "image" ? item.url : fallback}
+      alt={alt}
+      fill
+      unoptimized={Boolean(item)}
+      sizes={sizes}
+      priority={priority}
+      style={item ? {
+        objectPosition: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+        transform: `scale(${item.zoom ?? 1})`,
+        transformOrigin: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+      } : undefined}
+    />
   );
 }
 
