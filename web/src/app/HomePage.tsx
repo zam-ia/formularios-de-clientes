@@ -266,9 +266,14 @@ export default function HomePage({ content }: { content: SiteContent }) {
               <a
                 key={service.id}
                 href="#contacto"
+                className={`${service.size === "wide" ? styles.serviceWide : service.size === "regular" ? styles.serviceRegular : styles.serviceCompact} ${service.mediaUrl ? styles.serviceWithMedia : ""}`}
                 data-reveal
                 onClick={() => track("service_open", { service: service.title })}
               >
+                {service.mediaUrl ? <span className={styles.serviceMedia} aria-hidden="true">
+                  {service.mediaKind === "video" ? <video src={service.mediaUrl} muted autoPlay loop playsInline preload="metadata" /> : <Image src={service.mediaUrl} alt="" fill unoptimized sizes="(max-width:767px) 50vw, 20vw" />}
+                </span> : null}
+                {service.mediaUrl ? <i className={styles.serviceShade} aria-hidden="true" /> : null}
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <Icon />
                 <h3>{service.title}</h3>

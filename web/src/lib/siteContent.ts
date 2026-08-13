@@ -13,6 +13,9 @@ const serviceSchema = z.object({
   id: z.string(),
   title: z.string().min(2).max(100),
   text: z.string().min(2).max(350),
+  size: z.enum(["compact", "regular", "wide"]).default("compact"),
+  mediaKind: z.enum(["image", "video"]).default("image"),
+  mediaUrl: z.string().max(1500).default(""),
 });
 
 const mediaUrlSchema = z.string().refine(
@@ -30,7 +33,7 @@ const testimonialSchema = z.object({
 });
 
 export const siteContentSchema = z.object({
-  version: z.literal(3),
+  version: z.literal(4),
   whatsappNumber: z.string().regex(/^\d{8,15}$/),
   logoUrl: mediaUrlSchema,
   heroKicker: z.string().min(2).max(100),
@@ -75,7 +78,7 @@ export type SiteContent = z.infer<typeof siteContentSchema>;
 export type SiteTestimonial = z.infer<typeof testimonialSchema>;
 
 export const defaultSiteContent: SiteContent = {
-  version: 3,
+  version: 4,
   whatsappNumber: "51987088359",
   logoUrl: "/brand/crisdal-agency-logo.png",
   heroKicker: "Estrategia · Creatividad · Distribución · Conversión",
@@ -101,31 +104,39 @@ export const defaultSiteContent: SiteContent = {
       id: "strategy",
       title: "Estrategia",
       text: "Investigación, planificación, funnel y consultoría para decidir con claridad.",
+      size: "compact",
+      mediaKind: "image",
+      mediaUrl: "",
     },
     {
       id: "performance",
       title: "Performance",
       text: "Meta Ads, campañas y optimización enfocadas en oportunidades medibles.",
+      size: "compact", mediaKind: "image", mediaUrl: "",
     },
     {
       id: "creative",
       title: "Creatividad",
       text: "Identidad, diseño y contenido que convierten una promesa en una marca reconocible.",
+      size: "compact", mediaKind: "image", mediaUrl: "",
     },
     {
       id: "audiovisual",
       title: "Audiovisual",
       text: "Fotografía, reels y campañas producidas con tu equipo y tu realidad.",
+      size: "compact", mediaKind: "image", mediaUrl: "",
     },
     {
       id: "web",
       title: "Web & Conversión",
       text: "Experiencias rápidas y claras que convierten visitas en conversaciones.",
+      size: "compact", mediaKind: "image", mediaUrl: "",
     },
     {
       id: "growth",
       title: "Growth",
       text: "Automatización, analítica y mejora continua para sostener el avance.",
+      size: "compact", mediaKind: "image", mediaUrl: "",
     },
   ],
   resultsTitle: "Trabajo real antes que promesas.",
@@ -170,7 +181,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     const parsed = siteContentSchema.safeParse({
       ...defaultSiteContent,
       ...raw,
-      version: 3,
+      version: 4,
       heroTitle: storedVersion < 3 ? defaultSiteContent.heroTitle : raw.heroTitle,
       resultsTitle: storedVersion < 3 ? defaultSiteContent.resultsTitle : raw.resultsTitle,
       caseCategory: storedVersion < 3 ? defaultSiteContent.caseCategory : raw.caseCategory,
@@ -185,6 +196,14 @@ export async function getSiteContent(): Promise<SiteContent> {
       caseMediaKind: storedVersion < 3 ? defaultSiteContent.caseMediaKind : raw.caseMediaKind,
       metricValue: storedVersion < 3 ? defaultSiteContent.metricValue : raw.metricValue,
       metricLabel: storedVersion < 3 ? defaultSiteContent.metricLabel : raw.metricLabel,
+      services: Array.isArray(raw.services)
+        ? raw.services.map((service) => ({
+            ...(service as object),
+            size: (service as { size?: string }).size || "compact",
+            mediaKind: (service as { mediaKind?: string }).mediaKind || "image",
+            mediaUrl: (service as { mediaUrl?: string }).mediaUrl || "",
+          }))
+        : defaultSiteContent.services,
       finalMedia: raw.finalMedia || legacyFinal,
       finalPoster: raw.finalPoster || legacyFinal,
       testimonials: raw.testimonials || [],
@@ -198,7 +217,7 @@ export async function getSiteContent(): Promise<SiteContent> {
 export async function saveSiteContent(input: unknown) {
   const content = siteContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 3,
+    version: 4,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

@@ -345,5 +345,13 @@
 .serviceGrid h3 { margin:auto 0 8px; font-size:clamp(17px,1.55vw,22px); line-height:1.05; }
 .serviceGrid p { min-height:0; font-size:10px; line-height:1.55; }
 .serviceGrid > a > svg:last-child { width:16px; margin-top:14px; }
+.serviceGrid > .serviceRegular { grid-column:span 2; }
+.serviceGrid > .serviceWide { grid-column:span 3; }
+.serviceWithMedia { overflow:hidden; }
+.serviceMedia,.serviceShade { position:absolute; inset:0; }
+.serviceMedia img,.serviceMedia video { width:100%; height:100%; object-fit:cover; transition:transform .6s cubic-bezier(.2,.8,.2,1); }
+.serviceShade { background:linear-gradient(180deg,rgba(10,10,10,.15),rgba(10,10,10,.9)); }
+.serviceWithMedia > *:not(.serviceMedia):not(.serviceShade) { position:relative; z-index:2; }
+.serviceWithMedia:hover .serviceMedia img,.serviceWithMedia:hover .serviceMedia video { transform:scale(1.04); }
 @media(max-width:1199px){.serviceGrid{grid-template-columns:repeat(3,minmax(0,1fr));}.serviceGrid > a{min-height:190px;}}
-@media(max-width:767px){.serviceGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.serviceGrid > a{min-height:190px;padding:18px 15px}.serviceGrid h3{font-size:18px}.serviceGrid p{font-size:9px}.serviceGrid > a > svg:first-of-type{width:25px;height:25px}}
+@media(max-width:767px){.serviceGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.serviceGrid > a,.serviceGrid > .serviceRegular{min-height:190px;padding:18px 15px;grid-column:span 1}.serviceGrid > .serviceWide{grid-column:1/-1}.serviceGrid h3{font-size:18px}.serviceGrid p{font-size:9px}.serviceGrid > a > svg:first-of-type{width:25px;height:25px}}

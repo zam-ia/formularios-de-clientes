@@ -1160,7 +1160,7 @@
 }
 .teamGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(12, minmax(0,1fr));
   gap: 18px;
   margin-top: 70px;
 }
@@ -1530,6 +1530,10 @@
 
 /* Expandable team profiles */
 .teamGrid > button { min-width:0; padding:0; overflow:hidden; border:1px solid rgba(36,36,36,.12); border-radius:24px; background:var(--ivory); color:inherit; font:inherit; text-align:left; cursor:pointer; transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s ease; }
+.teamGrid > .teamWidgetSmall { grid-column:span 3; }
+.teamGrid > .teamWidgetMedium { grid-column:span 4; }
+.teamGrid > .teamWidgetWide { grid-column:span 6; }
+.teamGrid > .teamWidgetFull { grid-column:1/-1; }
 .teamGrid > button:hover,
 .teamGrid > button:focus-visible { transform:translateY(-9px); box-shadow:0 28px 75px rgba(51,43,28,.14); }
 .teamGrid > button:hover .teamPortrait img { transform:scale(1.035); }
@@ -1554,6 +1558,8 @@
   .problemFlow > .problemWidgetMedium,
   .problemFlow > .problemWidgetWide { grid-column:span 6; }
   .problemFlow > button:last-child { grid-column:1/-1; }
+  .teamGrid > .teamWidgetSmall,.teamGrid > .teamWidgetMedium { grid-column:span 6; }
+  .teamGrid > .teamWidgetWide,.teamGrid > .teamWidgetFull { grid-column:1/-1; }
 }
 @media(max-width:680px){
   .problemFlow > button,
@@ -1561,6 +1567,7 @@
   .problemFlow > .problemWidgetWide,
   .problemFlow > .problemWidgetFull { grid-column:1/-1; }
   .teamModal { padding:10px; }
+  .teamGrid > .teamWidgetSmall,.teamGrid > .teamWidgetMedium,.teamGrid > .teamWidgetWide,.teamGrid > .teamWidgetFull { grid-column:1/-1; }
   .teamModal > article { max-height:calc(100svh - 20px); grid-template-columns:1fr; overflow-y:auto; border-radius:24px; }
   .teamModalPortrait { min-height:42svh; }
   .teamModalCopy { padding:34px 24px 40px; }

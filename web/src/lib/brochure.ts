@@ -12,6 +12,13 @@ const serviceSchema = z.object({
   tag: z.string().max(40).default(""),
 });
 
+const problemSchema = z.object({
+  id: z.string().min(1).max(80),
+  title: z.string().min(1).max(100),
+  text: z.string().min(1).max(420),
+  result: z.string().min(1).max(240),
+});
+
 const planSchema = z.object({
   id: z.string().min(1).max(80),
   name: z.string().min(1).max(80),
@@ -121,8 +128,30 @@ const teamMemberSchema = z.object({
     ),
   positionX: z.number().min(0).max(100).default(50),
   positionY: z.number().min(0).max(100).default(35),
+  size: z.enum(brochureWidgetSizes).default("small"),
   visible: z.boolean().default(true),
 });
+
+export const defaultBrochureProblems = [
+  {
+    id: "rhythm",
+    title: "Contenido sin ritmo",
+    text: "Publicas cuando hay tiempo y luego tu marca desaparece por semanas.",
+    result: "Tu audiencia no alcanza a recordarte.",
+  },
+  {
+    id: "direction",
+    title: "Contenido sin dirección",
+    text: "Las piezas pueden verse bonitas, pero no explican por qué elegirte ni qué hacer después.",
+    result: "Hay alcance, pero pocas conversaciones.",
+  },
+  {
+    id: "dependency",
+    title: "Todo depende de ti",
+    text: "Tú grabas, diseñas, publicas, respondes y además intentas atender el negocio.",
+    result: "La comunicación se vuelve otra tarea pendiente.",
+  },
+];
 
 export const defaultBrochureTeam = [
   {
@@ -133,6 +162,7 @@ export const defaultBrochureTeam = [
     imageUrl: "/brochure/team/aldair-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
+    size: "small" as const,
     visible: true,
   },
   {
@@ -143,6 +173,7 @@ export const defaultBrochureTeam = [
     imageUrl: "/brochure/team/milagros-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
+    size: "small" as const,
     visible: true,
   },
   {
@@ -153,6 +184,7 @@ export const defaultBrochureTeam = [
     imageUrl: "/brochure/team/equipo-crisdal-2026.webp",
     positionX: 72,
     positionY: 28,
+    size: "small" as const,
     visible: true,
   },
   {
@@ -163,6 +195,7 @@ export const defaultBrochureTeam = [
     imageUrl: "/brochure/team/abi-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
+    size: "small" as const,
     visible: true,
   },
 ];
@@ -503,7 +536,7 @@ export const defaultBrochureCases = [
 ];
 
 export const brochureContentSchema = z.object({
-  version: z.number().int().positive().default(8),
+  version: z.number().int().positive().default(9),
   kicker: z.string().min(1).max(80),
   title: z.string().min(1).max(140),
   lead: z.string().min(1).max(500),
@@ -514,6 +547,7 @@ export const brochureContentSchema = z.object({
   ctaUrl: z.string().min(1).max(600),
   whatsappNumber: z.string().regex(/^\d{8,15}$/),
   services: z.array(serviceSchema).min(1).max(12),
+  problems: z.array(problemSchema).length(3).default(defaultBrochureProblems),
   plans: z.array(planSchema).min(1).max(8).default(defaultBrochurePlans),
   media: z.array(mediaSchema).max(120),
   sections: z
@@ -544,7 +578,7 @@ export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
 export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 8,
+  version: 9,
   kicker: "Contenido · Video · Redes · Publicidad",
   title: "Contenido que vende, no solo que se ve bonito.",
   lead: "Creamos y movemos contenido para que tu negocio deje de publicar por cumplir y empiece a generar conversaciones.",
@@ -585,6 +619,7 @@ export const defaultBrochureContent: BrochureContent = {
       tag: "Campaña · Segmentación · Reporte",
     },
   ],
+  problems: defaultBrochureProblems,
   plans: defaultBrochurePlans,
   media: [...defaultBrochureMedia, ...defaultBrochureStoryMedia],
   sections: defaultBrochureSections,
@@ -745,7 +780,8 @@ export async function getBrochureContent(): Promise<BrochureContent> {
     const migratedTeam = Array.isArray(raw.teamMembers)
       ? (raw.teamMembers as Array<Record<string, unknown>>).map((person) => {
           const updated = defaultBrochureTeam.find((item) => item.id === person.id);
-          return storedVersion < 5 && updated ? { ...person, role: updated.role, focus: updated.focus, imageUrl: updated.imageUrl } : person;
+          const base = storedVersion < 5 && updated ? { ...person, role: updated.role, focus: updated.focus, imageUrl: updated.imageUrl } : person;
+          return { ...base, size: person.size || "small" };
         })
       : defaultBrochureTeam;
     const phaseOneMedia = Array.isArray(raw.media)
@@ -753,7 +789,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
       : [...defaultBrochureMedia, ...defaultBrochureStoryMedia];
     const parsed = brochureContentSchema.safeParse({
       ...raw,
-      version: 8,
+      version: 9,
       kicker: storedVersion < 7 ? defaultBrochureContent.kicker : raw.kicker,
       title: storedVersion < 7 ? defaultBrochureContent.title : raw.title,
       lead: storedVersion < 7 ? defaultBrochureContent.lead : raw.lead,
@@ -767,6 +803,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
       ctaUrl:
         storedVersion < 7 ? defaultBrochureContent.ctaUrl : raw.ctaUrl || defaultBrochureContent.ctaUrl,
       services: storedVersion < 7 ? defaultBrochureContent.services : raw.services || defaultBrochureContent.services,
+      problems: Array.isArray(raw.problems) ? raw.problems : defaultBrochureProblems,
       plans: storedVersion < 7 ? defaultBrochurePlans : raw.plans || defaultBrochurePlans,
       sections: storedVersion < 7 ? defaultBrochureSections : migratedSections,
       cases: storedVersion < 7 ? defaultBrochureCases : raw.cases || defaultBrochureCases,
@@ -792,7 +829,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
 export async function saveBrochureContent(input: unknown) {
   const content = brochureContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 8,
+    version: 9,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

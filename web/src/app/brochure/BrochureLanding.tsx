@@ -22,27 +22,6 @@ import type {
 } from "@/lib/brochure";
 import styles from "./brochure.module.css";
 
-const problems = [
-  {
-    number: "01",
-    title: "Contenido sin ritmo",
-    text: "Publicas cuando hay tiempo y luego tu marca desaparece por semanas.",
-    result: "Tu audiencia no alcanza a recordarte.",
-  },
-  {
-    number: "02",
-    title: "Contenido sin dirección",
-    text: "Las piezas pueden verse bonitas, pero no explican por qué elegirte ni qué hacer después.",
-    result: "Hay alcance, pero pocas conversaciones.",
-  },
-  {
-    number: "03",
-    title: "Todo depende de ti",
-    text: "Tú grabas, diseñas, publicas, respondes y además intentas atender el negocio.",
-    result: "La comunicación se vuelve otra tarea pendiente.",
-  },
-];
-
 const solutions = [
   {
     code: "VIDEO",
@@ -428,7 +407,7 @@ function SectionContent({
           </p>
         </div>
         <div className={styles.problemFlow}>
-          {problems.map((item, index) => {
+          {content.problems.map((item, index) => {
             const media = selectedMedia[index];
             const fallback = [
               "/brochure/story/strategy.webp",
@@ -439,7 +418,7 @@ function SectionContent({
             return (
             <button
               type="button"
-              key={item.number}
+              key={item.id}
               className={`${openProblem === index ? styles.problemCardOpen : ""} ${
                 size === "full" ? styles.problemWidgetFull : size === "wide" ? styles.problemWidgetWide : size === "medium" ? styles.problemWidgetMedium : styles.problemWidgetSmall
               } ${styles.problemCardWithMedia}`}
@@ -454,7 +433,7 @@ function SectionContent({
                 <span className={styles.problemCardFront}>
                   <span className={styles.problemCardMedia}><VisualMedia item={media} fallback={fallback} alt={`Visual de ${item.title}`} sizes="(max-width: 680px) 92vw, 32vw" /></span>
                   <span className={styles.problemMediaShade} aria-hidden="true" />
-                  <small>{item.number}</small>
+                  <small>{String(index + 1).padStart(2, "0")}</small>
                   <strong>{item.title}</strong>
                   <em>Toca para entenderlo</em>
                 </span>
@@ -745,7 +724,7 @@ function SectionContent({
         </div>
         <div className={styles.teamGrid}>
           {content.teamMembers.filter((person) => person.visible).map((person, index) => (
-            <button type="button" key={person.name} data-reveal onClick={() => { setActiveTeamMember(person.id); track("open_team_profile", { person: person.name }); }} aria-label={`Ver perfil de ${person.name}`}>
+            <button type="button" key={person.name} className={person.size === "full" ? styles.teamWidgetFull : person.size === "wide" ? styles.teamWidgetWide : person.size === "medium" ? styles.teamWidgetMedium : styles.teamWidgetSmall} data-reveal onClick={() => { setActiveTeamMember(person.id); track("open_team_profile", { person: person.name }); }} aria-label={`Ver perfil de ${person.name}`}>
               <div className={styles.teamPortrait}>
                 <Image
                   src={person.imageUrl}

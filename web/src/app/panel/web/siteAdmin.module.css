@@ -42,8 +42,17 @@
 .imageField label { position: relative; min-height: 38px; padding: 0 11px; border-radius: 9px; display: flex; align-items: center; gap: 6px; background: #eee9e1; font-size: 9px; font-weight: 700; cursor: pointer; }
 .imageField label svg { width: 15px; }
 .imageField input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.service { grid-column: 1 / -1; padding: 12px; border: 1px solid #e3dcd2; border-radius: 14px; display: grid; grid-template-columns: 35px .6fr 1fr; gap: 9px; align-items: center; }
+.service { grid-column: 1 / -1; padding: 12px; border: 1px solid #e3dcd2; border-radius: 14px; display: grid; grid-template-columns: 35px .6fr 1fr .45fr; gap: 9px; align-items: end; }
 .service > span { color: #b6ada1; font-size: 18px; font-weight: 800; }
+.service > label { display:grid; gap:5px; color:#625b52; font-size:8px; font-weight:700; }
+.service select { width:100%; min-height:44px; padding:10px; border:1px solid #ddd6cc; border-radius:11px; background:#faf9f6; font:500 10px var(--font-poppins); }
+.serviceMediaControl { grid-column:2/-1; padding:10px; display:flex; align-items:center; gap:10px; border-radius:11px; background:#f2ede5; }
+.serviceMediaControl > img,.serviceMediaControl > video { width:100px; height:64px; object-fit:cover; border-radius:8px; background:#111; }
+.serviceMediaControl > svg { width:36px; color:#9a6b00; }
+.serviceMediaControl label { position:relative; min-height:38px; padding:0 11px; display:flex; align-items:center; gap:6px; border-radius:9px; background:white; font-size:8px; font-weight:800; cursor:pointer; }
+.serviceMediaControl label svg,.serviceMediaControl button svg { width:14px; }
+.serviceMediaControl input { position:absolute; width:1px; height:1px; opacity:0; }
+.serviceMediaControl button { margin-left:auto; min-height:38px; padding:0 10px; display:flex; align-items:center; gap:5px; border:0; border-radius:9px; color:#9c3025; background:#fff0ee; font:700 8px var(--font-poppins); cursor:pointer; }
 .addButton { min-height: 42px; padding: 0 14px; border: 0; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; background: #ffb800; color: #17120a; font: 800 9px var(--font-poppins); cursor: pointer; }
 .addButton svg { width: 16px; }
 .testimonialEditor { margin-top: 16px; display: grid; gap: 12px; }
@@ -59,4 +68,4 @@
 .saveBar { position: sticky; bottom: 12px; z-index: 3; margin: 22px 0 0 auto; width: min(100%,900px); padding: 12px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; background: rgba(20,19,17,.94); backdrop-filter: blur(14px); color: white; box-shadow: 0 15px 45px rgba(0,0,0,.2); }
 .saveBar span { color: rgba(255,255,255,.58); font-size: 9px; }
 @media(max-width:850px) { .layout { grid-template-columns: 1fr; } .layout > nav { position: static; display: flex; overflow: auto; } .layout > nav a { min-width: max-content; } .title { align-items: stretch; flex-direction: column; } .title > button { align-self: flex-start; } }
-@media(max-width:620px) { .header { grid-template-columns: auto 1fr auto; padding: 0 12px; } .header > a { font-size: 0; } .header > div { justify-self: center; } .content { padding: 24px 14px 90px; } .grid { grid-template-columns: 1fr; } .full { grid-column: auto; } .service { grid-template-columns: 28px 1fr; } .service textarea { grid-column: 2; } .imageField { grid-template-columns: 100px 1fr; } .imagePreview { min-height: 120px; } .saveBar { bottom: 8px; } .saveBar span { display: none; } .saveBar button { width: 100%; justify-content: center; } }
+@media(max-width:620px) { .header { grid-template-columns: auto 1fr auto; padding: 0 12px; } .header > a { font-size: 0; } .header > div { justify-self: center; } .content { padding: 24px 14px 90px; } .grid { grid-template-columns: 1fr; } .full { grid-column: auto; } .service { grid-template-columns: 28px 1fr; }.service > label,.serviceMediaControl{grid-column:2}.serviceMediaControl{align-items:flex-start;flex-direction:column}.serviceMediaControl button{margin-left:0}.imageField { grid-template-columns: 100px 1fr; } .imagePreview { min-height: 120px; } .saveBar { bottom: 8px; } .saveBar span { display: none; } .saveBar button { width: 100%; justify-content: center; } }

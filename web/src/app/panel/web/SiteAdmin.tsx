@@ -46,6 +46,8 @@ type MediaSlot =
   | "finalMedia"
   | "finalPoster";
 
+type ServiceSize = SiteContent["services"][number]["size"];
+
 export default function SiteAdmin() {
   const [content, setContent] = useState<SiteContent>(defaultSiteContent);
   const [loading, setLoading] = useState(true);
@@ -107,6 +109,27 @@ export default function SiteAdmin() {
       if (error) throw error;
       update(slot, signed.publicUrl);
       setNotice("Recurso cargado. Pulsa “Guardar y publicar” para verlo en la web.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "No pudimos cargar el recurso.");
+    } finally {
+      setUploading("");
+    }
+  }
+
+  async function uploadServiceMedia(index: number, file?: File) {
+    if (!file) return;
+    const key = `service-${index}`;
+    setUploading(key);
+    setNotice("");
+    try {
+      const signed = await api<{ path: string; token: string; publicUrl: string }>("/api/admin/site/media", {
+        method: "POST",
+        body: JSON.stringify({ fileName: file.name, mimeType: file.type, sizeBytes: file.size }),
+      });
+      const { error } = await getSupabaseBrowser().storage.from(BROCHURE_BUCKET).uploadToSignedUrl(signed.path, signed.token, file, { contentType: file.type, cacheControl: "31536000" });
+      if (error) throw error;
+      update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, mediaUrl: signed.publicUrl, mediaKind: file.type.startsWith("video/") ? "video" : "image" } : item));
+      setNotice("Recurso cargado. Pulsa “Guardar y publicar” para aplicarlo.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "No pudimos cargar el recurso.");
     } finally {
@@ -199,7 +222,17 @@ export default function SiteAdmin() {
               <div className={styles.grid}>
                 <label className={styles.full}>Título de sección<textarea rows={2} value={content.servicesTitle} onChange={(e) => update("servicesTitle", e.target.value)} /></label>
                 <label className={styles.full}>Introducción<textarea rows={2} value={content.servicesLead} onChange={(e) => update("servicesLead", e.target.value)} /></label>
-                {content.services.map((service, index) => <div className={styles.service} key={service.id}><span>{String(index + 1).padStart(2, "0")}</span><input value={service.title} onChange={(e) => update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, title: e.target.value } : item))} /><textarea rows={2} value={service.text} onChange={(e) => update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, text: e.target.value } : item))} /></div>)}
+                {content.services.map((service, index) => <div className={styles.service} key={service.id}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <label>Título<input value={service.title} onChange={(e) => update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, title: e.target.value } : item))} /></label>
+                  <label>Descripción<textarea rows={2} value={service.text} onChange={(e) => update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, text: e.target.value } : item))} /></label>
+                  <label>Tamaño<select value={service.size} onChange={(e) => update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, size: e.target.value as ServiceSize } : item))}><option value="compact">Compacta</option><option value="regular">Mediana</option><option value="wide">Ancha</option></select></label>
+                  <div className={styles.serviceMediaControl}>
+                    {service.mediaUrl ? service.mediaKind === "video" ? <video src={service.mediaUrl} muted controls /> : <Image src={service.mediaUrl} alt="" width={120} height={75} unoptimized /> : <ImageIcon />}
+                    <label>{uploading === `service-${index}` ? <LoaderCircle /> : <UploadCloud />} {service.mediaUrl ? "Cambiar imagen/video" : "Añadir imagen/video"}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" disabled={uploading === `service-${index}`} onChange={(event) => void uploadServiceMedia(index, event.target.files?.[0])} /></label>
+                    {service.mediaUrl ? <button type="button" onClick={() => update("services", content.services.map((item, itemIndex) => itemIndex === index ? { ...item, mediaUrl: "" } : item))}><Trash2 /> Quitar</button> : null}
+                  </div>
+                </div>)}
               </div>
             </EditorSection>
 

@@ -329,6 +329,19 @@ export default function PanelClient() {
     }));
   }
 
+  function updateProblem(
+    index: number,
+    field: "title" | "text" | "result",
+    value: string,
+  ) {
+    setContent((current) => ({
+      ...current,
+      problems: current.problems.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item,
+      ),
+    }));
+  }
+
   function addService() {
     setContent((current) => ({
       ...current,
@@ -435,6 +448,7 @@ export default function PanelClient() {
           imageUrl: "/team/equipo-crisdal.webp",
           positionX: 50,
           positionY: 30,
+          size: "small",
           visible: true,
         },
       ],
@@ -916,6 +930,24 @@ export default function PanelClient() {
               </div>
             </section>
             <section className={styles.formCard}>
+              <div className={styles.formCardHeader}>
+                <div>
+                  <h2>Lo que hoy te frena</h2>
+                  <p>Edita el frente, la explicación y la consecuencia de cada tarjeta. Las imágenes, videos y tamaños se configuran en “Secciones y casos”.</p>
+                </div>
+              </div>
+              <div className={styles.dataEditor}>
+                {content.problems.map((problem, index) => (
+                  <article key={problem.id}>
+                    <div className={styles.dataEditorHead}><strong>Tarjeta {String(index + 1).padStart(2, "0")}</strong></div>
+                    <label>Título<input value={problem.title} maxLength={100} onChange={(event) => updateProblem(index, "title", event.target.value)} /></label>
+                    <label>Explicación<textarea rows={3} value={problem.text} maxLength={420} onChange={(event) => updateProblem(index, "text", event.target.value)} /></label>
+                    <label>Consecuencia<textarea rows={2} value={problem.result} maxLength={240} onChange={(event) => updateProblem(index, "result", event.target.value)} /></label>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className={styles.formCard}>
               <h2>Método MÁGICA · C-C-C</h2>
               <div className={styles.formGrid}>
                 <label className={styles.full}>
@@ -1143,7 +1175,7 @@ export default function PanelClient() {
               <div className={styles.formCardHeader}>
                 <div>
                   <h2>Equipo Crisdal</h2>
-                  <p>Edita nombres, puestos, enfoque y el encuadre de cada perfil.</p>
+                  <p>Edita nombres, puestos, perfil, fotografía, encuadre y tamaño de cada tarjeta.</p>
                 </div>
                 <button className={styles.secondaryButton} onClick={addTeamMember}>
                   <Plus size={16} /> Añadir integrante
@@ -1178,6 +1210,7 @@ export default function PanelClient() {
                       <div className={styles.testimonialInputs}>
                         <label>Nombre<input value={person.name} maxLength={100} onChange={(event) => updateTeamMember(person.id, { name: event.target.value })} /></label>
                         <label>Puesto<input value={person.role} maxLength={120} onChange={(event) => updateTeamMember(person.id, { role: event.target.value })} /></label>
+                        <label>Tamaño de tarjeta<select value={person.size} onChange={(event) => updateTeamMember(person.id, { size: event.target.value as BrochureWidgetSize })}>{brochureWidgetSizes.map((size) => <option key={size} value={size}>{widgetSizeLabels[size]}</option>)}</select></label>
                       </div>
                       <label>Especialidad<textarea rows={2} value={person.focus} maxLength={280} onChange={(event) => updateTeamMember(person.id, { focus: event.target.value })} /></label>
                       <label>
