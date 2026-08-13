@@ -1,5 +1,8 @@
 import HomePage from "./HomePage";
+import { getSiteContent } from "@/lib/siteContent";
 
-export default function Page() {
-  return <HomePage />;
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  return <HomePage content={await getSiteContent()} />;
 }

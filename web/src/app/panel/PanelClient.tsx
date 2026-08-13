@@ -17,6 +17,7 @@ import {
   ExternalLink,
   FileText,
   GripVertical,
+  Globe2,
   ImageIcon,
   Layers3,
   Link2,
@@ -648,6 +649,9 @@ export default function PanelClient() {
           />
           <Link href="/panel/aliados">
             <Network /> Red de Aliados
+          </Link>
+          <Link href="/panel/web">
+            <Globe2 /> Editar sitio web
           </Link>
         </nav>
         <div className={styles.sidebarFoot}>

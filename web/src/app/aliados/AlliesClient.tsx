@@ -3,10 +3,14 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  BarChart3,
   Building2,
+  CalendarDays,
   Check,
+  Coins,
   Eye,
   EyeOff,
+  Gift,
   Handshake,
   LoaderCircle,
   LogOut,
@@ -14,6 +18,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Trophy,
   UploadCloud,
   UserRound,
   X,
@@ -35,8 +40,17 @@ type Me = PublicAlly & {
   contactWhatsapp: string;
   contactEmail: string | null;
   status: string;
+  loyaltyStatus: "active" | "frozen";
   visible: boolean;
   mustChangePassword: boolean;
+};
+type DashboardData = {
+  summary: { balance: number; reserved: number; available: number; status: "active" | "frozen"; expiresAt: string | null };
+  movements: Array<{ id: string; type: string; points: number; reference: string; created_at: string }>;
+  services: Array<{ id: string; period: string; plan: string; services: string; amount_paid: number; points_awarded: number }>;
+  metrics: Array<{ id: string; period: string; reach: number; audience: number; audience_growth: number; organic_growth: number; engagement: number; leads: number; sales: number | null; revenue: number | null; ad_spend: number | null; roi: number | null; notes: string }>;
+  rewards: Array<{ id: string; title: string; description: string; category: string; points: number; stock: number | null }>;
+  redemptions: Array<{ id: string; reward_title: string; points: number; status: string; requested_at: string }>;
 };
 type View =
   | "landing"
@@ -44,6 +58,7 @@ type View =
   | "register"
   | "waiting"
   | "password"
+  | "dashboard"
   | "directory"
   | "profile";
 async function api<T>(url: string, init?: RequestInit) {
@@ -60,10 +75,12 @@ export default function AlliesClient() {
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState(""),
     [me, setMe] = useState<Me | null>(null),
+    [dashboard, setDashboard] = useState<DashboardData | null>(null),
     [allies, setAllies] = useState<PublicAlly[]>([]),
     [search, setSearch] = useState(""),
     [category, setCategory] = useState("Todos"),
     [selected, setSelected] = useState<PublicAlly | null>(null),
+    [reward, setReward] = useState<DashboardData["rewards"][number] | null>(null),
     [showPass, setShowPass] = useState(false);
   useEffect(() => {
     void api<{ authenticated: boolean; ally?: Me }>("/api/allies/auth/session")
@@ -72,8 +89,13 @@ export default function AlliesClient() {
           setMe(r.ally);
           if (r.ally.mustChangePassword) setView("password");
           else {
-            setView("directory");
-            setAllies(await api("/api/allies/directory"));
+            const [directory, dashboardData] = await Promise.all([
+              api<PublicAlly[]>("/api/allies/directory"),
+              api<DashboardData>("/api/allies/dashboard"),
+            ]);
+            setAllies(directory);
+            setDashboard(dashboardData);
+            setView("dashboard");
           }
         }
       })
@@ -110,8 +132,13 @@ export default function AlliesClient() {
       setMe(session.ally);
       if (result.mustChangePassword) setView("password");
       else {
-        setAllies(await api("/api/allies/directory"));
-        setView("directory");
+        const [directory, dashboardData] = await Promise.all([
+          api<PublicAlly[]>("/api/allies/directory"),
+          api<DashboardData>("/api/allies/dashboard"),
+        ]);
+        setAllies(directory);
+        setDashboard(dashboardData);
+        setView("dashboard");
       }
     } catch (error) {
       setNotice(
@@ -174,8 +201,13 @@ export default function AlliesClient() {
       });
       const session = await api<{ ally: Me }>("/api/allies/auth/session");
       setMe(session.ally);
-      setAllies(await api("/api/allies/directory"));
-      setView("directory");
+      const [directory, dashboardData] = await Promise.all([
+        api<PublicAlly[]>("/api/allies/directory"),
+        api<DashboardData>("/api/allies/dashboard"),
+      ]);
+      setAllies(directory);
+      setDashboard(dashboardData);
+      setView("dashboard");
     } catch (error) {
       setNotice(
         error instanceof Error
@@ -190,6 +222,7 @@ export default function AlliesClient() {
     await api("/api/allies/auth/logout", { method: "POST", body: "{}" });
     setMe(null);
     setAllies([]);
+    setDashboard(null);
     setView("landing");
   }
   async function saveProfile(e: React.FormEvent<HTMLFormElement>) {
@@ -396,13 +429,16 @@ export default function AlliesClient() {
           </form>
         </AuthShell>
       ) : null}
-      {(view === "directory" || view === "profile") && me ? (
+      {(view === "dashboard" || view === "directory" || view === "profile") && me ? (
         <MemberShell
           logout={logout}
           profile={() => setView("profile")}
           directory={() => setView("directory")}
+          dashboard={() => setView("dashboard")}
         >
-          {view === "directory" ? (
+          {view === "dashboard" && dashboard ? (
+            <Dashboard me={me} data={dashboard} redeem={setReward} />
+          ) : view === "directory" ? (
             <Directory
               allies={filtered}
               all={allies}
@@ -430,6 +466,24 @@ export default function AlliesClient() {
             setSelected(null);
             setNotice("Solicitud enviada. Ambos recibirán una notificación.");
           }}
+        />
+      ) : null}
+      {reward ? (
+        <RewardModal
+          reward={reward}
+          available={dashboard?.summary.available || 0}
+          close={() => setReward(null)}
+          confirm={async () => {
+            setBusy(true);
+            try {
+              await api("/api/allies/redemptions", { method: "POST", body: JSON.stringify({ rewardId: reward.id }) });
+              setDashboard(await api<DashboardData>("/api/allies/dashboard"));
+              setReward(null);
+              setNotice("Canje solicitado. El equipo Crisdal lo revisará antes de hacerlo efectivo.");
+            } catch (error) { setNotice(error instanceof Error ? error.message : "No pudimos solicitar el canje."); }
+            finally { setBusy(false); }
+          }}
+          busy={busy}
         />
       ) : null}
       {notice ? (
@@ -594,11 +648,13 @@ function MemberShell({
   logout,
   profile,
   directory,
+  dashboard,
   children,
 }: {
   logout: () => void;
   profile: () => void;
   directory: () => void;
+  dashboard: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -606,6 +662,7 @@ function MemberShell({
       <header className={styles.memberHeader}>
         <Brand />
         <nav>
+          <button onClick={dashboard}>Mis resultados</button>
           <button onClick={directory}>Directorio</button>
           <button onClick={profile}>Mi perfil</button>
           <button onClick={logout}>
@@ -615,6 +672,10 @@ function MemberShell({
       </header>
       {children}
       <div className={styles.memberMobile}>
+        <button onClick={dashboard}>
+          <Coins />
+          Puntos
+        </button>
         <button onClick={directory}>
           <Search />
           Directorio
@@ -631,6 +692,41 @@ function MemberShell({
     </>
   );
 }
+
+function Dashboard({ me, data, redeem }: { me: Me; data: DashboardData; redeem: (reward: DashboardData["rewards"][number]) => void }) {
+  const latest = data.metrics[0];
+  const progressReward = data.rewards.find((reward) => reward.points > data.summary.available) || data.rewards.at(-1);
+  const progress = progressReward ? Math.min(100, (data.summary.available / progressReward.points) * 100) : 100;
+  return (
+    <section className={styles.loyaltyDashboard}>
+      <div className={styles.loyaltyHero}>
+        <div><p className={styles.eyebrow}>Hola, {me.contactName}</p><h1>Tu crecimiento también acumula.</h1><span>Aquí puedes seguir tus resultados, servicios y beneficios dentro de Crisdal.</span></div>
+        <div className={styles.pointsOrb}><small>SALDO DISPONIBLE</small><strong>{data.summary.available.toLocaleString("es-PE")}</strong><span>puntos</span>{data.summary.status === "frozen" ? <b>CUENTA CONGELADA</b> : null}</div>
+      </div>
+      <div className={styles.loyaltyStats}>
+        <article><Coins /><span>Puntos acumulados</span><strong>{data.summary.balance.toLocaleString("es-PE")}</strong><small>{data.summary.reserved ? `${data.summary.reserved} reservados en canjes` : "Listos para usar"}</small></article>
+        <article><BarChart3 /><span>Último alcance</span><strong>{latest ? latest.reach.toLocaleString("es-PE") : "—"}</strong><small>{latest ? `Periodo ${formatPeriod(latest.period)}` : "Aún sin reporte"}</small></article>
+        <article><Trophy /><span>ROI de campañas</span><strong>{latest?.roi !== null && latest?.roi !== undefined ? `${latest.roi.toFixed(0)}%` : "—"}</strong><small>{latest?.ad_spend ? `Sobre S/${latest.ad_spend.toLocaleString("es-PE")} en pauta` : "Se mostrará con autorización"}</small></article>
+        <article><CalendarDays /><span>Servicios registrados</span><strong>{data.services.length}</strong><small>{data.summary.expiresAt ? `Actividad vigente hasta ${new Date(data.summary.expiresAt).toLocaleDateString("es-PE")}` : "Sin vencimiento próximo"}</small></article>
+      </div>
+      {progressReward ? <div className={styles.rewardProgress}><div><span>PRÓXIMO BENEFICIO</span><h2>{progressReward.title}</h2><p>Te faltan {Math.max(0, progressReward.points - data.summary.available)} puntos.</p></div><div><strong>{Math.round(progress)}%</strong><span><i style={{ width: `${progress}%` }} /></span><small>{data.summary.available} / {progressReward.points} pts</small></div></div> : null}
+      <div className={styles.dashboardGrid}>
+        <section className={styles.performance}><div className={styles.dashboardHead}><div><p className={styles.eyebrow}>Resultados con Crisdal</p><h2>Tu evolución, sin métricas de vanidad.</h2></div>{latest ? <span>{formatPeriod(latest.period)}</span> : null}</div>
+          {latest ? <><div className={styles.performanceGrid}><Metric label="Audiencia" value={latest.audience.toLocaleString("es-PE")} change={`${latest.audience_growth >= 0 ? "+" : ""}${latest.audience_growth}%`} /><Metric label="Crecimiento orgánico" value={`${latest.organic_growth}%`} change="del periodo" /><Metric label="Engagement" value={`${latest.engagement}%`} change="interacción" /><Metric label="Oportunidades" value={String(latest.leads)} change={latest.sales !== null ? `${latest.sales} ventas` : "leads registrados"} /></div>{latest.notes ? <p className={styles.metricNote}>{latest.notes}</p> : null}</> : <Empty text="Tu primer reporte aparecerá aquí cuando el equipo registre las métricas del mes." />}
+        </section>
+        <section className={styles.servicesHistory}><div className={styles.dashboardHead}><div><p className={styles.eyebrow}>Historial</p><h2>Servicios y puntos.</h2></div></div>{data.services.slice(0, 5).map((service) => <article key={service.id}><div><span>{formatPeriod(service.period)}</span><h3>{service.plan}</h3><p>{service.services}</p></div><strong>+{service.points_awarded}<small> PTS</small></strong></article>)}{!data.services.length ? <Empty text="Cuando se registre un pago verás aquí el plan, servicios y puntos obtenidos." /> : null}</section>
+      </div>
+      <section className={styles.rewardCatalog}><div className={styles.dashboardHead}><div><p className={styles.eyebrow}>Catálogo de canje</p><h2>Convierte tus puntos en nuevas posibilidades.</h2></div><span>Los canjes requieren aprobación</span></div><div className={styles.rewardCards}>{data.rewards.map((item) => { const available = data.summary.available >= item.points && data.summary.status === "active"; return <article key={item.id} className={!available ? styles.rewardLocked : ""}><div><Gift /><span>{item.category}</span></div><h3>{item.title}</h3><p>{item.description}</p><strong>{item.points.toLocaleString("es-PE")} <small>PTS</small></strong><button disabled={!available} onClick={() => redeem(item)}>{available ? "Solicitar canje" : `Te faltan ${Math.max(0, item.points - data.summary.available)} pts`}</button></article>; })}</div></section>
+      {data.redemptions.length ? <section className={styles.myRedemptions}><div className={styles.dashboardHead}><div><p className={styles.eyebrow}>Solicitudes</p><h2>Estado de tus canjes.</h2></div></div>{data.redemptions.map((item) => <article key={item.id}><div><strong>{item.reward_title}</strong><span>{new Date(item.requested_at).toLocaleDateString("es-PE")} · {item.points} puntos</span></div><b className={styles[item.status]}>{redemptionLabel(item.status)}</b></article>)}</section> : null}
+    </section>
+  );
+}
+
+function Metric({ label, value, change }: { label: string; value: string; change: string }) { return <article><span>{label}</span><strong>{value}</strong><small>{change}</small></article>; }
+function Empty({ text }: { text: string }) { return <div className={styles.dashboardEmpty}><Sparkles /><p>{text}</p></div>; }
+function formatPeriod(period: string) { const [year, month] = period.split("-").map(Number); return new Intl.DateTimeFormat("es-PE", { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1)); }
+function redemptionLabel(status: string) { return ({ pending: "En revisión", approved: "Aprobado", rejected: "No aprobado", delivered: "Entregado" } as Record<string, string>)[status] || status; }
+
 function Directory({
   allies,
   all,
@@ -793,6 +889,10 @@ function Profile({
     </section>
   );
 }
+function RewardModal({ reward, available, close, confirm, busy }: { reward: DashboardData["rewards"][number]; available: number; close: () => void; confirm: () => Promise<void>; busy: boolean }) {
+  return <div className={`${styles.modal} ${styles.rewardModal}`} role="dialog" aria-modal="true"><div><button onClick={close} aria-label="Cerrar"><X /></button><div className={styles.rewardModalIcon}><Gift /></div><p className={styles.eyebrow}>Confirmar canje</p><h2>{reward.title}</h2><p>{reward.description}</p><div className={styles.rewardBalance}><span>Tu saldo</span><strong>{available} pts</strong><i /><span>Canje</span><strong>-{reward.points} pts</strong></div><small>La solicitud será revisada por Crisdal. Los puntos se descontarán cuando el canje sea aprobado.</small><button className={styles.primary} disabled={busy} onClick={() => void confirm()}>{busy ? <LoaderCircle className={styles.spin} /> : <Sparkles />} Solicitar canje</button></div></div>;
+}
+
 function ContactModal({
   ally,
   close,

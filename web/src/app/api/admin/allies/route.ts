@@ -184,6 +184,10 @@ export async function DELETE(request: NextRequest) {
     data.contacts = data.contacts.filter(
       (contact) => contact.sender_id !== parsed.data.id && contact.recipient_id !== parsed.data.id,
     );
+    data.point_movements = data.point_movements.filter((item) => item.ally_id !== parsed.data.id);
+    data.service_records = data.service_records.filter((item) => item.ally_id !== parsed.data.id);
+    data.performance_metrics = data.performance_metrics.filter((item) => item.ally_id !== parsed.data.id);
+    data.redemptions = data.redemptions.filter((item) => item.ally_id !== parsed.data.id);
   });
   return NextResponse.json({ success: true });
 }

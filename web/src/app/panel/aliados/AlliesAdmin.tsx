@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Check,
   Clock3,
+  Coins,
   Handshake,
   LoaderCircle,
   Network,
@@ -80,7 +81,7 @@ export default function AlliesAdmin() {
       <section className={styles.content}>
         <div className={styles.titleRow}>
           <div><p className={styles.eyebrow}>Administración</p><h1>Una red que cuidamos juntos.</h1></div>
-          <button className={styles.newButton} onClick={() => setEditor("new")}><Plus /> Crear aliado</button>
+          <div className={styles.titleActions}><Link className={styles.pointsButton} href="/panel/aliados/puntos"><Coins /> Puntos y resultados</Link><button className={styles.newButton} onClick={() => setEditor("new")}><Plus /> Crear aliado</button></div>
         </div>
         <div className={styles.metrics}>
           <Metric icon={<Users />} label="Solicitudes" value={data?.metrics.total || 0} />

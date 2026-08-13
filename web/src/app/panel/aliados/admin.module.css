@@ -85,6 +85,9 @@
 .titleRow h1 { margin-bottom:0 }
 .newButton { min-height:44px;padding:0 16px;border:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#ffb800;color:#18130a;font:800 11px var(--font-poppins) }
 .newButton svg { width:16px }
+.titleActions { display:flex;gap:8px;align-items:center }
+.pointsButton { min-height:44px;padding:0 16px;border:1px solid #ded7cd;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#18130a;text-decoration:none;font:800 11px var(--font-poppins) }
+.pointsButton svg { width:16px;color:#a87300 }
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -259,6 +262,8 @@
 @media (max-width: 520px) {
   .titleRow { align-items:stretch;flex-direction:column }
   .newButton { width:100% }
+  .titleActions { display:grid;grid-template-columns:1fr }
+  .pointsButton { width:100% }
   .editorBackdrop { padding:6px }
   .editor { padding:18px;border-radius:18px }
   .editorGrid { grid-template-columns:1fr }
