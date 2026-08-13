@@ -1,19 +1,44 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { BROCHURE_BUCKET, brochurePublicUrl, ensureBrochureBucket } from "@/lib/brochure";
+import {
+  BROCHURE_BUCKET,
+  brochurePublicUrl,
+  ensureBrochureBucket,
+} from "@/lib/brochure";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export const SITE_CONTENT_PATH = "content/site.json";
-const serviceSchema = z.object({ id: z.string(), title: z.string().min(2).max(100), text: z.string().min(2).max(350) });
-const mediaUrlSchema = z.string().refine((value) => value.startsWith("/") || /^https:\/\//.test(value), "Imagen inválida");
+
+const serviceSchema = z.object({
+  id: z.string(),
+  title: z.string().min(2).max(100),
+  text: z.string().min(2).max(350),
+});
+
+const mediaUrlSchema = z.string().refine(
+  (value) => value.startsWith("/") || /^https:\/\//.test(value),
+  "Recurso multimedia inválido",
+);
+
+const testimonialSchema = z.object({
+  id: z.string().min(1).max(100),
+  quote: z.string().min(10).max(700),
+  name: z.string().min(2).max(100),
+  role: z.string().max(120).default(""),
+  company: z.string().max(120).default(""),
+  visible: z.boolean().default(true),
+});
+
 export const siteContentSchema = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   whatsappNumber: z.string().regex(/^\d{8,15}$/),
   logoUrl: mediaUrlSchema,
   heroKicker: z.string().min(2).max(100),
   heroTitle: z.string().min(5).max(180),
   heroLead: z.string().min(10).max(500),
-  heroImage: mediaUrlSchema,
+  heroMediaKind: z.enum(["image", "video"]),
+  heroMedia: mediaUrlSchema,
+  heroPoster: mediaUrlSchema,
   whyTitle: z.string().min(5).max(180),
   sectorsTitle: z.string().min(5).max(180),
   healthTitle: z.string().min(5).max(180),
@@ -24,77 +49,169 @@ export const siteContentSchema = z.object({
   servicesLead: z.string().min(5).max(350),
   services: z.array(serviceSchema).length(6),
   resultsTitle: z.string().min(5).max(180),
+  caseCategory: z.string().min(2).max(80),
   caseTitle: z.string().min(5).max(180),
-  caseText: z.string().min(5).max(500),
-  metricValue: z.string().min(1).max(20),
-  metricLabel: z.string().min(2).max(100),
+  caseChallenge: z.string().min(5).max(500),
+  caseSolution: z.string().min(5).max(500),
+  caseExecution: z.string().min(5).max(600),
+  caseImage: mediaUrlSchema,
+  casePoster: mediaUrlSchema,
+  caseMediaKind: z.enum(["image", "video"]),
+  metricValue: z.string().max(20),
+  metricLabel: z.string().max(100),
   aboutTitle: z.string().min(5).max(180),
   aboutText: z.string().min(5).max(700),
   aboutImage: mediaUrlSchema,
+  testimonials: z.array(testimonialSchema).max(12).default([]),
   finalKicker: z.string().min(5).max(180),
   finalTitle: z.string().min(5).max(180),
-  finalImage: mediaUrlSchema,
+  finalMediaKind: z.enum(["image", "video"]),
+  finalMedia: mediaUrlSchema,
+  finalPoster: mediaUrlSchema,
   updatedAt: z.string().datetime(),
 });
+
 export type SiteContent = z.infer<typeof siteContentSchema>;
+export type SiteTestimonial = z.infer<typeof testimonialSchema>;
 
 export const defaultSiteContent: SiteContent = {
-  version: 1,
+  version: 2,
   whatsappNumber: "51987088359",
   logoUrl: "/brand/crisdal-agency-logo.png",
-  heroKicker: "Marketing, automatización y sistemas",
-  heroTitle: "QUE NINGÚN\nPACIENTE O ALUMNO\nSE QUEDE ESPERANDO.",
-  heroLead: "Conectamos estrategia, contenido y automatización con IA para que tu negocio responda mejor, venda con orden y pueda crecer sin saturar a tu equipo.",
-  heroImage: "/avatar-crisdal-cutout-v2.png",
-  whyTitle: "No hacemos marketing aislado. Construimos un sistema que responde.",
-  sectorsTitle: "Tu cliente necesita sentir que lo entiendes antes de escribirte.",
-  healthTitle: "¿Cuántos pacientes se van porque nadie respondió a tiempo?",
-  healthText: "Automatizamos consultas, citas y seguimiento sin perder el trato humano.",
-  educationTitle: "¿Tu equipo de informes se satura durante la matrícula?",
-  educationText: "Ordenamos consultas, registros y seguimiento para que cada interesado avance.",
-  servicesTitle: "Todo lo que tu marca necesita. En el orden correcto.",
-  servicesLead: "No coordinas cinco proveedores. Diseñamos una ruta y conectamos las piezas.",
+  heroKicker: "Estrategia · Creatividad · Distribución · Conversión",
+  heroTitle: "CONVERTIMOS ATENCIÓN\nEN OPORTUNIDADES\nREALES.",
+  heroLead:
+    "Crisdal conecta estrategia, creatividad, tecnología y seguimiento para que tu negocio responda mejor, convierta con claridad y crezca sin desorden.",
+  heroMediaKind: "image",
+  heroMedia: "/team/equipo-crisdal.webp",
+  heroPoster: "/team/equipo-crisdal.webp",
+  whyTitle: "Una sola ruta. Menos piezas aisladas. Más claridad para avanzar.",
+  sectorsTitle: "Conocemos el contexto antes de diseñar la solución.",
+  healthTitle: "Salud y estética",
+  healthText:
+    "Atención, contenido y seguimiento para transformar consultas en citas sin perder el trato humano.",
+  educationTitle: "Educación",
+  educationText:
+    "Comunicación y automatización para ordenar informes, registros y matrículas en cada campaña.",
+  servicesTitle: "Capacidades conectadas alrededor de un objetivo.",
+  servicesLead:
+    "No coordinas proveedores aislados. Diseñamos una ruta y activamos las capacidades que el problema necesita.",
   services: [
-    { id: "automation", title: "Automatización IA & WhatsApp", text: "Respuestas, seguimiento y derivación sin dejar conversaciones esperando." },
-    { id: "content", title: "Redes & contenido", text: "Estrategia y piezas que sostienen una conversación real con tu mercado." },
-    { id: "video", title: "Producción audiovisual", text: "Foto y video propio, producido en tu espacio y pensado para vender." },
-    { id: "web", title: "Diseño web", text: "Sitios rápidos y claros que convierten visitas en oportunidades." },
-    { id: "software", title: "Apps & software", text: "Herramientas a medida para ordenar operaciones y atención." },
-    { id: "branding", title: "Branding", text: "Una identidad reconocible, coherente y lista para crecer." },
+    {
+      id: "strategy",
+      title: "Estrategia",
+      text: "Investigación, planificación, funnel y consultoría para decidir con claridad.",
+    },
+    {
+      id: "performance",
+      title: "Performance",
+      text: "Meta Ads, campañas y optimización enfocadas en oportunidades medibles.",
+    },
+    {
+      id: "creative",
+      title: "Creatividad",
+      text: "Identidad, diseño y contenido que convierten una promesa en una marca reconocible.",
+    },
+    {
+      id: "audiovisual",
+      title: "Audiovisual",
+      text: "Fotografía, reels y campañas producidas con tu equipo y tu realidad.",
+    },
+    {
+      id: "web",
+      title: "Web & Conversión",
+      text: "Experiencias rápidas y claras que convierten visitas en conversaciones.",
+    },
+    {
+      id: "growth",
+      title: "Growth",
+      text: "Automatización, analítica y mejora continua para sostener el avance.",
+    },
   ],
-  resultsTitle: "No mostramos piezas sueltas. Mostramos lo que cambió.",
-  caseTitle: "De conversaciones dispersas a un seguimiento visible.",
-  caseText: "Los próximos casos mostrarán el problema, la solución implementada y la métrica alcanzada con autorización del cliente.",
-  metricValue: "0",
-  metricLabel: "mensajes importantes olvidados",
+  resultsTitle: "El trabajo se entiende mejor cuando se ve el recorrido completo.",
+  caseCategory: "Caso en preparación",
+  caseTitle: "Del problema real a una solución que el equipo puede sostener.",
+  caseChallenge:
+    "Documentamos el punto de partida para entender dónde se enfrían las oportunidades o se pierde tiempo.",
+  caseSolution:
+    "Conectamos estrategia, contenido y sistemas en una ruta proporcional al negocio.",
+  caseExecution:
+    "Publicaremos aquí el proceso y los resultados únicamente cuando exista autorización del cliente.",
+  caseImage: "/team/equipo-crisdal.webp",
+  casePoster: "/team/equipo-crisdal.webp",
+  caseMediaKind: "image",
+  metricValue: "",
+  metricLabel: "",
   aboutTitle: "Creatividad con estructura. Tecnología con propósito.",
-  aboutText: "Somos un equipo de Huancayo que conecta comunicación, producción audiovisual y desarrollo para transformar ideas en resultados sostenibles.",
+  aboutText:
+    "Somos un equipo de Huancayo que conecta estrategia, comunicación, producción audiovisual y desarrollo para transformar ideas en sistemas que generan resultados sostenibles.",
   aboutImage: "/team/equipo-crisdal.webp",
+  testimonials: [],
   finalKicker: "Tu próxima oportunidad ya puede estar escribiéndote",
-  finalTitle: "Haz que encuentre una respuesta.",
-  finalImage: "/avatar-crisdal-cutout-v2.png",
+  finalTitle: "Cuéntanos qué necesita cambiar.",
+  finalMediaKind: "image",
+  finalMedia: "/team/abi.webp",
+  finalPoster: "/team/abi.webp",
   updatedAt: new Date(0).toISOString(),
 };
 
 export async function getSiteContent(): Promise<SiteContent> {
   try {
     await ensureBrochureBucket();
-    const { data, error } = await getSupabaseServer().storage.from(BROCHURE_BUCKET).download(SITE_CONTENT_PATH);
+    const { data, error } = await getSupabaseServer()
+      .storage.from(BROCHURE_BUCKET)
+      .download(SITE_CONTENT_PATH);
     if (error || !data) return defaultSiteContent;
-    const parsed = siteContentSchema.safeParse({ ...defaultSiteContent, ...JSON.parse(await data.text()), version: 1 });
+    const raw = JSON.parse(await data.text()) as Record<string, unknown>;
+    const legacyHero = String(raw.heroImage || defaultSiteContent.heroMedia);
+    const legacyCaseText = String(raw.caseText || defaultSiteContent.caseChallenge);
+    const legacyFinal = String(raw.finalImage || defaultSiteContent.finalMedia);
+    const parsed = siteContentSchema.safeParse({
+      ...defaultSiteContent,
+      ...raw,
+      version: 2,
+      heroMedia: raw.heroMedia || legacyHero,
+      heroPoster: raw.heroPoster || legacyHero,
+      caseChallenge: raw.caseChallenge || legacyCaseText,
+      caseSolution: raw.caseSolution || legacyCaseText,
+      caseExecution: raw.caseExecution || legacyCaseText,
+      casePoster: raw.casePoster || raw.caseImage || defaultSiteContent.casePoster,
+      finalMedia: raw.finalMedia || legacyFinal,
+      finalPoster: raw.finalPoster || legacyFinal,
+      testimonials: raw.testimonials || [],
+    });
     return parsed.success ? parsed.data : defaultSiteContent;
-  } catch { return defaultSiteContent; }
+  } catch {
+    return defaultSiteContent;
+  }
 }
+
 export async function saveSiteContent(input: unknown) {
-  const content = siteContentSchema.parse({ ...(typeof input === "object" && input ? input : {}), version: 1, updatedAt: new Date().toISOString() });
+  const content = siteContentSchema.parse({
+    ...(typeof input === "object" && input ? input : {}),
+    version: 2,
+    updatedAt: new Date().toISOString(),
+  });
   await ensureBrochureBucket();
-  const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
-  const { error } = await getSupabaseServer().storage.from(BROCHURE_BUCKET).upload(SITE_CONTENT_PATH, blob, { contentType: "application/json", cacheControl: "0", upsert: true });
+  const blob = new Blob([JSON.stringify(content, null, 2)], {
+    type: "application/json",
+  });
+  const { error } = await getSupabaseServer()
+    .storage.from(BROCHURE_BUCKET)
+    .upload(SITE_CONTENT_PATH, blob, {
+      contentType: "application/json",
+      cacheControl: "0",
+      upsert: true,
+    });
   if (error) throw error;
   return content;
 }
+
 export function createSiteMediaPath(fileName: string) {
-  const extension = fileName.toLowerCase().match(/\.(png|jpe?g|webp|avif)$/)?.[1] || "jpg";
+  const extension =
+    fileName.toLowerCase().match(/\.(png|jpe?g|webp|avif|mp4|webm)$/)?.[1] ||
+    "jpg";
   return `site/${Date.now()}-${randomUUID()}.${extension === "jpeg" ? "jpg" : extension}`;
 }
+
 export { brochurePublicUrl as sitePublicUrl };

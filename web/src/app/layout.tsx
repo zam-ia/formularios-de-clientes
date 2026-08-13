@@ -22,7 +22,8 @@ export const metadata: Metadata = {
     template: "%s | Crisdal Agency",
   },
   description:
-    "Marketing, producción audiovisual y automatización con IA para negocios de salud, estética y educación.",
+    "Crisdal conecta estrategia, creatividad, tecnología y seguimiento para convertir atención en oportunidades comerciales.",
+  alternates: { canonical: "/" },
   applicationName: "Crisdal Agency",
   robots: { index: true, follow: true },
   openGraph: {
@@ -31,6 +32,12 @@ export const metadata: Metadata = {
       "Conectamos estrategia, contenido y automatización con IA para crecer con orden.",
     type: "website",
     locale: "es_PE",
+    images: ["/brand/crisdal-agency-logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Crisdal Agency | Estrategia, creatividad y conversión",
+    description: "Convertimos atención en oportunidades reales.",
     images: ["/brand/crisdal-agency-logo.png"],
   },
 };

@@ -2,65 +2,414 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowRight, Bot, BrainCircuit, Check, ChevronDown, Clapperboard, Code2, GraduationCap, Handshake, HeartPulse, Menu, MessageCircle, Palette, Play, Sparkles, Target, TrendingUp, Workflow, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowDownRight,
+  ArrowRight,
+  BarChart3,
+  Bot,
+  Check,
+  ChevronDown,
+  Clapperboard,
+  Code2,
+  Compass,
+  Eye,
+  Handshake,
+  HeartPulse,
+  Layers3,
+  LoaderCircle,
+  Menu,
+  MessageCircle,
+  Palette,
+  Play,
+  Quote,
+  Route,
+  Send,
+  Sparkles,
+  Target,
+  Users,
+  Workflow,
+  X,
+} from "lucide-react";
 import type { SiteContent } from "@/lib/siteContent";
 import styles from "./home.module.css";
 
-const serviceIcons = [BrainCircuit, MessageCircle, Clapperboard, Code2, Workflow, Palette];
-const faqs = [
-  ["¿El bot realmente entiende a mis pacientes o alumnos?", "Diseñamos flujos con lenguaje natural, contexto de tu negocio y rutas claras para derivar a una persona cuando corresponde."],
-  ["¿Qué pasa si la IA no sabe responder algo?", "No improvisa. El sistema reconoce límites, registra la consulta y la entrega al responsable adecuado con todo el contexto."],
-  ["¿Tengo que contratar todos los servicios?", "No. Empezamos con un diagnóstico y priorizamos lo que hoy genera más fricción o pérdida de oportunidades."],
-  ["¿Trabajan de manera presencial en Huancayo?", "Sí. La producción audiovisual y las reuniones clave pueden realizarse en sitio; la operación y el seguimiento también funcionan de forma remota."],
+const serviceIcons = [Compass, BarChart3, Palette, Clapperboard, Code2, Bot];
+const steps = [
+  ["01", "Diagnóstico", "Entendemos el problema, el contexto y el punto de partida."],
+  ["02", "Estrategia", "Priorizamos la ruta con mayor impacto y menor fricción."],
+  ["03", "Implementación", "Conectamos creatividad, tecnología y responsables."],
+  ["04", "Optimización", "Medimos, aprendemos y mejoramos cada ciclo."],
 ];
+const faqs = [
+  [
+    "¿Crisdal es solo una agencia de marketing?",
+    "No. El marketing es una capacidad dentro de una ruta que también puede integrar estrategia, producción audiovisual, diseño web, automatización y analítica.",
+  ],
+  [
+    "¿Tengo que contratar todos los servicios?",
+    "No. Primero identificamos el cuello de botella y activamos únicamente las capacidades necesarias para resolverlo.",
+  ],
+  [
+    "¿También implementan la solución?",
+    "Sí. Podemos acompañar diagnóstico, diseño, implementación, seguimiento y optimización según el alcance acordado.",
+  ],
+  [
+    "¿Trabajan fuera de Huancayo?",
+    "Sí. Atendemos proyectos de forma remota y coordinamos producción presencial según la ubicación y el alcance.",
+  ],
+];
+
+declare global {
+  interface Window {
+    dataLayer?: Array<Record<string, unknown>>;
+  }
+}
+
+function track(event: string, params: Record<string, string> = {}) {
+  window.dataLayer?.push({ event, ...params });
+  window.dispatchEvent(
+    new CustomEvent("crisdal:track", { detail: { event, ...params } }),
+  );
+}
 
 export default function HomePage({ content }: { content: SiteContent }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const whatsapp = `https://wa.me/${content.whatsappNumber}?text=Hola%20Crisdal%2C%20quiero%20agendar%20un%20diagn%C3%B3stico%20gratis.`;
-  const aboutImage = content.aboutImage === "/brand/crisdal-agency-logo.png" ? "/team/equipo-crisdal.webp" : content.aboutImage;
-  return <main className={styles.site}>
-    <header className={styles.header}>
-      <Link href="#inicio" className={styles.brand} aria-label="Crisdal Agency, inicio"><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized /></Link>
-      <nav className={menuOpen ? styles.navOpen : ""} aria-label="Navegación principal">
-        <a href="#inicio" onClick={() => setMenuOpen(false)}>Inicio</a>
-        <div className={styles.dropdown}><a href="#servicios" onClick={() => setMenuOpen(false)}>Servicios <ChevronDown /></a><div><a href="#servicios" onClick={() => setMenuOpen(false)}>IA & WhatsApp</a><a href="#servicios" onClick={() => setMenuOpen(false)}>Contenido audiovisual</a><a href="#servicios" onClick={() => setMenuOpen(false)}>Web, apps y branding</a></div></div>
-        <div className={styles.dropdown}><a href="#rubros" onClick={() => setMenuOpen(false)}>Rubros <ChevronDown /></a><div><a href="#salud" onClick={() => setMenuOpen(false)}>Salud & Estética</a><a href="#educacion" onClick={() => setMenuOpen(false)}>Educación</a></div></div>
-        <Link href="/aliados" onClick={() => setMenuOpen(false)}>Red de Aliados <span>PRIVADA</span></Link><a href="#resultados" onClick={() => setMenuOpen(false)}>Resultados</a><a href="#nosotros" onClick={() => setMenuOpen(false)}>Nosotros</a>
-      </nav>
-      <a className={styles.headerCta} href={whatsapp} target="_blank" rel="noreferrer">Agenda tu diagnóstico <ArrowRight /></a>
-      <button className={styles.menuButton} onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}>{menuOpen ? <X /> : <Menu />}</button>
-    </header>
+  const [contactState, setContactState] = useState<
+    "idle" | "sending" | "sent" | "error"
+  >("idle");
+  const formStarted = useRef(false);
+  const whatsapp = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent("Hola Crisdal, quiero solicitar un diagnóstico para mi negocio.")}`;
 
-    <section id="inicio" className={styles.hero}>
-      <div className={styles.heroGrid} />
-      <div className={styles.heroCopy}><p className={styles.kicker}><i /> {content.heroKicker}</p><h1><HighlightedTitle value={content.heroTitle} /></h1><p>{content.heroLead}</p><div className={styles.heroActions}><a href={whatsapp} target="_blank" rel="noreferrer">Agenda tu diagnóstico gratis <ArrowRight /></a><a href="#metodo"><Play /> Ver cómo trabajamos</a></div><div className={styles.heroProof}><span><Check /> Especialistas en dos rubros</span><span><Check /> Producción propia</span><span><Check /> IA integrada</span></div></div>
-      <div className={styles.heroVisual} aria-label="Sistema de atención automatizada de Crisdal"><div className={styles.orbit}><BrainCircuit /><span>IA activa</span></div><div className={styles.phone}><div className={styles.phoneHead}><b>C</b><span>Asistente CRISDAL<small>En línea ahora</small></span></div><div className={styles.chatIncoming}>Hola, quisiera información sobre una cita.</div><div className={styles.chatOutgoing}>¡Claro! Te ayudo a encontrar el horario ideal. ¿Qué servicio necesitas?</div><div className={styles.chatStatus}><Sparkles /> Respuesta enviada en 4 s</div></div><div className={styles.metric}><TrendingUp /><span><small>Conversaciones atendidas</small><strong>24 / 7</strong></span></div><Image src={content.heroImage} alt="Imagen principal de Crisdal" width={620} height={620} priority unoptimized /></div>
-    </section>
+  useEffect(() => {
+    const nodes = document.querySelectorAll("[data-reveal]");
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.setAttribute("data-visible", "true");
+            observer.unobserve(entry.target);
+          }
+        }),
+      { threshold: 0.14 },
+    );
+    nodes.forEach((node) => observer.observe(node));
+    const sent = new Set<number>();
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max <= 0) return;
+      const progress = window.scrollY / max;
+      [50, 90].forEach((point) => {
+        if (progress >= point / 100 && !sent.has(point)) {
+          sent.add(point);
+          track(`scroll_${point}`);
+        }
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
-    <section className={styles.why}><div className={styles.sectionHead}><p className={styles.kicker}>Por qué Crisdal</p><h2>{content.whyTitle}</h2></div><div className={styles.whyGrid}><article><Target /><span>01</span><h3>Especialización real</h3><p>Hablamos el idioma de salud, estética y educación; no intentamos servir a todos de la misma manera.</p></article><article><Bot /><span>02</span><h3>IA dentro del servicio</h3><p>La automatización forma parte de la estrategia desde el inicio, no aparece como un extra desconectado.</p></article><article><Clapperboard /><span>03</span><h3>Producción propia</h3><p>Grabamos tu equipo, tus instalaciones y tu valor real. Nada de construir una marca con imágenes genéricas.</p></article></div></section>
+  async function submitContact(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (contactState === "sending") return;
+    setContactState("sending");
+    try {
+      const payload = Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>;
+      if (!payload.company?.trim()) payload.company = "Sin especificar";
+      const response = await fetch("/api/brochure-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("No pudimos enviar tu consulta.");
+      event.currentTarget.reset();
+      setContactState("sent");
+      track("lead_form_submit");
+    } catch {
+      setContactState("error");
+    }
+  }
 
-    <section id="rubros" className={styles.sectors}><div className={styles.sectionHead}><p className={styles.kicker}>Dos rubros. Un enfoque profundo.</p><h2>{content.sectorsTitle}</h2></div><div className={styles.sectorGrid}><article id="salud"><HeartPulse /><p>SALUD & ESTÉTICA</p><h3>{content.healthTitle}</h3><span>{content.healthText}</span><a href={whatsapp} target="_blank" rel="noreferrer">Explorar solución <ArrowRight /></a></article><article id="educacion"><GraduationCap /><p>EDUCACIÓN</p><h3>{content.educationTitle}</h3><span>{content.educationText}</span><a href={whatsapp} target="_blank" rel="noreferrer">Explorar solución <ArrowRight /></a></article></div></section>
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: "Crisdal Agency",
+    url: "https://crisdalagency.vercel.app",
+    logo: "https://crisdalagency.vercel.app/brand/crisdal-agency-logo.png",
+    areaServed: "Perú",
+    address: { "@type": "PostalAddress", addressLocality: "Huancayo", addressCountry: "PE" },
+    sameAs: [],
+    telephone: `+${content.whatsappNumber}`,
+  };
 
-    <section id="servicios" className={styles.services}><div className={styles.sectionHead}><p className={styles.kicker}>Servicios conectados</p><h2>{content.servicesTitle}</h2><p>{content.servicesLead}</p></div><div className={styles.serviceGrid}>{content.services.map(({ id, title, text }, index) => { const Icon = serviceIcons[index]; const featured = index === 0; return <article key={id} className={featured ? styles.featuredService : ""}><span>{String(index + 1).padStart(2, "0")}</span><Icon /><h3>{title}</h3><p>{text}</p>{featured ? <b>LA BANDERA CRISDAL</b> : null}</article>; })}</div></section>
+  return (
+    <main className={styles.site}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <header className={styles.header}>
+        <a className={styles.brand} href="#inicio" aria-label="Crisdal Agency, inicio">
+          <Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized />
+        </a>
+        <nav className={menuOpen ? styles.navOpen : ""} aria-label="Navegación principal">
+          <a href="#servicios" onClick={() => setMenuOpen(false)}>Servicios</a>
+          <a href="#casos" onClick={() => setMenuOpen(false)}>Casos</a>
+          <a href="#metodo" onClick={() => setMenuOpen(false)}>Método</a>
+          <a href="#nosotros" onClick={() => setMenuOpen(false)}>Nosotros</a>
+          <a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
+        </nav>
+        <a
+          className={styles.headerCta}
+          href="#contacto"
+          onClick={() => track("hero_cta_click", { placement: "header" })}
+        >
+          Solicitar diagnóstico <ArrowRight />
+        </a>
+        <button
+          className={styles.menuButton}
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+        >
+          {menuOpen ? <X /> : <Menu />}
+        </button>
+      </header>
 
-    <section id="metodo" className={styles.method}><div className={styles.sectionHead}><p className={styles.kicker}>Cómo trabajamos</p><h2>Primero entendemos.<br />Después conectamos.</h2></div><div className={styles.steps}>{[["01", "Diagnóstico", "Detectamos dónde se enfrían las oportunidades."], ["02", "Estrategia", "Definimos mensajes, recorrido y prioridades."], ["03", "Implementación", "Activamos contenido, sistemas y automatización."], ["04", "Optimización", "Medimos, aprendemos y mejoramos cada ciclo."]].map(([n, t, x]) => <article key={n}><strong>{n}</strong><div><h3>{t}</h3><p>{x}</p></div></article>)}</div></section>
+      <section id="inicio" className={styles.hero}>
+        <div className={styles.heroGrid} aria-hidden="true" />
+        <div className={styles.heroCopy} data-reveal>
+          <p className={styles.kicker}><i /> {content.heroKicker}</p>
+          <h1>{content.heroTitle.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</h1>
+          <p>{content.heroLead}</p>
+          <div className={styles.heroActions}>
+            <a href="#contacto" onClick={() => track("hero_cta_click", { placement: "hero" })}>
+              Solicitar diagnóstico <ArrowRight />
+            </a>
+            <a href="#casos" onClick={() => track("case_study_open", { placement: "hero" })}>
+              <Play /> Ver casos
+            </a>
+          </div>
+          <div className={styles.heroProof}>
+            <span><Check /> Diagnóstico antes de ejecutar</span>
+            <span><Check /> Producción propia</span>
+            <span><Check /> Resultados trazables</span>
+          </div>
+        </div>
+        <div className={styles.heroVisual} data-reveal>
+          <Media
+            kind={content.heroMediaKind}
+            src={content.heroMedia}
+            poster={content.heroPoster}
+            alt="Equipo y trabajo de Crisdal Agency"
+            priority
+          />
+          <span className={styles.visualBadge}><Sparkles /> Estrategia conectada</span>
+          <span className={styles.visualIndex}>CRISDAL / 2026</span>
+        </div>
+        <a className={styles.scrollCue} href="#prueba"><ArrowDownRight /> Explorar</a>
+      </section>
 
-    <section className={styles.alliesTeaser}><div><p className={styles.kicker}>Una ventaja solo para clientes</p><h2>Crecer también es saber<br />con quién conectarte.</h2><p>Nuestros clientes acceden a una red privada de aliados y proveedores verificados para generar nuevas oportunidades.</p><Link href="/aliados">Conocer la Red de Aliados <ArrowRight /></Link></div><div className={styles.alliesMap}><Handshake /><i /><i /><i /><span>NEGOCIOS CONECTADOS</span></div></section>
+      <section id="prueba" className={styles.proofStrip} aria-label="Diferenciales de Crisdal">
+        <p>UNA RUTA CONECTADA</p>
+        <div>
+          <span><Target /> Estrategia</span>
+          <span><Palette /> Creatividad</span>
+          <span><Layers3 /> Tecnología</span>
+          <span><BarChart3 /> Medición</span>
+        </div>
+      </section>
 
-    <section id="resultados" className={styles.results}><div className={styles.sectionHead}><p className={styles.kicker}>Resultados que importan</p><h2>{content.resultsTitle}</h2></div><div className={styles.caseCard}><div><span>CASO DESTACADO</span><h3>{content.caseTitle}</h3><p>{content.caseText}</p></div><div><strong>{content.metricValue}</strong><span>{content.metricLabel}</span></div><Link href="/brochure">Ver brochure y proyectos <ArrowRight /></Link></div></section>
+      <section id="casos" className={styles.cases}>
+        <SectionHeading kicker="Prueba antes que promesas" title={content.resultsTitle} />
+        <article className={styles.caseCard} data-reveal>
+          <div className={styles.caseMedia}>
+            <Media kind={content.caseMediaKind} src={content.caseImage} poster={content.casePoster} alt={content.caseTitle} />
+            <span>{content.caseCategory}</span>
+          </div>
+          <div className={styles.caseContent}>
+            <p className={styles.caseEyebrow}>CASO DESTACADO</p>
+            <h3>{content.caseTitle}</h3>
+            <dl>
+              <div><dt>Problema</dt><dd>{content.caseChallenge}</dd></div>
+              <div><dt>Solución</dt><dd>{content.caseSolution}</dd></div>
+              <div><dt>Ejecución</dt><dd>{content.caseExecution}</dd></div>
+            </dl>
+            {content.metricValue && content.metricLabel ? (
+              <div className={styles.caseMetric}><strong>{content.metricValue}</strong><span>{content.metricLabel}</span></div>
+            ) : null}
+            <Link href="/brochure" onClick={() => track("case_study_open", { case: content.caseTitle })}>
+              Ver proyectos y brochure <ArrowRight />
+            </Link>
+          </div>
+        </article>
+      </section>
 
-    <section id="nosotros" className={styles.about}><div><p className={styles.kicker}>Nosotros</p><h2>{content.aboutTitle}</h2><p>{content.aboutText}</p><a href={whatsapp} target="_blank" rel="noreferrer">Conversemos sobre tu proyecto <ArrowRight /></a></div><div className={styles.aboutVisual}><Image src={aboutImage} alt="Equipo de Crisdal Agency" width={1600} height={1600} unoptimized /><span>HUANCAYO · PERÚ</span></div></section>
+      <section id="servicios" className={styles.services}>
+        <SectionHeading kicker="Capacidades" title={content.servicesTitle} text={content.servicesLead} />
+        <div className={styles.serviceGrid}>
+          {content.services.map((service, index) => {
+            const Icon = serviceIcons[index] || Workflow;
+            return (
+              <a
+                key={service.id}
+                href="#contacto"
+                data-reveal
+                onClick={() => track("service_open", { service: service.title })}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <Icon />
+                <h3>{service.title}</h3>
+                <p>{service.text}</p>
+                <ArrowDownRight />
+              </a>
+            );
+          })}
+        </div>
+      </section>
 
-    <section className={styles.faq}><div className={styles.sectionHead}><p className={styles.kicker}>Preguntas frecuentes</p><h2>Antes de empezar.</h2></div><div>{faqs.map(([question, answer], index) => <details key={question} open={index === 0}><summary>{question}<ChevronDown /></summary><p>{answer}</p></details>)}</div></section>
+      <section id="metodo" className={styles.method}>
+        <div className={styles.methodIntro} data-reveal>
+          <p className={styles.kicker}>Cómo trabajamos</p>
+          <h2>Primero entendemos.<br />Después conectamos.</h2>
+          <p>Un proceso claro reduce incertidumbre, retrabajo y decisiones aisladas.</p>
+          <a href="#contacto">Solicitar diagnóstico <ArrowRight /></a>
+        </div>
+        <ol className={styles.steps}>
+          {steps.map(([number, title, text]) => (
+            <li key={number} data-reveal><strong>{number}</strong><div><h3>{title}</h3><p>{text}</p></div></li>
+          ))}
+        </ol>
+      </section>
 
-    <section className={styles.finalCta}><Image src={content.finalImage} alt="Crisdal" width={500} height={500} unoptimized /><div><p className={styles.kicker}>{content.finalKicker}</p><h2>{content.finalTitle}</h2><a href={whatsapp} target="_blank" rel="noreferrer">Agenda tu diagnóstico gratis <ArrowRight /></a></div></section>
-    <footer className={styles.footer}><div className={styles.footerBrand}><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} unoptimized /><p>Transformamos ideas en resultados.</p></div><div><strong>Explora</strong><a href="#servicios">Servicios</a><a href="#rubros">Rubros</a><Link href="/aliados">Red de Aliados</Link><Link href="/brochure">Brochure</Link></div><div><strong>Contacto</strong><a href={whatsapp}>WhatsApp</a><a href="mailto:crisdalagency@gmail.com">crisdalagency@gmail.com</a><span>Huancayo, Perú</span></div><div className={styles.footerBottom}><span>© 2026 Crisdal Agency</span><Link href="/formulario">Formulario para clientes</Link></div></footer>
-    <a className={styles.floatingWa} href={whatsapp} target="_blank" rel="noreferrer" aria-label="Escribir a Crisdal por WhatsApp"><MessageCircle /><span>WhatsApp</span></a>
-  </main>;
+      <section className={styles.difference}>
+        <div className={styles.differenceCopy} data-reveal>
+          <p className={styles.kicker}>Por qué Crisdal</p>
+          <h2>{content.whyTitle}</h2>
+          <p>La estrategia define qué hacer. La creatividad lo vuelve visible. La distribución lo pone frente a las personas correctas. La conversión demuestra si funcionó.</p>
+        </div>
+        <div className={styles.differenceMap} aria-label="Ruta Crisdal">
+          {["Estrategia", "Creatividad", "Distribución", "Conversión"].map((item, index) => (
+            <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item}</strong></div>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.sectors}>
+        <SectionHeading kicker="Especialización" title={content.sectorsTitle} />
+        <div>
+          <article data-reveal><HeartPulse /><span>01</span><h3>{content.healthTitle}</h3><p>{content.healthText}</p></article>
+          <article data-reveal><Users /><span>02</span><h3>{content.educationTitle}</h3><p>{content.educationText}</p></article>
+        </div>
+      </section>
+
+      {content.testimonials.some((item) => item.visible) ? (
+        <section className={styles.testimonials}>
+          <SectionHeading kicker="Experiencias autorizadas" title="Lo que cambia cuando las piezas empiezan a conversar." />
+          <div>
+            {content.testimonials.filter((item) => item.visible).map((item) => (
+              <blockquote key={item.id} data-reveal>
+                <Quote />
+                <p>“{item.quote}”</p>
+                <footer><strong>{item.name}</strong><span>{[item.role, item.company].filter(Boolean).join(" · ")}</span></footer>
+              </blockquote>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="nosotros" className={styles.about}>
+        <div className={styles.aboutMedia} data-reveal>
+          <Image src={content.aboutImage} alt="Equipo de Crisdal Agency en Huancayo" fill unoptimized sizes="(max-width: 800px) 100vw, 52vw" />
+          <span>HUANCAYO · PERÚ</span>
+        </div>
+        <div className={styles.aboutCopy} data-reveal>
+          <p className={styles.kicker}>Nosotros</p>
+          <h2>{content.aboutTitle}</h2>
+          <p>{content.aboutText}</p>
+          <div><span><Handshake /> Un equipo</span><span><Route /> Una ruta</span><span><Eye /> Avance visible</span></div>
+          <a href="#contacto">Conversemos <ArrowRight /></a>
+        </div>
+      </section>
+
+      <section className={styles.faq}>
+        <SectionHeading kicker="Preguntas frecuentes" title="Antes de empezar." text="La claridad también consiste en saber qué esperar." />
+        <div>
+          {faqs.map(([question, answer]) => (
+            <details key={question}>
+              <summary>{question}<ChevronDown /></summary>
+              <p>{answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section id="contacto" className={styles.contact}>
+        <div className={styles.contactMedia}>
+          <Media kind={content.finalMediaKind} src={content.finalMedia} poster={content.finalPoster} alt="Crisdal Agency" />
+        </div>
+        <div className={styles.contactCopy}>
+          <p className={styles.kicker}>{content.finalKicker}</p>
+          <h2>{content.finalTitle}</h2>
+          <p>Déjanos cuatro datos. Te escribiremos para entender el contexto antes de recomendar una solución.</p>
+          <form
+            onSubmit={(event) => void submitContact(event)}
+            onFocus={() => {
+              if (!formStarted.current) {
+                formStarted.current = true;
+                track("lead_form_start");
+              }
+            }}
+          >
+            <label>Nombre<input name="name" autoComplete="name" required minLength={2} placeholder="Tu nombre" /></label>
+            <label>WhatsApp<input name="whatsapp" type="tel" autoComplete="tel" required minLength={8} placeholder="+51 987 654 321" /></label>
+            <label>Empresa <span>opcional</span><input name="company" autoComplete="organization" placeholder="Nombre de tu negocio" /></label>
+            <label>¿Qué necesitas?<textarea name="message" required minLength={10} rows={3} placeholder="Cuéntanos brevemente qué quieres mejorar" /></label>
+            <input className={styles.honeypot} name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+            <button disabled={contactState === "sending"}>
+              {contactState === "sending" ? <LoaderCircle className={styles.spin} /> : <Send />}
+              {contactState === "sending" ? "Enviando…" : "Enviar proyecto"}
+            </button>
+            <a href={whatsapp} target="_blank" rel="noreferrer" onClick={() => track("whatsapp_click", { placement: "contact" })}>
+              <MessageCircle /> Prefiero WhatsApp
+            </a>
+            <p className={contactState === "error" ? styles.formError : styles.formStatus} role="status">
+              {contactState === "sent" ? "Listo. Recibimos tu mensaje y te contactaremos pronto." : contactState === "error" ? "No pudimos enviarlo. Intenta por WhatsApp." : "Tus datos se usan únicamente para responder tu consulta."}
+            </p>
+          </form>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <div><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} unoptimized /><p>Transformamos ideas en resultados.</p></div>
+        <div><strong>Explora</strong><a href="#servicios">Servicios</a><a href="#casos">Casos</a><Link href="/brochure">Brochure</Link><Link href="/aliados">Red de Aliados</Link></div>
+        <div><strong>Contacto</strong><a href={whatsapp}>WhatsApp</a><a href="mailto:crisdalagency@gmail.com">crisdalagency@gmail.com</a><span>Huancayo, Perú</span></div>
+        <p>© 2026 Crisdal Agency · Estrategia, creatividad y tecnología.</p>
+      </footer>
+      <a className={styles.floatingWa} href={whatsapp} target="_blank" rel="noreferrer" aria-label="Escribir a Crisdal por WhatsApp" onClick={() => track("whatsapp_click", { placement: "floating" })}>
+        <MessageCircle /><span>WhatsApp</span>
+      </a>
+    </main>
+  );
 }
 
-function HighlightedTitle({ value }: { value: string }) {
-  const lines = value.split("\n");
-  return <>{lines.map((line, lineIndex) => <span key={`${line}-${lineIndex}`}>{line.split(/(PACIENTE)/i).map((part, index) => part.toLowerCase() === "paciente" ? <em key={index}>{part}</em> : part)}{lineIndex < lines.length - 1 ? <br /> : null}</span>)}</>;
+function SectionHeading({ kicker, title, text }: { kicker: string; title: string; text?: string }) {
+  return <header className={styles.sectionHead} data-reveal><p className={styles.kicker}>{kicker}</p><h2>{title}</h2>{text ? <p>{text}</p> : null}</header>;
+}
+
+function Media({ kind, src, poster, alt, priority = false }: { kind: "image" | "video"; src: string; poster: string; alt: string; priority?: boolean }) {
+  return kind === "video" ? (
+    <div className={styles.mediaAsset}>
+      <Image src={poster} alt={alt} fill priority={priority} unoptimized sizes="(max-width: 800px) 100vw, 48vw" />
+      <video src={src} poster={poster} muted loop autoPlay playsInline preload={priority ? "auto" : "metadata"} aria-label={alt} />
+    </div>
+  ) : (
+    <div className={styles.mediaAsset}>
+      <Image src={src} alt={alt} fill priority={priority} unoptimized sizes="(max-width: 800px) 100vw, 48vw" />
+    </div>
+  );
 }
