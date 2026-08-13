@@ -48,8 +48,11 @@ import {
   type BrochureCase,
   type BrochureContent,
   type BrochureMedia,
+  type BrochureMetric,
   type BrochureSection,
   type BrochureSectionType,
+  type BrochureTeamMember,
+  type BrochureTestimonial,
   type BrochureWidgetSize,
 } from "@/lib/brochure";
 import { getSupabaseBrowser } from "@/lib/supabaseClient";
@@ -73,8 +76,10 @@ const sectionLabels: Record<BrochureSectionType, string> = {
   problems: "Problemas que resolvemos",
   manifesto: "Manifiesto",
   solutions: "Soluciones",
+  metrics: "Datos y métricas",
   nexo: "Método NEXO",
   cases: "Casos",
+  testimonials: "Testimonios",
   showcase: "Galería multimedia",
   industries: "Industrias",
   team: "Equipo",
@@ -199,6 +204,7 @@ export default function PanelClient() {
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">(
     "desktop",
   );
+  const [previewSectionId, setPreviewSectionId] = useState("");
 
   const loadContent = useCallback(
     async () => setContent(await api<BrochureContent>("/api/admin/brochure")),
@@ -214,6 +220,20 @@ export default function PanelClient() {
       .catch(() => setAuthenticated(false))
       .finally(() => setAuthLoading(false));
   }, [loadContent]);
+
+  useEffect(() => {
+    if (!previewOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPreviewOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [previewOpen]);
 
   const formUrl = origin ? `${origin}/formulario` : "";
   const brochureUrl = origin ? `${origin}/brochure` : "";
@@ -318,6 +338,91 @@ export default function PanelClient() {
           title: "Nueva solución",
           description: "Cuenta de forma sencilla cómo ayuda esta solución.",
           tag: "Solución",
+        },
+      ],
+    }));
+  }
+
+  function updateMetric(id: string, patch: Partial<BrochureMetric>) {
+    setContent((current) => ({
+      ...current,
+      metrics: current.metrics.map((item) =>
+        item.id === id ? { ...item, ...patch } : item,
+      ),
+    }));
+  }
+
+  function addMetric() {
+    setContent((current) => ({
+      ...current,
+      metrics: [
+        ...current.metrics,
+        {
+          id: crypto.randomUUID(),
+          value: 0,
+          prefix: "",
+          suffix: "%",
+          label: "Nuevo indicador",
+          description: "Explica brevemente qué representa este número.",
+          visible: true,
+        },
+      ],
+    }));
+  }
+
+  function updateTestimonial(
+    id: string,
+    patch: Partial<BrochureTestimonial>,
+  ) {
+    setContent((current) => ({
+      ...current,
+      testimonials: current.testimonials.map((item) =>
+        item.id === id ? { ...item, ...patch } : item,
+      ),
+    }));
+  }
+
+  function addTestimonial() {
+    setContent((current) => ({
+      ...current,
+      testimonials: [
+        ...current.testimonials,
+        {
+          id: crypto.randomUUID(),
+          quote: "Escribe aquí la experiencia autorizada de tu cliente.",
+          name: "Nombre del cliente",
+          role: "Cargo",
+          company: "Empresa",
+          rating: 5,
+          visible: true,
+        },
+      ],
+    }));
+  }
+
+  function updateTeamMember(id: string, patch: Partial<BrochureTeamMember>) {
+    setContent((current) => ({
+      ...current,
+      teamMembers: current.teamMembers.map((item) =>
+        item.id === id ? { ...item, ...patch } : item,
+      ),
+    }));
+  }
+
+  function addTeamMember() {
+    setContent((current) => ({
+      ...current,
+      teamMembers: [
+        ...current.teamMembers,
+        {
+          id: crypto.randomUUID(),
+          name: "Nuevo integrante",
+          role: "Cargo o especialidad",
+          focus: "Describe brevemente su aporte al equipo.",
+          imageUrl: "/team/equipo-crisdal.webp",
+          positionX: 50,
+          positionY: 30,
+          visible: true,
         },
       ],
     }));
@@ -685,7 +790,17 @@ export default function PanelClient() {
             </strong>
           </div>
           <div className={styles.previewActions}>
-            <button type="button" onClick={() => setPreviewOpen(true)}>
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewSectionId(
+                  previewSectionId ||
+                    content.sections.find((section) => section.visible)?.id ||
+                    "",
+                );
+                setPreviewOpen(true);
+              }}
+            >
               <Eye size={16} /> Vista en vivo
             </button>
             <a
@@ -857,6 +972,165 @@ export default function PanelClient() {
               </div>
             </section>
             <section className={styles.formCard}>
+              <div className={styles.formCardHeader}>
+                <div>
+                  <h2>Datos y números</h2>
+                  <p>Se animan al entrar en pantalla y puedes organizarlos como un widget.</p>
+                </div>
+                <button className={styles.secondaryButton} onClick={addMetric}>
+                  <Plus size={16} /> Añadir indicador
+                </button>
+              </div>
+              <div className={styles.dataEditor}>
+                {content.metrics.map((metric) => (
+                  <article key={metric.id} className={!metric.visible ? styles.dataMuted : ""}>
+                    <div className={styles.dataEditorHead}>
+                      <strong>{metric.label}</strong>
+                      <button
+                        type="button"
+                        onClick={() => updateMetric(metric.id, { visible: !metric.visible })}
+                        aria-label={metric.visible ? "Ocultar indicador" : "Mostrar indicador"}
+                      >
+                        {metric.visible ? <Eye size={17} /> : <EyeOff size={17} />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setContent({
+                            ...content,
+                            metrics: content.metrics.filter((item) => item.id !== metric.id),
+                          })
+                        }
+                        aria-label="Eliminar indicador"
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </div>
+                    <div className={styles.metricInputs}>
+                      <label>
+                        Prefijo
+                        <input value={metric.prefix} maxLength={12} onChange={(event) => updateMetric(metric.id, { prefix: event.target.value })} />
+                      </label>
+                      <label>
+                        Número
+                        <input type="number" value={metric.value} onChange={(event) => updateMetric(metric.id, { value: Number(event.target.value) })} />
+                      </label>
+                      <label>
+                        Sufijo
+                        <input value={metric.suffix} maxLength={12} onChange={(event) => updateMetric(metric.id, { suffix: event.target.value })} />
+                      </label>
+                    </div>
+                    <label>
+                      Nombre del indicador
+                      <input value={metric.label} maxLength={100} onChange={(event) => updateMetric(metric.id, { label: event.target.value })} />
+                    </label>
+                    <label>
+                      Explicación
+                      <textarea rows={2} value={metric.description} maxLength={240} onChange={(event) => updateMetric(metric.id, { description: event.target.value })} />
+                    </label>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className={styles.formCard}>
+              <div className={styles.formCardHeader}>
+                <div>
+                  <h2>Testimonios</h2>
+                  <p>Usa únicamente testimonios reales que el cliente haya autorizado.</p>
+                </div>
+                <button className={styles.secondaryButton} onClick={addTestimonial}>
+                  <Plus size={16} /> Añadir testimonio
+                </button>
+              </div>
+              <div className={styles.dataEditor}>
+                {content.testimonials.map((testimonial) => (
+                  <article key={testimonial.id} className={!testimonial.visible ? styles.dataMuted : ""}>
+                    <div className={styles.dataEditorHead}>
+                      <strong>{testimonial.name}</strong>
+                      <button type="button" onClick={() => updateTestimonial(testimonial.id, { visible: !testimonial.visible })} aria-label={testimonial.visible ? "Ocultar testimonio" : "Mostrar testimonio"}>
+                        {testimonial.visible ? <Eye size={17} /> : <EyeOff size={17} />}
+                      </button>
+                      <button type="button" onClick={() => setContent({ ...content, testimonials: content.testimonials.filter((item) => item.id !== testimonial.id) })} aria-label="Eliminar testimonio">
+                        <Trash2 size={17} />
+                      </button>
+                    </div>
+                    <label>
+                      Testimonio
+                      <textarea rows={4} value={testimonial.quote} maxLength={700} onChange={(event) => updateTestimonial(testimonial.id, { quote: event.target.value })} />
+                    </label>
+                    <div className={styles.testimonialInputs}>
+                      <label>Nombre<input value={testimonial.name} maxLength={100} onChange={(event) => updateTestimonial(testimonial.id, { name: event.target.value })} /></label>
+                      <label>Cargo<input value={testimonial.role} maxLength={100} onChange={(event) => updateTestimonial(testimonial.id, { role: event.target.value })} /></label>
+                      <label>Empresa<input value={testimonial.company} maxLength={100} onChange={(event) => updateTestimonial(testimonial.id, { company: event.target.value })} /></label>
+                      <label>Estrellas<select value={testimonial.rating} onChange={(event) => updateTestimonial(testimonial.id, { rating: Number(event.target.value) })}>{[5, 4, 3, 2, 1].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className={styles.formCard}>
+              <div className={styles.formCardHeader}>
+                <div>
+                  <h2>Equipo Crisdal</h2>
+                  <p>Edita nombres, puestos, enfoque y el encuadre de cada perfil.</p>
+                </div>
+                <button className={styles.secondaryButton} onClick={addTeamMember}>
+                  <Plus size={16} /> Añadir integrante
+                </button>
+              </div>
+              <p className={styles.editorHint}>
+                Para usar una foto nueva, súbela primero en Multimedia; después aparecerá en el selector de cada perfil.
+              </p>
+              <div className={styles.teamEditor}>
+                {content.teamMembers.map((person) => (
+                  <article key={person.id} className={!person.visible ? styles.dataMuted : ""}>
+                    <div className={styles.teamEditorPhoto}>
+                      <Image
+                        src={person.imageUrl}
+                        alt={person.name}
+                        fill
+                        unoptimized
+                        sizes="210px"
+                        style={{ objectPosition: `${person.positionX}% ${person.positionY}%` }}
+                      />
+                    </div>
+                    <div className={styles.teamEditorFields}>
+                      <div className={styles.dataEditorHead}>
+                        <strong>{person.name}</strong>
+                        <button type="button" onClick={() => updateTeamMember(person.id, { visible: !person.visible })} aria-label={person.visible ? "Ocultar integrante" : "Mostrar integrante"}>
+                          {person.visible ? <Eye size={17} /> : <EyeOff size={17} />}
+                        </button>
+                        <button type="button" onClick={() => setContent({ ...content, teamMembers: content.teamMembers.filter((item) => item.id !== person.id) })} aria-label="Eliminar integrante">
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
+                      <div className={styles.testimonialInputs}>
+                        <label>Nombre<input value={person.name} maxLength={100} onChange={(event) => updateTeamMember(person.id, { name: event.target.value })} /></label>
+                        <label>Puesto<input value={person.role} maxLength={120} onChange={(event) => updateTeamMember(person.id, { role: event.target.value })} /></label>
+                      </div>
+                      <label>Especialidad<textarea rows={2} value={person.focus} maxLength={280} onChange={(event) => updateTeamMember(person.id, { focus: event.target.value })} /></label>
+                      <label>
+                        Fotografía
+                        <select value={person.imageUrl} onChange={(event) => updateTeamMember(person.id, { imageUrl: event.target.value })}>
+                          <option value="/team/aldair.webp">Perfil Aldair</option>
+                          <option value="/team/milagros.webp">Perfil Milagros</option>
+                          <option value="/team/abi.webp">Perfil Abi</option>
+                          <option value="/team/equipo-crisdal.webp">Foto grupal</option>
+                          {content.media.filter((item) => item.kind === "image").map((item) => (
+                            <option key={item.id} value={item.url}>{item.title || "Imagen de multimedia"}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className={styles.testimonialInputs}>
+                        <label>Posición horizontal ({Math.round(person.positionX)}%)<input type="range" min="0" max="100" value={person.positionX} onChange={(event) => updateTeamMember(person.id, { positionX: Number(event.target.value) })} /></label>
+                        <label>Posición vertical ({Math.round(person.positionY)}%)<input type="range" min="0" max="100" value={person.positionY} onChange={(event) => updateTeamMember(person.id, { positionY: Number(event.target.value) })} /></label>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className={styles.formCard}>
               <h2>Contacto</h2>
               <div className={styles.formGrid}>
                 <label>
@@ -992,7 +1266,9 @@ export default function PanelClient() {
                     </div>
                     <div className={styles.sectionFields}>
                       {section.type === "custom" ||
-                      section.type === "showcase" ? (
+                      section.type === "showcase" ||
+                      section.type === "metrics" ||
+                      section.type === "testimonials" ? (
                         <>
                         <input
                           value={section.eyebrow}
@@ -1372,7 +1648,12 @@ export default function PanelClient() {
         />
       ) : null}
       {previewOpen ? (
-        <div className={styles.livePreviewBackdrop} role="dialog" aria-modal>
+        <div
+          className={styles.livePreviewBackdrop}
+          role="dialog"
+          aria-modal
+          aria-label="Vista previa y editor de widgets"
+        >
           <section className={styles.livePreviewPanel}>
             <header>
               <div>
@@ -1399,23 +1680,158 @@ export default function PanelClient() {
                   onClick={() => setPreviewOpen(false)}
                   aria-label="Cerrar vista previa"
                 >
-                  <X />
+                  <X /> <span>Cerrar</span>
                 </button>
               </div>
             </header>
-            <div className={styles.livePreviewStage}>
-              <div
-                className={`${styles.livePreviewSurface} ${
-                  previewDevice === "mobile" ? styles.mobilePreview : ""
-                }`}
-              >
-                <LiveBrochure content={content} />
+            <div className={styles.livePreviewWorkspace}>
+              <PreviewWidgetInspector
+                content={content}
+                selectedId={previewSectionId}
+                onSelect={(id) => {
+                  setPreviewSectionId(id);
+                  window.requestAnimationFrame(() =>
+                    document
+                      .querySelector(`[data-brochure-widget="${id}"]`)
+                      ?.scrollIntoView({ behavior: "smooth", block: "center" }),
+                  );
+                }}
+                onChange={setContent}
+              />
+              <div className={styles.livePreviewStage}>
+                <div
+                  className={`${styles.livePreviewSurface} ${
+                    previewDevice === "mobile" ? styles.mobilePreview : ""
+                  }`}
+                >
+                  <LiveBrochure
+                    content={content}
+                    previewSectionId={previewSectionId}
+                  />
+                </div>
               </div>
             </div>
           </section>
+          <button
+            type="button"
+            className={styles.previewClosePersistent}
+            onClick={() => setPreviewOpen(false)}
+          >
+            <X size={17} /> Cerrar vista previa
+          </button>
         </div>
       ) : null}
     </main>
+  );
+}
+
+function PreviewWidgetInspector({
+  content,
+  selectedId,
+  onSelect,
+  onChange,
+}: {
+  content: BrochureContent;
+  selectedId: string;
+  onSelect: (id: string) => void;
+  onChange: (content: BrochureContent) => void;
+}) {
+  const [draggedId, setDraggedId] = useState("");
+  const selected = content.sections.find((section) => section.id === selectedId);
+
+  function patchSection(id: string, patch: Partial<BrochureSection>) {
+    onChange({
+      ...content,
+      sections: content.sections.map((section) =>
+        section.id === id ? { ...section, ...patch } : section,
+      ),
+    });
+  }
+
+  function reorder(fromId: string, toId: string) {
+    const from = content.sections.findIndex((section) => section.id === fromId);
+    const to = content.sections.findIndex((section) => section.id === toId);
+    if (from < 0 || to < 0 || from === to) return;
+    const sections = [...content.sections];
+    const [moved] = sections.splice(from, 1);
+    sections.splice(to, 0, moved);
+    onChange({ ...content, sections });
+  }
+
+  function moveSelected(direction: -1 | 1) {
+    if (!selected) return;
+    const index = content.sections.findIndex((section) => section.id === selected.id);
+    const target = index + direction;
+    if (target < 0 || target >= content.sections.length) return;
+    const sections = [...content.sections];
+    [sections[index], sections[target]] = [sections[target], sections[index]];
+    onChange({ ...content, sections });
+  }
+
+  return (
+    <aside className={styles.previewInspector} aria-label="Editor de widgets">
+      <div className={styles.previewInspectorIntro}>
+        <p>EDITOR EN VIVO</p>
+        <strong>Mueve y configura tus widgets</strong>
+        <span>Arrastra un bloque o selecciónalo para ajustar cómo se muestra.</span>
+      </div>
+      <div className={styles.previewWidgetList}>
+        {content.sections.map((section, index) => (
+          <button
+            type="button"
+            key={section.id}
+            draggable
+            onDragStart={() => setDraggedId(section.id)}
+            onDragEnd={() => setDraggedId("")}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => {
+              reorder(draggedId, section.id);
+              setDraggedId("");
+            }}
+            onClick={() => onSelect(section.id)}
+            className={`${selectedId === section.id ? styles.previewWidgetSelected : ""} ${!section.visible ? styles.previewWidgetHidden : ""}`}
+          >
+            <GripVertical />
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{sectionLabels[section.type]}</strong>
+            {section.visible ? <Eye /> : <EyeOff />}
+          </button>
+        ))}
+      </div>
+      {selected ? (
+        <div className={styles.previewWidgetSettings}>
+          <div>
+            <span>Widget seleccionado</span>
+            <strong>{sectionLabels[selected.type]}</strong>
+          </div>
+          <div className={styles.previewWidgetActions}>
+            <button type="button" onClick={() => moveSelected(-1)} aria-label="Mover arriba"><ArrowUp /></button>
+            <button type="button" onClick={() => moveSelected(1)} aria-label="Mover abajo"><ArrowDown /></button>
+            <button type="button" onClick={() => patchSection(selected.id, { visible: !selected.visible })}>
+              {selected.visible ? <><EyeOff /> Ocultar</> : <><Eye /> Mostrar</>}
+            </button>
+          </div>
+          <label>
+            Distribución visual
+            <select
+              value={selected.mediaLayout}
+              onChange={(event) =>
+                patchSection(selected.id, {
+                  mediaLayout: event.target.value as BrochureSection["mediaLayout"],
+                })
+              }
+            >
+              <option value="grid">Cuadrícula equilibrada</option>
+              <option value="spotlight">Primer elemento destacado</option>
+              <option value="stack">Bloques apilados</option>
+            </select>
+          </label>
+          <small>
+            Los cambios son inmediatos. Usa “Guardar y publicar” al cerrar la vista.
+          </small>
+        </div>
+      ) : null}
+    </aside>
   );
 }
 

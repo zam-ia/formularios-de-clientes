@@ -18,6 +18,7 @@ const faqs = [
 export default function HomePage({ content }: { content: SiteContent }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const whatsapp = `https://wa.me/${content.whatsappNumber}?text=Hola%20Crisdal%2C%20quiero%20agendar%20un%20diagn%C3%B3stico%20gratis.`;
+  const aboutImage = content.aboutImage === "/brand/crisdal-agency-logo.png" ? "/team/equipo-crisdal.webp" : content.aboutImage;
   return <main className={styles.site}>
     <header className={styles.header}>
       <Link href="#inicio" className={styles.brand} aria-label="Crisdal Agency, inicio"><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized /></Link>
@@ -49,7 +50,7 @@ export default function HomePage({ content }: { content: SiteContent }) {
 
     <section id="resultados" className={styles.results}><div className={styles.sectionHead}><p className={styles.kicker}>Resultados que importan</p><h2>{content.resultsTitle}</h2></div><div className={styles.caseCard}><div><span>CASO DESTACADO</span><h3>{content.caseTitle}</h3><p>{content.caseText}</p></div><div><strong>{content.metricValue}</strong><span>{content.metricLabel}</span></div><Link href="/brochure">Ver brochure y proyectos <ArrowRight /></Link></div></section>
 
-    <section id="nosotros" className={styles.about}><div><p className={styles.kicker}>Nosotros</p><h2>{content.aboutTitle}</h2><p>{content.aboutText}</p><a href={whatsapp} target="_blank" rel="noreferrer">Conversemos sobre tu proyecto <ArrowRight /></a></div><div className={styles.aboutVisual}><Image src={content.aboutImage} alt="Crisdal Agency" width={1080} height={1080} unoptimized /><span>HUANCAYO · PERÚ</span></div></section>
+    <section id="nosotros" className={styles.about}><div><p className={styles.kicker}>Nosotros</p><h2>{content.aboutTitle}</h2><p>{content.aboutText}</p><a href={whatsapp} target="_blank" rel="noreferrer">Conversemos sobre tu proyecto <ArrowRight /></a></div><div className={styles.aboutVisual}><Image src={aboutImage} alt="Equipo de Crisdal Agency" width={1600} height={1600} unoptimized /><span>HUANCAYO · PERÚ</span></div></section>
 
     <section className={styles.faq}><div className={styles.sectionHead}><p className={styles.kicker}>Preguntas frecuentes</p><h2>Antes de empezar.</h2></div><div>{faqs.map(([question, answer], index) => <details key={question} open={index === 0}><summary>{question}<ChevronDown /></summary><p>{answer}</p></details>)}</div></section>
 

@@ -69,7 +69,7 @@ export const defaultSiteContent: SiteContent = {
   metricLabel: "mensajes importantes olvidados",
   aboutTitle: "Creatividad con estructura. Tecnología con propósito.",
   aboutText: "Somos un equipo de Huancayo que conecta comunicación, producción audiovisual y desarrollo para transformar ideas en resultados sostenibles.",
-  aboutImage: "/brand/crisdal-agency-logo.png",
+  aboutImage: "/team/equipo-crisdal.webp",
   finalKicker: "Tu próxima oportunidad ya puede estar escribiéndote",
   finalTitle: "Haz que encuentre una respuesta.",
   finalImage: "/avatar-crisdal-cutout-v2.png",

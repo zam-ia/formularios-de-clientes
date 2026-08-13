@@ -32,8 +32,10 @@ export const brochureSectionTypes = [
   "problems",
   "manifesto",
   "solutions",
+  "metrics",
   "nexo",
   "cases",
+  "testimonials",
   "showcase",
   "industries",
   "team",
@@ -69,6 +71,127 @@ const caseSchema = z.object({
   stages: z.array(z.string().min(1).max(240)).min(1).max(6),
   mediaIds: z.array(z.string().max(100)).max(12).default([]),
 });
+
+const metricSchema = z.object({
+  id: z.string().min(1).max(100),
+  value: z.number().finite().min(-999999).max(999999),
+  prefix: z.string().max(12).default(""),
+  suffix: z.string().max(12).default(""),
+  label: z.string().min(1).max(100),
+  description: z.string().max(240).default(""),
+  visible: z.boolean().default(true),
+});
+
+const testimonialSchema = z.object({
+  id: z.string().min(1).max(100),
+  quote: z.string().min(1).max(700),
+  name: z.string().min(1).max(100),
+  role: z.string().max(100).default(""),
+  company: z.string().max(100).default(""),
+  rating: z.number().int().min(1).max(5).default(5),
+  visible: z.boolean().default(true),
+});
+
+const teamMemberSchema = z.object({
+  id: z.string().min(1).max(100),
+  name: z.string().min(1).max(100),
+  role: z.string().min(1).max(120),
+  focus: z.string().max(280).default(""),
+  imageUrl: z
+    .string()
+    .refine(
+      (value) => value.startsWith("/") || /^https:\/\//.test(value),
+      "Imagen inválida",
+    ),
+  positionX: z.number().min(0).max(100).default(50),
+  positionY: z.number().min(0).max(100).default(35),
+  visible: z.boolean().default(true),
+});
+
+export const defaultBrochureTeam = [
+  {
+    id: "aldair",
+    name: "Aldair Pérez",
+    role: "Estrategia & Procesos",
+    focus: "Administración, operación y estructura.",
+    imageUrl: "/team/aldair.webp",
+    positionX: 50,
+    positionY: 28,
+    visible: true,
+  },
+  {
+    id: "milagros",
+    name: "Milagros Ríos",
+    role: "Cultura & Personas",
+    focus: "Psicología organizacional, cultura y gestión del cambio.",
+    imageUrl: "/team/milagros.webp",
+    positionX: 50,
+    positionY: 28,
+    visible: true,
+  },
+  {
+    id: "abi",
+    name: "Abi",
+    role: "Comunicación & Growth",
+    focus: "Comunicación estratégica, publicidad y marca.",
+    imageUrl: "/team/abi.webp",
+    positionX: 50,
+    positionY: 28,
+    visible: true,
+  },
+];
+
+export const defaultBrochureMetrics = [
+  {
+    id: "metric-availability",
+    value: 24,
+    prefix: "",
+    suffix: "/7",
+    label: "Atención conectada",
+    description: "Una experiencia preparada para acompañar cada oportunidad.",
+    visible: true,
+  },
+  {
+    id: "metric-capabilities",
+    value: 4,
+    prefix: "",
+    suffix: " áreas",
+    label: "Bajo una misma ruta",
+    description: "Strategy, Growth, Systems y Culture trabajando juntas.",
+    visible: true,
+  },
+  {
+    id: "metric-view",
+    value: 360,
+    prefix: "",
+    suffix: "°",
+    label: "Visión del negocio",
+    description: "Decisiones que conectan operación, personas y resultados.",
+    visible: true,
+  },
+  {
+    id: "metric-route",
+    value: 1,
+    prefix: "",
+    suffix: " ruta",
+    label: "Sin proveedores aislados",
+    description: "Un equipo que entiende el problema completo y mide el avance.",
+    visible: true,
+  },
+];
+
+export const defaultBrochureTestimonials = [
+  {
+    id: "testimonial-placeholder",
+    quote:
+      "Este espacio está listo para publicar una experiencia real cuando el cliente autorice el uso de su testimonio.",
+    name: "Próximo testimonio",
+    role: "Caso en preparación",
+    company: "Cliente Crisdal",
+    rating: 5,
+    visible: true,
+  },
+];
 
 export const defaultBrochureSections = [
   {
@@ -108,6 +231,15 @@ export const defaultBrochureSections = [
     mediaIds: [],
   },
   {
+    id: "metrics",
+    type: "metrics" as const,
+    visible: true,
+    eyebrow: "Avance visible",
+    title: "Los números también cuentan la historia.",
+    body: "Indicadores claros para entender el sistema que estamos construyendo.",
+    mediaIds: [],
+  },
+  {
     id: "cases",
     type: "cases" as const,
     visible: true,
@@ -123,6 +255,15 @@ export const defaultBrochureSections = [
     eyebrow: "Trabajo reciente",
     title: "Ideas que ya tomaron forma.",
     body: "Videos, campañas, piezas y experiencias creadas junto a nuestros clientes.",
+    mediaIds: [],
+  },
+  {
+    id: "testimonials",
+    type: "testimonials" as const,
+    visible: true,
+    eyebrow: "Experiencias compartidas",
+    title: "La transformación, contada por sus protagonistas.",
+    body: "Publica aquí testimonios reales y autorizados de tus clientes.",
     mediaIds: [],
   },
   {
@@ -194,7 +335,7 @@ export const defaultBrochureCases = [
 ];
 
 export const brochureContentSchema = z.object({
-  version: z.number().int().positive().default(3),
+  version: z.number().int().positive().default(4),
   kicker: z.string().min(1).max(80),
   title: z.string().min(1).max(140),
   lead: z.string().min(1).max(500),
@@ -211,6 +352,12 @@ export const brochureContentSchema = z.object({
     .max(30)
     .default(defaultBrochureSections),
   cases: z.array(caseSchema).max(20).default(defaultBrochureCases),
+  metrics: z.array(metricSchema).max(16).default(defaultBrochureMetrics),
+  testimonials: z
+    .array(testimonialSchema)
+    .max(24)
+    .default(defaultBrochureTestimonials),
+  teamMembers: z.array(teamMemberSchema).max(12).default(defaultBrochureTeam),
   updatedAt: z.string().datetime(),
 });
 
@@ -218,12 +365,15 @@ export type BrochureContent = z.infer<typeof brochureContentSchema>;
 export type BrochureMedia = z.infer<typeof mediaSchema>;
 export type BrochureSection = z.infer<typeof sectionSchema>;
 export type BrochureCase = z.infer<typeof caseSchema>;
+export type BrochureMetric = z.infer<typeof metricSchema>;
+export type BrochureTestimonial = z.infer<typeof testimonialSchema>;
+export type BrochureTeamMember = z.infer<typeof teamMemberSchema>;
 export type BrochureSectionType = (typeof brochureSectionTypes)[number];
 export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
 export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 3,
+  version: 4,
   kicker: "Estrategia · Procesos · Cultura · Tecnología",
   title: "Crecer con orden.",
   lead: "Ayudamos a convertir un crecimiento que se siente pesado en una empresa más clara, rentable y preparada para lo que viene.",
@@ -266,6 +416,9 @@ export const defaultBrochureContent: BrochureContent = {
   media: [],
   sections: defaultBrochureSections,
   cases: defaultBrochureCases,
+  metrics: defaultBrochureMetrics,
+  testimonials: defaultBrochureTestimonials,
+  teamMembers: defaultBrochureTeam,
   updatedAt: new Date(0).toISOString(),
 };
 
@@ -334,11 +487,37 @@ export async function getBrochureContent(): Promise<BrochureContent> {
         updatedAt: raw.updatedAt || defaultBrochureContent.updatedAt,
       });
     }
+    const storedSections = Array.isArray(raw.sections)
+      ? (raw.sections as Array<Record<string, unknown>>)
+      : defaultBrochureSections;
+    const migratedSections =
+      Number(raw.version || 1) < 4
+        ? (() => {
+            const next = [...storedSections];
+            const newWidgets = defaultBrochureSections.filter(
+              (section) =>
+                ["metrics", "testimonials"].includes(section.type) &&
+                !next.some((item) => item.type === section.type),
+            );
+            const contactIndex = next.findIndex(
+              (section) => section.type === "contact",
+            );
+            next.splice(
+              contactIndex >= 0 ? contactIndex : next.length,
+              0,
+              ...newWidgets,
+            );
+            return next;
+          })()
+        : storedSections;
     const parsed = brochureContentSchema.safeParse({
       ...raw,
-      version: 3,
-      sections: raw.sections || defaultBrochureSections,
+      version: 4,
+      sections: migratedSections,
       cases: raw.cases || defaultBrochureCases,
+      metrics: raw.metrics || defaultBrochureMetrics,
+      testimonials: raw.testimonials || defaultBrochureTestimonials,
+      teamMembers: raw.teamMembers || defaultBrochureTeam,
       media: Array.isArray(raw.media)
         ? raw.media.map((item) => ({
             ...(item as object),
@@ -358,7 +537,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
 export async function saveBrochureContent(input: unknown) {
   const content = brochureContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 3,
+    version: 4,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

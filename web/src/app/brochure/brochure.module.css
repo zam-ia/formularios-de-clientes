@@ -9,6 +9,30 @@
   color: var(--graphite);
   font-family: var(--font-poppins), sans-serif;
 }
+.brochureWidget {
+  position: relative;
+}
+.brochureWidgetSelected {
+  z-index: 4;
+  outline: 4px solid var(--yellow);
+  outline-offset: -4px;
+  animation: widgetSelectedPulse 1.8s ease-in-out infinite;
+}
+.brochureWidgetSelected::before {
+  content: "WIDGET SELECCIONADO";
+  position: absolute;
+  z-index: 20;
+  top: 88px;
+  right: 18px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: #211b0d;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  pointer-events: none;
+}
 .header {
   position: fixed;
   z-index: 50;
@@ -777,6 +801,187 @@
 .customSection {
   background: var(--ivory);
 }
+.metricsSection,
+.testimonialsSection {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(100px, 13vw, 180px) clamp(20px, 7vw, 110px);
+}
+.metricsSection {
+  background: #242424;
+  color: white;
+}
+.metricsSection .sectionHead,
+.testimonialsSection .sectionHead {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 64px;
+}
+.metricsSection .sectionHead > p:last-child {
+  color: rgba(255,255,255,.58);
+}
+.metricAura {
+  position: absolute;
+  width: min(58vw, 760px);
+  aspect-ratio: 1;
+  top: -45%;
+  right: -14%;
+  border: 1px solid rgba(250, 183, 19, .22);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 80px rgba(250, 183, 19, .035),
+    0 0 0 180px rgba(250, 183, 19, .025);
+  animation: metricAuraDrift 9s ease-in-out infinite alternate;
+}
+.metricsGrid,
+.testimonialsGrid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.metricsGrid article {
+  position: relative;
+  min-height: 310px;
+  overflow: hidden;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
+  transition: transform .35s ease, border-color .35s ease, background .35s ease;
+}
+.metricsGrid article:hover {
+  transform: translateY(-9px);
+  border-color: rgba(250,183,19,.65);
+  background: linear-gradient(145deg, rgba(250,183,19,.14), rgba(255,255,255,.025));
+}
+.metricsGrid article > svg {
+  width: 21px;
+  color: var(--yellow);
+}
+.animatedNumber {
+  margin-top: auto;
+  color: var(--yellow);
+  font-size: clamp(52px, 6vw, 92px);
+  line-height: .9;
+  letter-spacing: -.07em;
+}
+.metricsGrid h3 {
+  margin: 22px 0 8px;
+  font-size: 17px;
+}
+.metricsGrid p {
+  margin: 0;
+  color: rgba(255,255,255,.54);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.metricsGrid article i {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 0 0 rgba(250,183,19,.45);
+  animation: metricSignal 2.2s ease-out infinite;
+}
+.metricsSpotlight article:first-child,
+.testimonialsSpotlight article:first-child {
+  grid-column: span 2;
+}
+.metricsStack,
+.testimonialsStack {
+  grid-template-columns: 1fr;
+}
+.metricsStack article {
+  min-height: 230px;
+}
+.testimonialsSection {
+  background: linear-gradient(150deg, #f8f2e8, #fff);
+}
+.testimonialsGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.testimonialsGrid article {
+  min-height: 350px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(36,36,36,.1);
+  border-radius: 30px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 24px 70px rgba(50,42,28,.06);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease;
+}
+.testimonialsGrid article:nth-child(even) {
+  transform: translateY(28px);
+}
+.testimonialsGrid article:hover {
+  transform: translateY(-8px) rotate(-.5deg);
+  box-shadow: 0 32px 90px rgba(50,42,28,.14);
+}
+.testimonialsGrid article > svg {
+  width: 36px;
+  height: 36px;
+  color: var(--yellow);
+  fill: rgba(250,183,19,.15);
+}
+.testimonialStars {
+  display: flex;
+  gap: 3px;
+  margin: 22px 0;
+}
+.testimonialStars svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--yellow);
+  color: var(--yellow);
+}
+.testimonialsGrid blockquote {
+  margin: 0 0 34px;
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -.025em;
+}
+.testimonialsGrid footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.testimonialsGrid footer > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--graphite);
+  color: var(--yellow);
+  font-weight: 900;
+}
+.testimonialsGrid footer div {
+  display: grid;
+  gap: 3px;
+}
+.testimonialsGrid footer small {
+  color: #817a70;
+  font-size: 10px;
+}
+@keyframes metricSignal {
+  70%, 100% { box-shadow: 0 0 0 15px rgba(250,183,19,0); }
+}
+@keyframes metricAuraDrift {
+  to { transform: translate(-6%, 9%) rotate(12deg); }
+}
+@keyframes widgetSelectedPulse {
+  50% { outline-color: rgba(250,183,19,.4); }
+}
 .sectionWidgets {
   padding: clamp(64px, 9vw, 120px) clamp(20px, 7vw, 110px);
   background: var(--ivory);
@@ -882,25 +1087,52 @@
   margin-top: 70px;
 }
 .teamGrid article {
-  min-height: 360px;
-  padding: 32px;
+  min-height: 560px;
+  overflow: hidden;
   border: 1px solid rgba(36, 36, 36, 0.12);
   border-radius: 24px;
   background: var(--ivory);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease;
 }
-.teamGrid article > div {
-  width: 82px;
-  height: 82px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--graphite);
+.teamGrid article:hover {
+  transform: translateY(-9px);
+  box-shadow: 0 28px 75px rgba(51,43,28,.14);
+}
+.teamPortrait {
+  position: relative;
+  height: 390px;
+  overflow: hidden;
+  background: #e9e4dc;
+}
+.teamPortrait img {
+  object-fit: cover;
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
+}
+.teamGrid article:hover .teamPortrait img {
+  transform: scale(1.035);
+}
+.teamPortrait::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 35%;
+  background: linear-gradient(transparent, rgba(18,17,14,.5));
+}
+.teamPortrait span {
+  position: absolute;
+  z-index: 2;
+  left: 18px;
+  bottom: 16px;
   color: var(--yellow);
-  font-size: 24px;
+  font-size: 8px;
   font-weight: 900;
+  letter-spacing: .16em;
+}
+.teamCardCopy {
+  padding: 25px 28px 28px;
 }
 .teamGrid h3 {
-  margin: 55px 0 7px;
+  margin: 0 0 7px;
   font-size: 28px;
   text-transform: uppercase;
 }
@@ -1161,7 +1393,10 @@
     scroll-behavior: auto !important;
   }
   .routeLine,
-  .nexoRoute::before {
+  .nexoRoute::before,
+  .metricAura,
+  .metricsGrid article i,
+  .brochureWidgetSelected {
     animation: none;
   }
   .page [data-reveal] {
@@ -1249,6 +1484,12 @@
   .teamGrid {
     grid-template-columns: 1fr;
   }
+  .metricsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .testimonialsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
   .projectRoute {
     grid-template-columns: 1fr;
   }
@@ -1327,8 +1568,30 @@
   .customSection,
   .teamSection,
   .routeSection,
-  .faqSection {
+  .faqSection,
+  .metricsSection,
+  .testimonialsSection {
     padding: 100px 18px;
+  }
+  .metricsGrid,
+  .testimonialsGrid {
+    grid-template-columns: 1fr;
+  }
+  .metricsSpotlight article:first-child,
+  .testimonialsSpotlight article:first-child {
+    grid-column: auto;
+  }
+  .metricsGrid article {
+    min-height: 270px;
+  }
+  .testimonialsGrid article,
+  .testimonialsGrid article:nth-child(even) {
+    min-height: 300px;
+    transform: none;
+  }
+  .brochureWidgetSelected::before {
+    top: 76px;
+    right: 10px;
   }
   .problemSection {
     padding-top: 180px;

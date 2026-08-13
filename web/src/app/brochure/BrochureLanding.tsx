@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -9,8 +9,11 @@ import {
   CircleDot,
   Menu,
   MessageCircle,
+  Quote,
   RefreshCw,
   Route,
+  Star,
+  TrendingUp,
   Users,
   Workflow,
   X,
@@ -101,27 +104,6 @@ const nexo = [
   },
 ];
 
-const team = [
-  {
-    initials: "AP",
-    name: "Aldair Pérez",
-    role: "Estrategia & Procesos",
-    focus: "Administración, operación y estructura.",
-  },
-  {
-    initials: "MR",
-    name: "Milagros Ríos",
-    role: "Cultura & Personas",
-    focus: "Psicología organizacional, cultura y gestión del cambio.",
-  },
-  {
-    initials: "DP",
-    name: "Damaris Pérez",
-    role: "Comunicación & Growth",
-    focus: "Comunicación estratégica, publicidad y marca.",
-  },
-];
-
 const steps = [
   "Diagnóstico",
   "Mapa de solución",
@@ -167,8 +149,10 @@ function track(name: string, detail: Record<string, string> = {}) {
 
 export default function BrochureLanding({
   content,
+  previewSectionId,
 }: {
   content: BrochureContent;
+  previewSectionId?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactState, setContactState] = useState<
@@ -347,16 +331,23 @@ export default function BrochureLanding({
       {content.sections
         .filter((section) => section.visible)
         .map((section) => (
-          <SectionRenderer
+          <div
             key={section.id}
-            section={section}
-            content={content}
-            mediaById={mediaById}
-            diagnosticUrl={diagnosticUrl}
-            whatsappUrl={whatsappUrl}
-            submitContact={submitContact}
-            contactState={contactState}
-          />
+            data-brochure-widget={section.id}
+            className={`${styles.brochureWidget} ${
+              previewSectionId === section.id ? styles.brochureWidgetSelected : ""
+            }`}
+          >
+            <SectionRenderer
+              section={section}
+              content={content}
+              mediaById={mediaById}
+              diagnosticUrl={diagnosticUrl}
+              whatsappUrl={whatsappUrl}
+              submitContact={submitContact}
+              contactState={contactState}
+            />
+          </div>
         ))}
 
       <footer className={styles.footer}>
@@ -574,6 +565,93 @@ function SectionContent({
       </section>
     );
 
+  if (section.type === "metrics")
+    return (
+      <section className={styles.metricsSection}>
+        <div className={styles.metricAura} aria-hidden="true" />
+        <div className={styles.sectionHead} data-reveal>
+          <p className={styles.eyebrow}>{section.eyebrow || "Avance visible"}</p>
+          <h2>{section.title || "Los números también cuentan la historia."}</h2>
+          {section.body ? <p>{section.body}</p> : null}
+        </div>
+        <div
+          className={`${styles.metricsGrid} ${
+            section.mediaLayout === "spotlight"
+              ? styles.metricsSpotlight
+              : section.mediaLayout === "stack"
+                ? styles.metricsStack
+                : ""
+          }`}
+        >
+          {content.metrics
+            .filter((metric) => metric.visible)
+            .map((metric, index) => (
+              <article key={metric.id} data-reveal>
+                <TrendingUp aria-hidden="true" />
+                <AnimatedNumber
+                  value={metric.value}
+                  prefix={metric.prefix}
+                  suffix={metric.suffix}
+                />
+                <h3>{metric.label}</h3>
+                <p>{metric.description}</p>
+                <i style={{ animationDelay: `${index * 0.35}s` }} />
+              </article>
+            ))}
+        </div>
+      </section>
+    );
+
+  if (section.type === "testimonials")
+    return (
+      <section className={styles.testimonialsSection}>
+        <div className={styles.sectionHead} data-reveal>
+          <p className={styles.eyebrow}>
+            {section.eyebrow || "Experiencias compartidas"}
+          </p>
+          <h2>
+            {section.title ||
+              "La transformación, contada por sus protagonistas."}
+          </h2>
+          {section.body ? <p>{section.body}</p> : null}
+        </div>
+        <div
+          className={`${styles.testimonialsGrid} ${
+            section.mediaLayout === "spotlight"
+              ? styles.testimonialsSpotlight
+              : section.mediaLayout === "stack"
+                ? styles.testimonialsStack
+                : ""
+          }`}
+        >
+          {content.testimonials
+            .filter((testimonial) => testimonial.visible)
+            .map((testimonial) => (
+              <article key={testimonial.id} data-reveal>
+                <Quote aria-hidden="true" />
+                <div className={styles.testimonialStars} aria-label={`${testimonial.rating} de 5 estrellas`}>
+                  {Array.from({ length: testimonial.rating }).map((_, index) => (
+                    <Star key={index} aria-hidden="true" />
+                  ))}
+                </div>
+                <blockquote>“{testimonial.quote}”</blockquote>
+                <footer>
+                  <span>{testimonial.name.slice(0, 1).toUpperCase()}</span>
+                  <div>
+                    <strong>{testimonial.name}</strong>
+                    <small>
+                      {[testimonial.role, testimonial.company]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </small>
+                  </div>
+                </footer>
+              </article>
+            ))}
+        </div>
+      </section>
+    );
+
   if (section.type === "showcase")
     return (
       <MediaShowcase
@@ -619,12 +697,24 @@ function SectionContent({
           <h2>Una firma construida desde disciplinas diferentes.</h2>
         </div>
         <div className={styles.teamGrid}>
-          {team.map((person) => (
+          {content.teamMembers.filter((person) => person.visible).map((person) => (
             <article key={person.name} data-reveal>
-              <div>{person.initials}</div>
-              <h3>{person.name}</h3>
-              <strong>{person.role}</strong>
-              <p>{person.focus}</p>
+              <div className={styles.teamPortrait}>
+                <Image
+                  src={person.imageUrl}
+                  alt={person.name}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 680px) 92vw, (max-width: 1050px) 70vw, 30vw"
+                  style={{ objectPosition: `${person.positionX}% ${person.positionY}%` }}
+                />
+                <span>CRISDAL / TEAM</span>
+              </div>
+              <div className={styles.teamCardCopy}>
+                <h3>{person.name}</h3>
+                <strong>{person.role}</strong>
+                <p>{person.focus}</p>
+              </div>
             </article>
           ))}
         </div>
@@ -791,6 +881,60 @@ function SectionContent({
       </section>
     );
   return null;
+}
+
+function AnimatedNumber({
+  value,
+  prefix,
+  suffix,
+}: {
+  value: number;
+  prefix: string;
+  suffix: string;
+}) {
+  const node = useRef<HTMLElement>(null);
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const element = node.current;
+    if (!element) return;
+    let frame = 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          setDisplay(value);
+          return;
+        }
+        const startedAt = performance.now();
+        const tick = (now: number) => {
+          const progress = Math.min((now - startedAt) / 1200, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setDisplay(value * eased);
+          if (progress < 1) frame = requestAnimationFrame(tick);
+        };
+        frame = requestAnimationFrame(tick);
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [value]);
+
+  const formatted = Number.isInteger(value)
+    ? Math.round(display).toLocaleString("es-PE")
+    : display.toLocaleString("es-PE", { maximumFractionDigits: 1 });
+  return (
+    <strong ref={node} className={styles.animatedNumber}>
+      {prefix}
+      {formatted}
+      {suffix}
+    </strong>
+  );
 }
 
 function CaseStudy({

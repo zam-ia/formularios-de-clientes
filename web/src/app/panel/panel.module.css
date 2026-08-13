@@ -565,6 +565,131 @@
   place-items: center;
   cursor: pointer;
 }
+.dataEditor {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.dataEditor > article {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  border: 1px solid #e8e1d6;
+  border-radius: 18px;
+  background: #faf8f4;
+  transition: opacity .2s ease, border-color .2s ease;
+}
+.dataEditor > article > label,
+.metricInputs label,
+.testimonialInputs label {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #625d55;
+  font-size: 10px;
+}
+.dataMuted {
+  opacity: .5;
+}
+.dataEditorHead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.dataEditorHead strong {
+  flex: 1;
+  font-size: 13px;
+}
+.dataEditorHead button,
+.previewWidgetActions button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #e4ddd3;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: white;
+  color: #615a50;
+  cursor: pointer;
+}
+.metricInputs,
+.testimonialInputs {
+  display: grid;
+  grid-template-columns: .65fr 1fr .65fr;
+  gap: 8px;
+}
+.testimonialInputs {
+  grid-template-columns: 1fr 1fr;
+}
+.dataEditor select,
+.previewWidgetSettings select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ddd7ce;
+  border-radius: 11px;
+  background: white;
+  color: #181612;
+  font: 500 12px var(--font-poppins);
+}
+.editorHint {
+  margin: 18px 0 0;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff7dd;
+  color: #77622e;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.teamEditor {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+.teamEditor > article {
+  padding: 13px;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 18px;
+  border: 1px solid #e8e1d6;
+  border-radius: 18px;
+  background: #faf8f4;
+}
+.teamEditorPhoto {
+  position: relative;
+  min-height: 290px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #e6e0d7;
+}
+.teamEditorPhoto img {
+  object-fit: cover;
+}
+.teamEditorFields {
+  display: grid;
+  gap: 12px;
+}
+.teamEditorFields > label,
+.teamEditorFields .testimonialInputs label {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #625d55;
+  font-size: 10px;
+}
+.teamEditorFields select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ddd7ce;
+  border-radius: 11px;
+  background: white;
+  font: 500 12px var(--font-poppins);
+}
 .stickySave {
   position: sticky;
   bottom: 20px;
@@ -656,6 +781,24 @@
   background: #e9e5dd;
   box-shadow: 0 35px 100px rgba(0, 0, 0, 0.45);
 }
+.previewClosePersistent {
+  position: fixed;
+  z-index: 145;
+  right: 34px;
+  bottom: 30px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffb800;
+  color: #1e190e;
+  box-shadow: 0 12px 35px rgba(0,0,0,.32);
+  font: 800 11px var(--font-poppins);
+  cursor: pointer;
+}
 .livePreviewPanel > header {
   min-height: 68px;
   padding: 10px 16px 10px 22px;
@@ -704,6 +847,126 @@
 .deviceSwitch .closePreview {
   margin-left: 10px;
   color: white;
+  width: auto;
+  padding: 0 12px;
+  display: flex;
+  gap: 6px;
+}
+.deviceSwitch .closePreview span {
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+}
+.livePreviewWorkspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+.previewInspector {
+  min-height: 0;
+  padding: 18px 14px;
+  overflow: auto;
+  border-right: 1px solid #d7d0c5;
+  background: #f8f5ef;
+}
+.previewInspectorIntro {
+  padding: 5px 7px 16px;
+  display: grid;
+  gap: 5px;
+}
+.previewInspectorIntro p {
+  margin: 0;
+  color: #9a6800;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+.previewInspectorIntro strong {
+  font-size: 13px;
+}
+.previewInspectorIntro span {
+  color: #817a70;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.previewWidgetList {
+  display: grid;
+  gap: 6px;
+}
+.previewWidgetList > button {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 17px 23px 1fr 17px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #756e64;
+  cursor: grab;
+  text-align: left;
+}
+.previewWidgetList > button:hover {
+  background: #fff;
+}
+.previewWidgetList > button > svg {
+  width: 14px;
+}
+.previewWidgetList > button > span {
+  color: #aaa197;
+  font-size: 9px;
+}
+.previewWidgetList > button > strong {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.previewWidgetList .previewWidgetSelected {
+  border-color: #e6a900;
+  background: #fff3ce;
+  color: #5a4100;
+  box-shadow: 0 7px 20px rgba(126,88,0,.08);
+}
+.previewWidgetList .previewWidgetHidden {
+  opacity: .48;
+}
+.previewWidgetSettings {
+  margin-top: 16px;
+  padding: 14px;
+  display: grid;
+  gap: 13px;
+  border: 1px solid #e6ded2;
+  border-radius: 16px;
+  background: white;
+}
+.previewWidgetSettings > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.previewWidgetSettings > div:first-child span,
+.previewWidgetSettings label,
+.previewWidgetSettings small {
+  color: #817a70;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.previewWidgetSettings > div:first-child strong {
+  font-size: 12px;
+}
+.previewWidgetSettings label {
+  display: grid;
+  gap: 6px;
+}
+.previewWidgetActions {
+  display: flex;
+  gap: 6px;
+}
+.previewWidgetActions button:last-child {
+  flex: 1;
+  font-size: 9px;
 }
 .livePreviewStage {
   min-height: 0;
@@ -1016,6 +1279,12 @@
   .serviceRow .serviceDescription {
     grid-column: 2/4;
   }
+  .livePreviewWorkspace {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .dataEditor {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 680px) {
   .previewActions > button {
@@ -1029,6 +1298,57 @@
     border-radius: 0;
   }
   .livePreviewPanel > header span {
+    display: none;
+  }
+  .livePreviewPanel > header {
+    min-height: 58px;
+    padding: 8px 10px 8px 14px;
+  }
+  .livePreviewPanel > header > div:first-child {
+    display: none;
+  }
+  .deviceSwitch {
+    width: 100%;
+  }
+  .deviceSwitch .closePreview {
+    margin-left: auto;
+  }
+  .deviceSwitch .closePreview span {
+    display: inline;
+  }
+  .previewClosePersistent {
+    right: 12px;
+    bottom: 12px;
+  }
+  .livePreviewWorkspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .previewInspector {
+    max-height: 190px;
+    padding: 10px;
+    border-right: 0;
+    border-bottom: 1px solid #d7d0c5;
+  }
+  .previewInspectorIntro {
+    display: none;
+  }
+  .previewWidgetList {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 7px;
+  }
+  .previewWidgetList > button {
+    min-width: 154px;
+  }
+  .previewWidgetSettings {
+    margin-top: 4px;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 9px;
+  }
+  .previewWidgetSettings label,
+  .previewWidgetSettings small {
     display: none;
   }
   .livePreviewStage {
@@ -1073,6 +1393,16 @@
   .serviceRow > button {
     grid-column: 3;
     grid-row: 1;
+  }
+  .metricInputs,
+  .testimonialInputs {
+    grid-template-columns: 1fr;
+  }
+  .teamEditor > article {
+    grid-template-columns: 1fr;
+  }
+  .teamEditorPhoto {
+    min-height: 360px;
   }
   .mediaItem {
     grid-template-columns: 72px 1fr;
