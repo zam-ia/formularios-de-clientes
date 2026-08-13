@@ -7,7 +7,7 @@
   overflow: hidden;
   background: var(--ivory);
   color: var(--graphite);
-  font-family: var(--font-montserrat), var(--font-poppins), sans-serif;
+  font-family: var(--font-poppins), sans-serif;
 }
 .header {
   position: fixed;
@@ -606,6 +606,35 @@
   gap: clamp(50px, 8vw, 120px);
   background: linear-gradient(160deg, #f7f1e7, #ede4d4);
 }
+.casesSection,
+.showcaseSection,
+.customSection {
+  padding: clamp(100px, 13vw, 180px) clamp(20px, 7vw, 110px);
+  background: linear-gradient(160deg, #f7f1e7, #ede4d4);
+}
+.casesList {
+  margin-top: 80px;
+  display: grid;
+  gap: 36px;
+}
+.casesList .caseSection {
+  padding: clamp(40px, 6vw, 80px);
+  border: 1px solid rgba(36, 36, 36, 0.1);
+  border-radius: 36px;
+  background: rgba(255, 255, 255, 0.48);
+}
+.caseNumber {
+  display: block;
+  margin: 24px 0 12px;
+  color: #9a6800;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+.emptyPublic {
+  margin-top: 40px;
+  color: #6d675e;
+}
 .caseCopy {
   position: sticky;
   top: 130px;
@@ -653,7 +682,6 @@
 }
 .caseEvidence li strong {
   font-size: 22px;
-  text-transform: uppercase;
 }
 .caseEvidence li p {
   margin: 0;
@@ -738,6 +766,76 @@
 }
 .caseImages img {
   object-fit: cover;
+}
+.showcaseSection {
+  background: #fff;
+}
+.showcaseSection .sectionHead,
+.customSection .sectionHead {
+  margin-bottom: 64px;
+}
+.customSection {
+  background: var(--ivory);
+}
+.mediaShowcase {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.mediaShowcase figure {
+  position: relative;
+  min-height: 420px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #292826;
+}
+.mediaShowcase img,
+.mediaShowcase video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mediaShowcase figure > img {
+  position: absolute;
+  inset: 0;
+}
+.mediaShowcase figure > video {
+  position: absolute;
+  inset: 0;
+}
+.mediaShowcase figure > a {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  color: #fff;
+  text-decoration: none;
+}
+.mediaShowcase figure > a svg {
+  width: 54px;
+  fill: none;
+  stroke: var(--yellow);
+  stroke-width: 1.5;
+}
+.mediaShowcase figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  padding: 70px 22px 22px;
+  display: grid;
+  gap: 5px;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+  pointer-events: none;
+}
+.mediaShowcase figcaption strong {
+  font-size: 17px;
+}
+.mediaShowcase figcaption span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
 }
 .industries {
   padding: 65px clamp(20px, 7vw, 110px);
@@ -919,6 +1017,87 @@
 .finalCta > div:last-child {
   display: grid;
   gap: 12px;
+}
+.contactButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+.whatsappPrimary {
+  min-height: 54px;
+  padding: 15px 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 999px;
+  background: #25d366;
+  color: #092e17;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.quickForm {
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 28px;
+  display: grid;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(16px);
+}
+.quickForm > p {
+  margin: 0 0 5px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+.quickForm label {
+  display: grid;
+  gap: 7px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  font-weight: 600;
+}
+.quickForm input,
+.quickForm textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  resize: vertical;
+  outline: none;
+}
+.quickForm input:focus,
+.quickForm textarea:focus {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px rgba(250, 183, 19, 0.16);
+}
+.quickForm .primary {
+  border: 0;
+  cursor: pointer;
+}
+.formSuccess,
+.formError {
+  font-size: 12px;
+  font-weight: 700;
+}
+.formSuccess {
+  color: #77e39f;
+}
+.formError {
+  color: #ffaca4;
+}
+.honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
 }
 .secondaryLight {
   border-color: rgba(255, 255, 255, 0.2);
@@ -1122,6 +1301,9 @@
   }
   .problemSection,
   .solutions,
+  .casesSection,
+  .showcaseSection,
+  .customSection,
   .teamSection,
   .routeSection,
   .faqSection {
@@ -1177,6 +1359,14 @@
   .caseSection {
     padding: 105px 18px;
   }
+  .casesList {
+    margin-top: 50px;
+    gap: 22px;
+  }
+  .casesList .caseSection {
+    padding: 34px 18px;
+    border-radius: 24px;
+  }
   .nexoIntro h2 {
     font-size: 31vw;
   }
@@ -1208,6 +1398,13 @@
   .caseImages figure:first-child {
     grid-row: auto;
   }
+  .mediaShowcase {
+    grid-template-columns: 1fr;
+  }
+  .mediaShowcase figure,
+  .mediaShowcase figure > a {
+    min-height: 320px;
+  }
   .industries {
     padding: 55px 18px;
   }
@@ -1235,6 +1432,17 @@
   }
   .finalCta > div:last-child {
     margin-top: 15px;
+  }
+  .contactButtons {
+    display: grid;
+  }
+  .whatsappPrimary,
+  .secondaryLight {
+    width: 100%;
+  }
+  .quickForm {
+    padding: 22px 16px;
+    border-radius: 22px;
   }
   .footer {
     padding: 38px 18px 94px;
