@@ -845,9 +845,24 @@ function MediaGrid({ media }: { media: BrochureMedia[] }) {
               fill
               unoptimized
               sizes="(max-width: 800px) 92vw, 42vw"
+              style={{
+                objectPosition: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+                transform: `scale(${item.zoom ?? 1})`,
+                transformOrigin: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+              }}
             />
           ) : item.kind === "video" ? (
-            <video src={item.url} controls playsInline preload="metadata" />
+            <video
+              src={item.url}
+              controls
+              playsInline
+              preload="metadata"
+              style={{
+                objectPosition: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+                transform: `scale(${item.zoom ?? 1})`,
+                transformOrigin: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+              }}
+            />
           ) : (
             <a href={item.url} target="_blank" rel="noreferrer">
               <FileTextIcon />

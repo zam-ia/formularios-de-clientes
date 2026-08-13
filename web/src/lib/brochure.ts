@@ -21,6 +21,11 @@ const mediaSchema = z.object({
   caption: z.string().max(320).default(""),
   mimeType: z.string().max(100),
   sizeBytes: z.number().int().nonnegative().default(0),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  positionX: z.number().min(0).max(100).default(50),
+  positionY: z.number().min(0).max(100).default(50),
+  zoom: z.number().min(1).max(2.5).default(1),
 });
 
 export const brochureSectionTypes = [
@@ -302,6 +307,9 @@ export async function getBrochureContent(): Promise<BrochureContent> {
         ? raw.media.map((item) => ({
             ...(item as object),
             sizeBytes: (item as { sizeBytes?: number }).sizeBytes || 0,
+            positionX: (item as { positionX?: number }).positionX ?? 50,
+            positionY: (item as { positionY?: number }).positionY ?? 50,
+            zoom: (item as { zoom?: number }).zoom ?? 1,
           }))
         : [];
       return brochureContentSchema.parse({
@@ -322,6 +330,9 @@ export async function getBrochureContent(): Promise<BrochureContent> {
         ? raw.media.map((item) => ({
             ...(item as object),
             sizeBytes: (item as { sizeBytes?: number }).sizeBytes || 0,
+            positionX: (item as { positionX?: number }).positionX ?? 50,
+            positionY: (item as { positionY?: number }).positionY ?? 50,
+            zoom: (item as { zoom?: number }).zoom ?? 1,
           }))
         : [],
     });

@@ -9,6 +9,7 @@ import {
   ArrowUp,
   Check,
   Copy,
+  Crop,
   Download,
   Eye,
   EyeOff,
@@ -44,11 +45,17 @@ import {
   type BrochureSectionType,
 } from "@/lib/brochure";
 import { getSupabaseBrowser } from "@/lib/supabaseClient";
+import { FramingDialog, ImageCropDialog } from "./MediaEditors";
 import styles from "./panel.module.css";
 import authStyles from "./auth.module.css";
 
 type Tab = "links" | "content" | "structure" | "media";
 type Notice = { kind: "success" | "error" | "info"; text: string } | null;
+type CropRequest = {
+  file: File;
+  previewUrl: string;
+  resolve: (file: File | null) => void;
+};
 
 const sectionLabels: Record<BrochureSectionType, string> = {
   problems: "Problemas que resolvemos",
@@ -80,6 +87,31 @@ function formatBytes(size: number) {
   return size >= 1024 ** 2
     ? `${(size / 1024 ** 2).toFixed(1)} MB`
     : `${Math.ceil(size / 1024)} KB`;
+}
+
+async function readMediaDimensions(file: File) {
+  if (file.type.startsWith("image/")) {
+    const bitmap = await createImageBitmap(file);
+    const dimensions = { width: bitmap.width, height: bitmap.height };
+    bitmap.close();
+    return dimensions;
+  }
+  if (file.type.startsWith("video/")) {
+    const url = URL.createObjectURL(file);
+    try {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.src = url;
+      await new Promise<void>((resolve, reject) => {
+        video.onloadedmetadata = () => resolve();
+        video.onerror = () => reject(new Error("No pudimos leer el video."));
+      });
+      return { width: video.videoWidth, height: video.videoHeight };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  return {};
 }
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
@@ -149,6 +181,8 @@ export default function PanelClient() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadName, setUploadName] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cropRequest, setCropRequest] = useState<CropRequest | null>(null);
+  const [framingItem, setFramingItem] = useState<BrochureMedia | null>(null);
 
   const loadContent = useCallback(
     async () => setContent(await api<BrochureContent>("/api/admin/brochure")),
@@ -333,16 +367,30 @@ export default function PanelClient() {
       : [...ids, mediaId];
   }
 
+  function prepareImage(file: File) {
+    return new Promise<File | null>((resolve) =>
+      setCropRequest({ file, previewUrl: URL.createObjectURL(file), resolve }),
+    );
+  }
+
   async function uploadFiles(files: FileList | null) {
     if (!files?.length) return;
     const selectedFiles = Array.from(files);
     setUploading(true);
     setNotice(null);
     let working = content;
+    let uploadedCount = 0;
     try {
       for (let index = 0; index < selectedFiles.length; index += 1) {
-        const file = selectedFiles[index];
-        setUploadName(`${index + 1}/${selectedFiles.length} · ${file.name}`);
+        const originalFile = selectedFiles[index];
+        const file =
+          originalFile.type.startsWith("image/") &&
+          originalFile.type !== "image/gif"
+            ? await prepareImage(originalFile)
+            : originalFile;
+        if (!file) continue;
+        const dimensions = await readMediaDimensions(file);
+        setUploadName(`${index + 1}/${selectedFiles.length} · ${originalFile.name}`);
         setUploadProgress(2);
         const signed = await api<{
           path: string;
@@ -378,17 +426,26 @@ export default function PanelClient() {
           kind,
           path: signed.path,
           url: signed.publicUrl,
-          title: file.name.replace(/\.[^.]+$/, ""),
+          title: originalFile.name.replace(/\.[^.]+$/, ""),
           caption: "",
           mimeType: file.type,
           sizeBytes: file.size,
+          ...dimensions,
+          positionX: 50,
+          positionY: 50,
+          zoom: 1,
         };
         working = { ...working, media: [...working.media, media] };
+        uploadedCount += 1;
+      }
+      if (!uploadedCount) {
+        setNotice({ kind: "info", text: "No se subió ningún archivo." });
+        return;
       }
       setContent(working);
       await save(
         working,
-        `${selectedFiles.length} archivo${selectedFiles.length === 1 ? "" : "s"} cargado${selectedFiles.length === 1 ? "" : "s"} en calidad original.`,
+        `${uploadedCount} archivo${uploadedCount === 1 ? "" : "s"} cargado${uploadedCount === 1 ? "" : "s"} y optimizado${uploadedCount === 1 ? "" : "s"} para el brochure.`,
       );
     } catch (error) {
       setNotice({
@@ -1058,6 +1115,10 @@ export default function PanelClient() {
               title="Sube el trabajo en su calidad original."
               text="Fotos, videos, flyers, perfiles de clientes y PDFs. Después podrás reutilizarlos en casos o galerías."
             />
+            <div className={styles.mediaGuide}>
+              <article><ImageIcon /><div><strong>Imágenes</strong><span>Recomendado: 1600 × 1200 px · relación 4:3</span><small>JPG, PNG, WebP o AVIF. El editor prepara el recorte antes de subir.</small></div></article>
+              <article><Video /><div><strong>Videos</strong><span>Horizontal: 1920 × 1080 · vertical: 1080 × 1350 px</span><small>MP4 recomendado. Conservamos el original y ajustas su enfoque después.</small></div></article>
+            </div>
             <label className={styles.uploadZone}>
               <input
                 type="file"
@@ -1110,6 +1171,9 @@ export default function PanelClient() {
                           </>
                         )}{" "}
                         · {formatBytes(item.sizeBytes)}
+                        {item.width && item.height
+                          ? ` · ${item.width} × ${item.height} px`
+                          : ""}
                       </span>
                       <input
                         value={item.title}
@@ -1143,6 +1207,16 @@ export default function PanelClient() {
                       />
                     </div>
                     <div className={styles.mediaActions}>
+                      {item.kind !== "document" ? (
+                        <button
+                          className={styles.frameButton}
+                          onClick={() => setFramingItem(item)}
+                          aria-label="Ajustar encuadre"
+                          title="Ajustar encuadre y zoom"
+                        >
+                          <Crop />
+                        </button>
+                      ) : null}
                       <button
                         onClick={() =>
                           setContent({
@@ -1191,6 +1265,41 @@ export default function PanelClient() {
                 busy={busy}
                 onSave={() => save()}
                 label={`${content.media.length} archivo${content.media.length === 1 ? "" : "s"} en la biblioteca`}
+              />
+            ) : null}
+            {cropRequest ? (
+              <ImageCropDialog
+                file={cropRequest.file}
+                previewUrl={cropRequest.previewUrl}
+                onCancel={() => {
+                  URL.revokeObjectURL(cropRequest.previewUrl);
+                  cropRequest.resolve(null);
+                  setCropRequest(null);
+                }}
+                onConfirm={(file) => {
+                  URL.revokeObjectURL(cropRequest.previewUrl);
+                  cropRequest.resolve(file);
+                  setCropRequest(null);
+                }}
+              />
+            ) : null}
+            {framingItem ? (
+              <FramingDialog
+                item={framingItem}
+                onCancel={() => setFramingItem(null)}
+                onConfirm={(patch) => {
+                  const next = {
+                    ...content,
+                    media: content.media.map((media) =>
+                      media.id === framingItem.id
+                        ? { ...media, ...patch }
+                        : media,
+                    ),
+                  };
+                  setFramingItem(null);
+                  setContent(next);
+                  void save(next, "Encuadre guardado y publicado.");
+                }}
               />
             ) : null}
           </div>
@@ -1261,12 +1370,17 @@ function SaveBar({
 }
 
 function MediaPreview({ item }: { item: BrochureMedia }) {
+  const framing = {
+    objectPosition: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+    transform: `scale(${item.zoom ?? 1})`,
+    transformOrigin: `${item.positionX ?? 50}% ${item.positionY ?? 50}%`,
+  };
   return (
     <div className={styles.mediaThumb}>
       {item.kind === "image" ? (
-        <Image src={item.url} alt="" fill unoptimized sizes="96px" />
+        <Image src={item.url} alt="" fill unoptimized sizes="96px" style={framing} />
       ) : item.kind === "video" ? (
-        <video src={item.url} muted preload="metadata" />
+        <video src={item.url} muted preload="metadata" style={framing} />
       ) : (
         <FileText />
       )}
