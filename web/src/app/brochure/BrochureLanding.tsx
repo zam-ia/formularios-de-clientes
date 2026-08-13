@@ -389,15 +389,7 @@ export default function BrochureLanding({
   );
 }
 
-function SectionRenderer({
-  section,
-  content,
-  mediaById,
-  diagnosticUrl,
-  whatsappUrl,
-  submitContact,
-  contactState,
-}: {
+type SectionRendererProps = {
   section: BrochureSection;
   content: BrochureContent;
   mediaById: Map<string, BrochureMedia>;
@@ -405,7 +397,42 @@ function SectionRenderer({
   whatsappUrl: string;
   submitContact: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
   contactState: "idle" | "sending" | "sent" | "error";
-}) {
+};
+
+function SectionRenderer(props: SectionRendererProps) {
+  const { section, mediaById } = props;
+  const selectedMedia = section.mediaIds
+    .map((id) => mediaById.get(id))
+    .filter(Boolean) as BrochureMedia[];
+  const hasInternalMedia = ["showcase", "custom", "cases"].includes(
+    section.type,
+  );
+
+  return (
+    <>
+      <SectionContent {...props} />
+      {selectedMedia.length && !hasInternalMedia ? (
+        <section className={styles.sectionWidgets}>
+          <MediaGrid
+            media={selectedMedia}
+            layout={section.mediaLayout}
+            sizes={section.mediaSizes}
+          />
+        </section>
+      ) : null}
+    </>
+  );
+}
+
+function SectionContent({
+  section,
+  content,
+  mediaById,
+  diagnosticUrl,
+  whatsappUrl,
+  submitContact,
+  contactState,
+}: SectionRendererProps) {
   const selectedMedia = section.mediaIds
     .map((id) => mediaById.get(id))
     .filter(Boolean) as BrochureMedia[];
@@ -562,7 +589,13 @@ function SectionRenderer({
           <h2>{section.title}</h2>
           <p>{section.body}</p>
         </div>
-        {selectedMedia.length ? <MediaGrid media={selectedMedia} /> : null}
+        {selectedMedia.length ? (
+          <MediaGrid
+            media={selectedMedia}
+            layout={section.mediaLayout}
+            sizes={section.mediaSizes}
+          />
+        ) : null}
       </section>
     );
   if (section.type === "industries")
@@ -828,16 +861,55 @@ function MediaShowcase({
         <h2>{section.title}</h2>
         <p>{section.body}</p>
       </div>
-      <MediaGrid media={media} />
+      <MediaGrid
+        media={media}
+        layout={section.mediaLayout}
+        sizes={section.mediaSizes}
+      />
     </section>
   );
 }
 
-function MediaGrid({ media }: { media: BrochureMedia[] }) {
+function MediaGrid({
+  media,
+  layout = "grid",
+  sizes = {},
+}: {
+  media: BrochureMedia[];
+  layout?: BrochureSection["mediaLayout"];
+  sizes?: BrochureSection["mediaSizes"];
+}) {
   return (
-    <div className={styles.mediaShowcase}>
-      {media.map((item) => (
-        <figure key={item.id}>
+    <div
+      className={`${styles.mediaShowcase} ${
+        layout === "spotlight"
+          ? styles.mediaSpotlight
+          : layout === "stack"
+            ? styles.mediaStack
+            : ""
+      }`}
+    >
+      {media.map((item, index) => {
+        const configuredSize = sizes[item.id] || "medium";
+        const size =
+          layout === "stack"
+            ? "full"
+            : layout === "spotlight" && index === 0
+              ? "wide"
+              : configuredSize;
+        return (
+        <figure
+          key={item.id}
+          className={
+            size === "small"
+              ? styles.widgetSmall
+              : size === "wide"
+                ? styles.widgetWide
+                : size === "full"
+                  ? styles.widgetFull
+                  : styles.widgetMedium
+          }
+        >
           {item.kind === "image" ? (
             <Image
               src={item.url}
@@ -874,7 +946,8 @@ function MediaGrid({ media }: { media: BrochureMedia[] }) {
             {item.caption ? <span>{item.caption}</span> : null}
           </figcaption>
         </figure>
-      ))}
+        );
+      })}
     </div>
   );
 }

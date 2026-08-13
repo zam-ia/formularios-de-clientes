@@ -74,12 +74,17 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-.content > h1 {
+.content > h1,
+.titleRow h1 {
   max-width: 850px;
   margin: 12px 0 45px;
   font-size: clamp(44px, 6vw, 78px);
   line-height: 1;
 }
+.titleRow { display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:45px }
+.titleRow h1 { margin-bottom:0 }
+.newButton { min-height:44px;padding:0 16px;border:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#ffb800;color:#18130a;font:800 11px var(--font-poppins) }
+.newButton svg { width:16px }
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -199,6 +204,9 @@
   background: #242424;
   color: #fff;
 }
+.actions .deleteButton { width:36px;padding:0;color:#a33226;background:#fff0ed }
+.actions .editButton { color:#6b4b00;background:#fff8df }
+.empty { padding:40px;color:#777067;text-align:center }
 .actions svg {
   width: 13px;
 }
@@ -216,6 +224,23 @@
   border: 0;
   background: transparent;
 }
+.editorBackdrop { position:fixed;inset:0;z-index:100;padding:18px;display:grid;place-items:center;background:rgba(8,7,6,.76);backdrop-filter:blur(12px) }
+.editor { width:min(760px,100%);max-height:calc(100svh - 24px);overflow-y:auto;padding:clamp(20px,4vw,32px);border-radius:26px;background:#fffaf0;box-shadow:0 35px 100px rgba(0,0,0,.42) }
+.editor>header,.editor>footer { display:flex;align-items:center;justify-content:space-between;gap:12px }
+.editor>header span { color:#a87100;font-size:9px;font-weight:800;letter-spacing:.15em }
+.editor>header h2 { margin:4px 0 0;font:800 clamp(24px,4vw,34px) var(--font-poppins) }
+.editor>header>button { width:38px;height:38px;border:1px solid #ddd5c8;border-radius:50%;display:grid;place-items:center;background:transparent }
+.editor>header svg { width:17px }
+.editor>p { margin:15px 0 24px;color:#746e65;font-size:11px;line-height:1.6 }
+.editorGrid { display:grid;grid-template-columns:1fr 1fr;gap:14px }
+.editorGrid label { display:grid;gap:7px;color:#625c53;font-size:10px;font-weight:700 }
+.editorGrid input,.editorGrid select,.editorGrid textarea { width:100%;min-height:46px;padding:11px 12px;border:1px solid #ddd5c8;border-radius:11px;background:#fff;color:#181612;font:500 12px var(--font-poppins) }
+.editorGrid textarea { resize:vertical }
+.editorGrid .full { grid-column:1/-1 }
+.editorGrid .visibleCheck { display:flex;align-items:center;flex-direction:row }
+.visibleCheck input { width:18px;min-height:18px;accent-color:#ffb800 }
+.editor>footer { margin-top:22px;justify-content:flex-end }
+.editor>footer>button:first-child { min-height:42px;padding:0 14px;border:1px solid #ddd5c8;border-radius:11px;background:transparent;font-size:11px }
 @media (max-width: 850px) {
   .metrics {
     grid-template-columns: 1fr 1fr;
@@ -232,6 +257,12 @@
   }
 }
 @media (max-width: 520px) {
+  .titleRow { align-items:stretch;flex-direction:column }
+  .newButton { width:100% }
+  .editorBackdrop { padding:6px }
+  .editor { padding:18px;border-radius:18px }
+  .editorGrid { grid-template-columns:1fr }
+  .editorGrid .full { grid-column:auto }
   .page > header > div {
     display: none;
   }

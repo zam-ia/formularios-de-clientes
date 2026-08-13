@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as tus from "tus-js-client";
@@ -15,6 +16,7 @@ import {
   EyeOff,
   ExternalLink,
   FileText,
+  GripVertical,
   ImageIcon,
   Layers3,
   Link2,
@@ -22,6 +24,7 @@ import {
   LogOut,
   LockKeyhole,
   Menu,
+  Monitor,
   MonitorPlay,
   Network,
   Plus,
@@ -29,6 +32,7 @@ import {
   Save,
   Settings2,
   Sparkles,
+  Smartphone,
   Trash2,
   UploadCloud,
   Video,
@@ -36,18 +40,25 @@ import {
 } from "lucide-react";
 import {
   BROCHURE_BUCKET,
+  brochureMediaLayouts,
   brochureSectionTypes,
+  brochureWidgetSizes,
   defaultBrochureContent,
   type BrochureCase,
   type BrochureContent,
   type BrochureMedia,
   type BrochureSection,
   type BrochureSectionType,
+  type BrochureWidgetSize,
 } from "@/lib/brochure";
 import { getSupabaseBrowser } from "@/lib/supabaseClient";
 import { FramingDialog, ImageCropDialog } from "./MediaEditors";
 import styles from "./panel.module.css";
 import authStyles from "./auth.module.css";
+
+const LiveBrochure = dynamic(() => import("../brochure/BrochureLanding"), {
+  ssr: false,
+});
 
 type Tab = "links" | "content" | "structure" | "media";
 type Notice = { kind: "success" | "error" | "info"; text: string } | null;
@@ -183,6 +194,10 @@ export default function PanelClient() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cropRequest, setCropRequest] = useState<CropRequest | null>(null);
   const [framingItem, setFramingItem] = useState<BrochureMedia | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">(
+    "desktop",
+  );
 
   const loadContent = useCallback(
     async () => setContent(await api<BrochureContent>("/api/admin/brochure")),
@@ -199,7 +214,7 @@ export default function PanelClient() {
       .finally(() => setAuthLoading(false));
   }, [loadContent]);
 
-  const formUrl = origin ? `${origin}/` : "";
+  const formUrl = origin ? `${origin}/formulario` : "";
   const brochureUrl = origin ? `${origin}/brochure` : "";
   const activePreview = useMemo(
     () => `${brochureUrl}?preview=panel`,
@@ -329,6 +344,8 @@ export default function PanelClient() {
           title: "Una nueva historia por contar.",
           body: "Escribe aquí el contenido de esta sección.",
           mediaIds: [],
+          mediaLayout: "grid",
+          mediaSizes: {},
         },
       ],
     }));
@@ -566,7 +583,7 @@ export default function PanelClient() {
             </div>
           ) : null}
           <Link className={styles.backLink} href="/">
-            Volver al formulario
+            Volver al sitio web
           </Link>
         </section>
       </main>
@@ -663,9 +680,20 @@ export default function PanelClient() {
                     : "Biblioteca multimedia"}
             </strong>
           </div>
-          <a href={activePreview} target="_blank" rel="noreferrer">
-            Vista pública <ExternalLink size={16} />
-          </a>
+          <div className={styles.previewActions}>
+            <button type="button" onClick={() => setPreviewOpen(true)}>
+              <Eye size={16} /> Vista en vivo
+            </button>
+            <a
+              href={activePreview}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Abrir brochure publicado"
+              title="Abrir brochure publicado"
+            >
+              <ExternalLink size={16} />
+            </a>
+          </div>
         </header>
         {notice ? (
           <div className={`${styles.notice} ${styles[notice.kind]}`}>
@@ -958,9 +986,10 @@ export default function PanelClient() {
                         <Trash2 />
                       </button>
                     </div>
-                    {section.type === "custom" ||
-                    section.type === "showcase" ? (
-                      <div className={styles.sectionFields}>
+                    <div className={styles.sectionFields}>
+                      {section.type === "custom" ||
+                      section.type === "showcase" ? (
+                        <>
                         <input
                           value={section.eyebrow}
                           placeholder="Etiqueta"
@@ -988,17 +1017,34 @@ export default function PanelClient() {
                             updateSection(section.id, { body: e.target.value })
                           }
                         />
-                        <MediaPicker
-                          media={content.media}
-                          selected={section.mediaIds}
-                          onToggle={(id) =>
-                            updateSection(section.id, {
-                              mediaIds: toggleMedia(section.mediaIds, id),
-                            })
-                          }
-                        />
-                      </div>
-                    ) : null}
+                        </>
+                      ) : (
+                        <p className={styles.widgetHelp}>
+                          El texto de este bloque pertenece al diseño base. Puedes
+                          añadir contenido visual debajo y organizarlo libremente.
+                        </p>
+                      )}
+                      <MediaPicker
+                        media={content.media}
+                        selected={section.mediaIds}
+                        onToggle={(id) => {
+                          const selected = section.mediaIds.includes(id);
+                          const nextSizes = { ...section.mediaSizes };
+                          if (selected) delete nextSizes[id];
+                          else nextSizes[id] = "medium";
+                          updateSection(section.id, {
+                            mediaIds: toggleMedia(section.mediaIds, id),
+                            mediaSizes: nextSizes,
+                          });
+                        }}
+                      />
+                      <MediaWidgetBoard
+                        section={section}
+                        media={content.media}
+                        onChange={(patch) => updateSection(section.id, patch)}
+                        onFrame={setFramingItem}
+                      />
+                    </div>
                   </article>
                 ))}
               </div>
@@ -1305,6 +1351,66 @@ export default function PanelClient() {
           </div>
         ) : null}
       </section>
+      {framingItem && tab !== "media" ? (
+        <FramingDialog
+          item={framingItem}
+          onCancel={() => setFramingItem(null)}
+          onConfirm={(patch) => {
+            const next = {
+              ...content,
+              media: content.media.map((media) =>
+                media.id === framingItem.id ? { ...media, ...patch } : media,
+              ),
+            };
+            setFramingItem(null);
+            setContent(next);
+          }}
+        />
+      ) : null}
+      {previewOpen ? (
+        <div className={styles.livePreviewBackdrop} role="dialog" aria-modal>
+          <section className={styles.livePreviewPanel}>
+            <header>
+              <div>
+                <strong>Vista previa en tiempo real</strong>
+                <span>Incluye los cambios aunque aún no los hayas guardado.</span>
+              </div>
+              <div className={styles.deviceSwitch}>
+                <button
+                  className={previewDevice === "desktop" ? styles.selected : ""}
+                  onClick={() => setPreviewDevice("desktop")}
+                  aria-label="Vista de computadora"
+                >
+                  <Monitor />
+                </button>
+                <button
+                  className={previewDevice === "mobile" ? styles.selected : ""}
+                  onClick={() => setPreviewDevice("mobile")}
+                  aria-label="Vista de celular"
+                >
+                  <Smartphone />
+                </button>
+                <button
+                  className={styles.closePreview}
+                  onClick={() => setPreviewOpen(false)}
+                  aria-label="Cerrar vista previa"
+                >
+                  <X />
+                </button>
+              </div>
+            </header>
+            <div className={styles.livePreviewStage}>
+              <div
+                className={`${styles.livePreviewSurface} ${
+                  previewDevice === "mobile" ? styles.mobilePreview : ""
+                }`}
+              >
+                <LiveBrochure content={content} />
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -1416,6 +1522,153 @@ function MediaPicker({
             <span>{item.title || "Sin título"}</span>
             {selected.includes(item.id) ? <Check /> : null}
           </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const widgetSizeLabels: Record<BrochureWidgetSize, string> = {
+  small: "Pequeño",
+  medium: "Mediano",
+  wide: "Ancho",
+  full: "Completo",
+};
+
+function MediaWidgetBoard({
+  section,
+  media,
+  onChange,
+  onFrame,
+}: {
+  section: BrochureSection;
+  media: BrochureMedia[];
+  onChange: (patch: Partial<BrochureSection>) => void;
+  onFrame: (item: BrochureMedia) => void;
+}) {
+  const items = section.mediaIds
+    .map((id) => media.find((item) => item.id === id))
+    .filter(Boolean) as BrochureMedia[];
+
+  function reorder(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= section.mediaIds.length) return;
+    const next = [...section.mediaIds];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange({ mediaIds: next });
+  }
+
+  if (!items.length) return null;
+
+  return (
+    <div className={styles.widgetBoard}>
+      <div className={styles.widgetBoardHead}>
+        <div>
+          <strong>Widgets de esta sección</strong>
+          <span>Ordena, redimensiona y encuadra cada archivo.</span>
+        </div>
+        <label>
+          Distribución
+          <select
+            value={section.mediaLayout}
+            onChange={(event) =>
+              onChange({
+                mediaLayout: event.target
+                  .value as BrochureSection["mediaLayout"],
+              })
+            }
+          >
+            {brochureMediaLayouts.map((layout) => (
+              <option key={layout} value={layout}>
+                {layout === "grid"
+                  ? "Cuadrícula"
+                  : layout === "spotlight"
+                    ? "Destacado"
+                    : "Apilado"}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className={styles.widgetList}>
+        {items.map((item, index) => (
+          <article className={styles.widgetItem} key={item.id}>
+            <GripVertical className={styles.widgetGrip} aria-hidden />
+            <MediaPreview item={item} />
+            <div className={styles.widgetMeta}>
+              <strong>{item.title || "Archivo sin título"}</strong>
+              <span>
+                {item.kind === "image"
+                  ? "Imagen"
+                  : item.kind === "video"
+                    ? "Video"
+                    : "Documento"}
+              </span>
+            </div>
+            <label className={styles.widgetSize}>
+              Tamaño
+              <select
+                value={section.mediaSizes[item.id] || "medium"}
+                onChange={(event) =>
+                  onChange({
+                    mediaSizes: {
+                      ...section.mediaSizes,
+                      [item.id]: event.target.value as BrochureWidgetSize,
+                    },
+                  })
+                }
+              >
+                {brochureWidgetSizes.map((size) => (
+                  <option key={size} value={size}>
+                    {widgetSizeLabels[size]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className={styles.widgetActions}>
+              {item.kind !== "document" ? (
+                <button
+                  type="button"
+                  onClick={() => onFrame(item)}
+                  title="Ajustar encuadre"
+                  aria-label="Ajustar encuadre"
+                >
+                  <Crop />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => reorder(index, -1)}
+                disabled={index === 0}
+                aria-label="Mover widget arriba"
+              >
+                <ArrowUp />
+              </button>
+              <button
+                type="button"
+                onClick={() => reorder(index, 1)}
+                disabled={index === items.length - 1}
+                aria-label="Mover widget abajo"
+              >
+                <ArrowDown />
+              </button>
+              <button
+                type="button"
+                className={styles.deleteButton}
+                onClick={() => {
+                  const sizes = { ...section.mediaSizes };
+                  delete sizes[item.id];
+                  onChange({
+                    mediaIds: section.mediaIds.filter((id) => id !== item.id),
+                    mediaSizes: sizes,
+                  });
+                }}
+                aria-label="Quitar widget de la sección"
+              >
+                <X />
+              </button>
+            </div>
+          </article>
         ))}
       </div>
     </div>

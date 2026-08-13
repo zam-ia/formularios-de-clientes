@@ -43,6 +43,9 @@ export const brochureSectionTypes = [
   "custom",
 ] as const;
 
+export const brochureMediaLayouts = ["grid", "spotlight", "stack"] as const;
+export const brochureWidgetSizes = ["small", "medium", "wide", "full"] as const;
+
 const sectionSchema = z.object({
   id: z.string().min(1).max(100),
   type: z.enum(brochureSectionTypes),
@@ -51,6 +54,10 @@ const sectionSchema = z.object({
   title: z.string().max(180).default(""),
   body: z.string().max(1200).default(""),
   mediaIds: z.array(z.string().max(100)).max(30).default([]),
+  mediaLayout: z.enum(brochureMediaLayouts).default("grid"),
+  mediaSizes: z
+    .record(z.string().max(100), z.enum(brochureWidgetSizes))
+    .default({}),
 });
 
 const caseSchema = z.object({
@@ -163,7 +170,11 @@ export const defaultBrochureSections = [
     body: "",
     mediaIds: [],
   },
-];
+].map((section) => ({
+  ...section,
+  mediaLayout: "grid" as const,
+  mediaSizes: {},
+}));
 
 export const defaultBrochureCases = [
   {
@@ -208,6 +219,8 @@ export type BrochureMedia = z.infer<typeof mediaSchema>;
 export type BrochureSection = z.infer<typeof sectionSchema>;
 export type BrochureCase = z.infer<typeof caseSchema>;
 export type BrochureSectionType = (typeof brochureSectionTypes)[number];
+export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
+export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
   version: 3,

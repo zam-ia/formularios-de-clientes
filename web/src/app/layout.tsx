@@ -16,17 +16,22 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Radiografía de Marca | Crisdal Agency",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://crisdalagency.vercel.app"),
+  title: {
+    default: "Crisdal Agency | Marketing, IA y automatización",
+    template: "%s | Crisdal Agency",
+  },
   description:
-    "Cuéntanos lo esencial de tu negocio para crear una estrategia, contenido y campañas con mayor claridad.",
+    "Marketing, producción audiovisual y automatización con IA para negocios de salud, estética y educación.",
   applicationName: "Crisdal Agency",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "Radiografía de Marca | Crisdal Agency",
+    title: "Crisdal Agency | Que ninguna oportunidad se quede esperando",
     description:
-      "Ordenemos lo esencial de tu marca antes de diseñar, grabar o pautar.",
+      "Conectamos estrategia, contenido y automatización con IA para crecer con orden.",
     type: "website",
     locale: "es_PE",
+    images: ["/brand/crisdal-agency-logo.png"],
   },
 };
 

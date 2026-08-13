@@ -777,10 +777,30 @@
 .customSection {
   background: var(--ivory);
 }
+.sectionWidgets {
+  padding: clamp(64px, 9vw, 120px) clamp(20px, 7vw, 110px);
+  background: var(--ivory);
+}
 .mediaShowcase {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 18px;
+}
+.widgetSmall {
+  grid-column: span 4;
+}
+.widgetMedium {
+  grid-column: span 6;
+}
+.widgetWide {
+  grid-column: span 8;
+}
+.widgetFull,
+.mediaStack > figure {
+  grid-column: 1 / -1;
+}
+.mediaSpotlight > figure:first-child {
+  grid-column: span 8;
 }
 .mediaShowcase figure {
   position: relative;
@@ -1401,6 +1421,10 @@
   }
   .mediaShowcase {
     grid-template-columns: 1fr;
+  }
+  .mediaShowcase > figure,
+  .mediaSpotlight > figure:first-child {
+    grid-column: 1;
   }
   .mediaShowcase figure,
   .mediaShowcase figure > a {

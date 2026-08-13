@@ -1,5 +1,5 @@
-import MultiStepForm from '@/components/MultiStepForm';
+import HomePage from "./HomePage";
 
 export default function Page() {
-  return <MultiStepForm />;
+  return <HomePage />;
 }
