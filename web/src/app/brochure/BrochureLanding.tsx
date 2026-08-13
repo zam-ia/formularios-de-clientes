@@ -1,18 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDown,
   ArrowRight,
   Check,
-  CircleDot,
+  Camera,
   Menu,
   MessageCircle,
-  RefreshCw,
-  Route,
-  Users,
-  Workflow,
+  Megaphone,
+  Palette,
+  Send,
   X,
 } from "lucide-react";
 import type {
@@ -26,21 +24,21 @@ import styles from "./brochure.module.css";
 const problems = [
   {
     number: "01",
-    title: "Las consultas se enfrían",
-    text: "Llegan personas interesadas, pero el seguimiento queda repartido entre chats, tareas y memoria.",
-    result: "Hay oportunidades que se pierden sin que nadie lo note.",
+    title: "Contenido sin ritmo",
+    text: "Publicas cuando hay tiempo y luego tu marca desaparece por semanas.",
+    result: "Tu audiencia no alcanza a recordarte.",
   },
   {
     number: "02",
-    title: "Todo pasa por pocas personas",
-    text: "El negocio crece, pero las responsabilidades y procesos siguen viviendo en la cabeza del equipo.",
-    result: "Aparecen retrabajos, retrasos y cansancio.",
+    title: "Contenido sin dirección",
+    text: "Las piezas pueden verse bonitas, pero no explican por qué elegirte ni qué hacer después.",
+    result: "Hay alcance, pero pocas conversaciones.",
   },
   {
     number: "03",
-    title: "Vender más no se siente mejor",
-    text: "Entran más proyectos, pero también crecen los errores, los costos y la dificultad para saber qué funciona.",
-    result: "El esfuerzo aumenta más rápido que la rentabilidad.",
+    title: "Todo depende de ti",
+    text: "Tú grabas, diseñas, publicas, respondes y además intentas atender el negocio.",
+    result: "La comunicación se vuelve otra tarea pendiente.",
   },
 ];
 
@@ -52,101 +50,71 @@ const problemVisuals = [
 
 const solutions = [
   {
-    code: "STRATEGY",
-    question: "¿Hay muchas ideas, pero cuesta decidir por dónde empezar?",
-    text: "Ordenamos el panorama, elegimos prioridades y trazamos una ruta realista para avanzar.",
-    result: "De la intuición → a una dirección compartida.",
+    code: "VIDEO",
+    question: "¿Tu negocio todavía no comunica en video?",
+    text: "Grabamos y editamos piezas verticales pensadas para captar atención y explicar tu oferta.",
+    result: "De fotos sueltas → a video que retiene.",
   },
   {
-    code: "GROWTH",
-    question:
-      "¿Tu marca llama la atención, pero no siempre genera conversaciones valiosas?",
-    text: "Conectamos contenido, campañas y seguimiento para que cada esfuerzo tenga un propósito comercial claro.",
-    result: "De publicar → a construir demanda.",
+    code: "DESIGN",
+    question: "¿Tus publicaciones se ven improvisadas?",
+    text: "Creamos posts, flyers y piezas publicitarias con una identidad reconocible.",
+    result: "De plantillas genéricas → a contenido con marca.",
   },
   {
-    code: "SYSTEMS",
-    question:
-      "¿El día a día todavía depende de tareas manuales y chats separados?",
-    text: "Simplificamos procesos y sumamos tecnología donde realmente libera tiempo y mejora el control.",
-    result: "De tareas sueltas → a un sistema que acompaña.",
+    code: "SOCIAL",
+    question: "¿No tienes tiempo de publicar ni responder?",
+    text: "Organizamos el calendario, publicamos y gestionamos la primera respuesta según tu plan.",
+    result: "De redes abandonadas → a presencia constante.",
   },
   {
-    code: "CULTURE",
-    question:
-      "¿Las buenas ideas se quedan a medio camino porque el equipo no logra sostenerlas?",
-    text: "Aclaramos funciones, comunicación y formas de trabajo para que el cambio también funcione para las personas.",
-    result: "De depender de alguien → a trabajar en equipo.",
+    code: "ADS",
+    question: "¿Quieres que más personas encuentren tu negocio?",
+    text: "Gestionamos campañas en Meta Ads y reportamos qué pasó con la inversión.",
+    result: "De publicar y esperar → a distribuir con intención.",
   },
 ];
 
 const solutionVisuals = [
-  ["Problema", "Prioridad", "Ruta"],
-  ["Contenido", "Campaña", "Lead"],
-  ["Formulario", "CRM", "Seguimiento"],
-  ["Personas", "Roles", "Adopción"],
+  ["Grabación", "Edición", "Publicación"],
+  ["Diseño", "Copy", "Identidad"],
+  ["Calendario", "Publicación", "Comunidad"],
+  ["Campaña", "Segmentación", "Reporte"],
 ];
 const solutionStoryImages = [
-  "/brochure/story/strategy.webp",
-  "/brochure/story/growth.webp",
-  "/brochure/story/systems.webp",
-  "/brochure/story/culture.webp",
+  "/brochure/portfolio/personal-training-social.webp",
+  "/brochure/portfolio/change-brand-system.webp",
+  "/brochure/portfolio/change-experience.webp",
+  "/brochure/portfolio/personal-training-case.webp",
 ];
 
-const nexo = [
-  {
-    letter: "N",
-    title: "Necesidad",
-    text: "¿Qué problema económico u operativo necesita resolverse realmente?",
-    icon: CircleDot,
-  },
-  {
-    letter: "E",
-    title: "Estrategia",
-    text: "¿Qué camino puede generar mayor impacto con menor complejidad?",
-    icon: Route,
-  },
-  {
-    letter: "X",
-    title: "Experiencia",
-    text: "¿Cómo funcionará para el cliente y para las personas que tendrán que ejecutarlo?",
-    icon: Users,
-  },
-  {
-    letter: "O",
-    title: "Optimización",
-    text: "¿Qué datos demostrarán avance y qué debemos corregir?",
-    icon: RefreshCw,
-  },
-];
-
-const steps = [
-  "Diagnóstico",
-  "Diseño de solución",
-  "Implementación",
-  "Medición",
-  "Optimización",
+const steps = ["Brief", "Producción", "Publicación", "Reporte"];
+const stepDetails = [
+  "Objetivo, oferta y piezas del mes.",
+  "Grabación, diseño, copy y revisión.",
+  "Material listo o gestión según tu plan.",
+  "Resultados, aprendizajes y siguiente acción.",
 ];
 const faq = [
   [
-    "¿Crisdal es una agencia de marketing?",
-    "El marketing es una de nuestras capacidades. Crisdal integra estrategia, operación, comunicación, cultura y tecnología dependiendo del problema detectado.",
+    "¿Qué plan me conviene?",
+    "Si recién vas a ordenar tu presencia, empieza con Esencial. Si ya vendes y necesitas constancia, Crece suele ser el mejor punto de partida. Podemos orientarte por WhatsApp.",
   ],
   [
-    "¿Tengo que contratar todos los servicios?",
-    "No. Primero identificamos el cuello de botella y priorizamos una solución proporcional al problema y al presupuesto.",
+    "¿La pauta de Meta Ads está incluida?",
+    "La gestión está incluida en los planes que la indican. El presupuesto que Meta cobra por mostrar los anuncios se paga por separado.",
   ],
   [
-    "¿También implementan o solamente hacen consultoría?",
-    "El modelo combina diagnóstico, diseño, implementación, seguimiento y optimización según el alcance aprobado.",
+    "¿Crisdal también publica el contenido?",
+    "Sí, en los planes con manejo de redes. En Esencial entregamos el material listo para que puedas publicarlo.",
   ],
   [
     "¿Trabajan con empresas pequeñas?",
-    "El mejor cliente no depende únicamente del tamaño. Trabajamos mejor con empresas que ya reciben oportunidades y están dispuestas a medir e implementar mejoras.",
+    "Sí. Los planes están pensados para negocios locales que necesitan empezar o crecer sin montar un equipo interno completo.",
   ],
   [
-    "¿Trabajan únicamente en Lima?",
-    "Atendemos proyectos en Perú de forma presencial y remota según el alcance.",
+    "¿Trabajan solo en Huancayo?",
+    "Producimos presencialmente en Huancayo y coordinamos proyectos remotos en otras ciudades según el alcance.",
   ],
 ];
 
@@ -163,6 +131,13 @@ function track(name: string, detail: Record<string, string> = {}) {
   );
 }
 
+function trackOnce(name: string, detail: Record<string, string> = {}) {
+  const key = `crisdal_event_${name}`;
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, "1");
+  track(name, detail);
+}
+
 export default function BrochureLanding({
   content,
   previewSectionId,
@@ -171,10 +146,11 @@ export default function BrochureLanding({
   previewSectionId?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [headerSolid, setHeaderSolid] = useState(false);
   const [contactState, setContactState] = useState<
     "idle" | "sending" | "sent" | "error"
   >("idle");
-  const whatsappUrl = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent("Hola Crisdal, vi su brochure y quiero solicitar un diagnóstico.")}`;
+  const whatsappUrl = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent("Hola Crisdal, vi su brochure y quiero saber qué plan me conviene.")}`;
   const diagnosticUrl = content.ctaUrl || "/";
   const mediaById = new Map(content.media.map((item) => [item.id, item]));
   const heroMedia = mediaById.get(content.heroMediaId);
@@ -202,6 +178,7 @@ export default function BrochureLanding({
   }
 
   useEffect(() => {
+    trackOnce("view_brochure");
     const nodes = document.querySelectorAll("[data-reveal]");
     const observer = new IntersectionObserver(
       (entries) =>
@@ -215,6 +192,7 @@ export default function BrochureLanding({
     nodes.forEach((node) => observer.observe(node));
     let sent50 = false;
     const onScroll = () => {
+      setHeaderSolid(window.scrollY > 96);
       const max = document.documentElement.scrollHeight - window.innerHeight;
       if (!sent50 && max > 0 && window.scrollY / max >= 0.5) {
         sent50 = true;
@@ -230,7 +208,7 @@ export default function BrochureLanding({
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
+      <header className={`${styles.header} ${headerSolid ? styles.headerSolid : ""}`}>
         <a
           className={styles.brand}
           href="#inicio"
@@ -246,16 +224,16 @@ export default function BrochureLanding({
           aria-label="Navegación principal"
         >
           <a href="#problema" onClick={() => setMenuOpen(false)}>
-            Qué resolvemos
+            Qué hacemos
           </a>
-          <a href="#soluciones" onClick={() => setMenuOpen(false)}>
-            Soluciones
+          <a href="#planes" onClick={() => setMenuOpen(false)}>
+            Planes
           </a>
-          <a href="#nexo" onClick={() => setMenuOpen(false)}>
-            Método NEXO
+          <a href="#ruta" onClick={() => setMenuOpen(false)}>
+            Cómo trabajamos
           </a>
           <a href="#caso" onClick={() => setMenuOpen(false)}>
-            Caso real
+            Casos
           </a>
           <a href="#equipo" onClick={() => setMenuOpen(false)}>
             Nosotros
@@ -266,7 +244,7 @@ export default function BrochureLanding({
           href={diagnosticUrl}
           onClick={() => track("diagnostic_click", { placement: "header" })}
         >
-          Solicitar diagnóstico
+          Quiero mi plan
         </a>
         <button
           className={styles.menuButton}
@@ -283,22 +261,11 @@ export default function BrochureLanding({
         <div className={styles.noise} aria-hidden="true" />
         <div className={styles.heroCopy} data-reveal>
           <p className={styles.eyebrow}>{content.kicker}</p>
-          <h1>
-            {content.title.toLowerCase() === "crecer con orden." ? (
-              <>
-                Crecer
-                <br />
-                <em>con orden.</em>
-              </>
-            ) : (
-              content.title
-            )}
-          </h1>
+          <h1>{content.title}</h1>
           <p className={styles.promise}>{content.lead}</p>
           <p className={styles.support}>
-            Trabajamos con empresas que ya están avanzando, pero sienten que su
-            estrategia, su operación y su equipo necesitan conversar mejor entre
-            sí.
+            Video, diseño, manejo de redes y campañas en un solo equipo local,
+            con entregables claros y seguimiento mensual.
           </p>
           <div className={styles.actions}>
             <a
@@ -308,18 +275,18 @@ export default function BrochureLanding({
             >
               {content.ctaLabel} <ArrowRight />
             </a>
-            <a className={styles.secondary} href="#ruta">
-              Ver cómo trabajamos <ArrowDown />
+            <a className={styles.secondary} href={whatsappUrl} target="_blank" rel="noreferrer" onClick={() => track("click_hero_whatsapp")}>
+              Hablar por WhatsApp <MessageCircle />
             </a>
           </div>
           <p className={styles.microcopy}>
-            Diagnóstico <span>→</span> implementación <span>→</span> medición{" "}
-            <span>→</span> optimización
+            Grabamos <span>→</span> Diseñamos <span>→</span> Publicamos{" "}
+            <span>→</span> Tú vendes
           </p>
         </div>
         <div
           className={styles.heroSystem}
-          aria-label="Del caos al orden"
+          aria-label="Muestra del trabajo creativo de Crisdal"
           data-reveal
         >
           <VisualMedia
@@ -332,30 +299,12 @@ export default function BrochureLanding({
           />
           <div className={styles.heroStoryShade} aria-hidden="true" />
           <div className={styles.systemLabel}>
-            <span>CAOS</span>
-            <span>ORDEN</span>
+            <span>IDEA</span>
+            <span>CONTENIDO</span>
           </div>
-          <div className={styles.chaosNodes}>
-            {[0, 1, 2, 3, 4, 5, 6].map((n) => (
-              <i key={n} />
-            ))}
-          </div>
-          <svg viewBox="0 0 560 420" aria-hidden="true">
-            <path
-              className={styles.routeLine}
-              d="M42 332 C120 40 230 400 294 202 S430 86 518 80"
-            />
-            <circle cx="294" cy="202" r="58" />
-            <path d="M270 202h50m-18-18 18 18-18 18" />
-          </svg>
-          <div className={styles.orderStack}>
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
+          <div className={styles.heroProductionIcons} aria-hidden="true"><Camera /><Palette /><Megaphone /><Send /></div>
           <span className={styles.systemNote}>
-            Conectamos lo que hoy trabaja separado.
+            Producción real para negocios reales.
           </span>
         </div>
       </section>
@@ -388,15 +337,16 @@ export default function BrochureLanding({
             CRISDAL<small>AGENCY</small>
           </span>
         </div>
-        <p>Strategy · Growth · Systems · Culture</p>
+        <p>Video · Diseño · Redes · Publicidad</p>
         <strong>Crecer con orden.</strong>
+        <span className={styles.nexoTeaser}>Próxima etapa · Si ya tienes contenido y necesitas ordenar estrategia, procesos y equipo, pregúntanos por Método NEXO.</span>
       </footer>
       <div className={styles.mobileBar}>
         <a
           href={diagnosticUrl}
           onClick={() => track("diagnostic_click", { placement: "mobile_bar" })}
         >
-          Cuéntanos
+          Ver planes
         </a>
         <a
           href={whatsappUrl}
@@ -426,7 +376,7 @@ function SectionRenderer(props: SectionRendererProps) {
   const selectedMedia = section.mediaIds
     .map((id) => mediaById.get(id))
     .filter(Boolean) as BrochureMedia[];
-  const hasInternalMedia = ["problems", "solutions", "nexo", "showcase", "custom", "cases", "testimonials"].includes(
+  const hasInternalMedia = ["problems", "solutions", "method", "plans", "showcase", "custom", "cases", "testimonials"].includes(
     section.type,
   );
 
@@ -483,22 +433,6 @@ function SectionContent({
             </article>
           ))}
         </div>
-        <figure className={styles.storyFigure} data-reveal>
-          <VisualMedia item={selectedMedia[0]} fallback="/brochure/story/problems.webp" alt="Los tres problemas que aparecen cuando una empresa crece sin sistemas" sizes="92vw" />
-        </figure>
-      </section>
-    );
-
-  if (section.type === "manifesto")
-    return (
-      <section className={styles.manifesto}>
-        <div data-reveal>
-          <span className={styles.strikeCopy}>Más marketing</span>
-          <span>No arregla</span>
-          <strong>Más conexión.</strong>
-          <h2>{content.storyTitle}</h2>
-          <p>{content.story}</p>
-        </div>
       </section>
     );
 
@@ -536,46 +470,61 @@ function SectionContent({
                   {(solutionVisuals[index] || ["Entrada", "Sistema", "Avance"]).map((label) => <span key={label}>{label}</span>)}
                 </div>
                 <strong>{item.result}</strong>
-                <a href="#contacto" onClick={() => track("solution_open", { solution: editable.title })}>Explorar solución <ArrowRight /></a>
+                <a href="#planes" onClick={() => track("solution_open", { solution: editable.title })}>Ver planes <ArrowRight /></a>
               </article>
             );
           })}
         </div>
         <p className={styles.integratedNote} data-reveal>
-          <Workflow /> No coordinas cinco proveedores diferentes. Conectamos
-          estrategia, crecimiento, sistemas y cultura bajo una misma ruta.
+          <Check /> Video, diseño, redes y publicidad coordinados por un solo equipo.
         </p>
       </section>
     );
 
-  if (section.type === "nexo")
+  if (section.type === "method")
     return (
-      <section id="nexo" className={styles.nexoSection}>
-        <div className={styles.nexoIntro} data-reveal>
-          <p className={styles.eyebrow}>Marco de pensamiento</p>
-          <h2>NEXO</h2>
-          <p>
-            Cómo pensamos antes de ejecutar: conectamos el problema real con una solución que el negocio pueda sostener.
-          </p>
-          <figure className={styles.nexoStory}>
-            <VisualMedia item={selectedMedia[0]} fallback="/brochure/story/nexo.webp" alt="Diagrama del marco NEXO de Crisdal" sizes="(max-width: 1050px) 92vw, 35vw" />
-          </figure>
+      <section id="metodo" className={styles.magicSection}>
+        <div className={styles.sectionHead} data-reveal>
+          <p className={styles.eyebrow}>Método MÁGICA</p>
+          <h2>Cómo creamos contenido que vende.</h2>
+          <p>{content.story}</p>
         </div>
-        <div className={styles.nexoRoute}>
-          {nexo.map((item) => {
-            const Icon = item.icon;
-            return (
-              <article key={item.letter} data-reveal>
-                <div>
-                  <span>{item.letter}</span>
-                  <Icon />
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            );
+        <div className={styles.magicTrack} aria-label="Tres pilares del contenido Crisdal">
+          {["Claridad", "Contexto", "Curiosidad"].map((pillar, index) => (
+            <article key={pillar} data-reveal style={{ "--delay": `${index * 100}ms` } as React.CSSProperties}>
+              <span>C</span>
+              <div><strong>{pillar}</strong><p>{[
+                "Tu audiencia entiende qué ofreces y por qué importa.",
+                "La pieza conversa con una situación real del cliente.",
+                "Abrimos una razón para mirar, recordar y actuar.",
+              ][index]}</p></div>
+            </article>
+          ))}
+        </div>
+        <p className={styles.magicNote}>MÁGICA seguirá creciendo como metodología. En esta fase mostramos únicamente los tres pilares ya definidos.</p>
+      </section>
+    );
+
+  if (section.type === "plans")
+    return (
+        <section id="planes" className={styles.plansSection} onMouseEnter={() => trackOnce("view_plans")}>
+        <div className={styles.sectionHead} data-reveal>
+          <p className={styles.eyebrow}>{section.eyebrow}</p>
+          <h2>{section.title}</h2>
+          <p>{section.body}</p>
+        </div>
+        <div className={styles.plansGrid}>
+          {content.plans.filter((plan) => plan.visible).map((plan) => {
+            const planUrl = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent(`Hola Crisdal, vi su brochure y me interesa el Plan ${plan.name}.`)}`;
+            return <article key={plan.id} className={plan.id === "crece" ? styles.planFeatured : ""} data-reveal>
+              {plan.badge ? <span className={styles.planBadge}>{plan.badge}</span> : null}
+              <p>PLAN</p><h3>{plan.name}</h3><strong>{plan.price}</strong><small>{plan.description}</small>
+              <ul>{plan.features.map((feature) => <li key={feature}><Check />{feature}</li>)}</ul>
+              <a href={planUrl} target="_blank" rel="noreferrer" onClick={() => track(`click_whatsapp_plan_${plan.id}`)}>Quiero este plan <ArrowRight /></a>
+            </article>;
           })}
         </div>
+        <p className={styles.planConditions}>La pauta, licencias, dominio, hosting, producciones extraordinarias y costos de terceros se informan por separado cuando no estén incluidos.</p>
       </section>
     );
 
@@ -588,7 +537,8 @@ function SectionContent({
       >
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>{section.eyebrow || "Casos reales"}</p>
-          <h2>Historias construidas junto a nuestros clientes.</h2>
+          <h2>{section.title || "Prueba visual antes que promesas."}</h2>
+          {section.body ? <p>{section.body}</p> : null}
         </div>
         {content.cases.length ? (
           <div className={styles.casesList}>
@@ -633,7 +583,7 @@ function SectionContent({
               <article key={metric.id} data-reveal>
                 <span className={styles.metricIndex}>0{index + 1}</span>
                 <strong className={styles.animatedNumber}>
-                  {metric.prefix}{metric.value.toLocaleString("es-PE")}{metric.suffix}
+              <CountedNumber value={metric.value} prefix={metric.prefix} suffix={metric.suffix} />
                 </strong>
                 <h3>{metric.label}</h3>
                 <p>{metric.description}</p>
@@ -739,7 +689,7 @@ function SectionContent({
       <section id="equipo" className={styles.teamSection}>
         <div className={styles.sectionHead} data-reveal>
           <p className={styles.eyebrow}>Equipo interdisciplinario</p>
-          <h2>Una firma construida desde disciplinas diferentes.</h2>
+          <h2>Un equipo real detrás de cada entrega.</h2>
         </div>
         <div className={styles.teamGrid}>
           {content.teamMembers.filter((person) => person.visible).map((person, index) => (
@@ -763,8 +713,8 @@ function SectionContent({
             </article>
           ))}
         </div>
-        <div className={styles.integrationMap} aria-label="Empresa, personas, comunicación y tecnología conectadas por Crisdal">
-          <span>Empresa</span><span>Personas</span><strong>CRISDAL</strong><span>Tecnología</span><span>Comunicación</span>
+        <div className={styles.integrationMap} aria-label="Video, diseño, redes y publicidad conectados por Crisdal">
+          <span>Video</span><span>Diseño</span><strong>CRISDAL</strong><span>Redes</span><span>Publicidad</span>
         </div>
       </section>
     );
@@ -773,21 +723,20 @@ function SectionContent({
     return (
       <section id="ruta" className={styles.routeSection}>
         <div className={styles.sectionHead} data-reveal>
-          <p className={styles.eyebrow}>Ciclo de implementación</p>
-          <h2>Así ejecutamos cada proyecto.</h2>
-          <p>NEXO define cómo pensamos. Este ciclo convierte esa claridad en entregables, responsables y mejora continua.</p>
+          <p className={styles.eyebrow}>Cómo trabajamos</p>
+          <h2>De la idea a una entrega que puedes usar.</h2>
+          <p>Un ciclo corto y visible para que siempre sepas qué sigue y qué recibirás.</p>
         </div>
         <ol className={styles.projectRoute}>
           {steps.map((step, index) => (
             <li key={step} data-reveal>
               <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{step}</strong>
+              <strong>{step}</strong><small>{stepDetails[index]}</small>
             </li>
           ))}
         </ol>
         <p className={styles.routeNote}>
-          <Check /> Cada etapa tiene un objetivo, responsable, entregable y
-          criterio de cierre.
+          <Check /> Cada etapa deja un entregable claro, sin procesos ocultos.
         </p>
       </section>
     );
@@ -825,20 +774,20 @@ function SectionContent({
         <div>
           <p className={styles.eyebrow}>Conversemos</p>
           <h2>
-            Cuéntanos qué está pasando.
+            Hagamos que tu negocio se vea
             <br />
-            <em>Busquemos juntos por dónde empezar.</em>
+            <em>(y venda) como se merece.</em>
           </h2>
           <p>
-            Solicita un diagnóstico para identificar qué conviene ordenar primero. Si prefieres, también puedes hablarnos directamente por WhatsApp.
+            Elige un plan o cuéntanos qué necesitas. Te responderemos con una recomendación clara y sin tecnicismos.
           </p>
           <div className={styles.contactButtons}>
             <a
               className={styles.primary}
-              href="#formulario-diagnostico"
+              href="#planes"
               onClick={() => track("diagnostic_click", { placement: "final" })}
             >
-              Solicitar diagnóstico <ArrowRight />
+              Quiero mi plan <ArrowRight />
             </a>
             <a
               className={styles.secondaryLight}
@@ -889,14 +838,14 @@ function SectionContent({
             />
           </label>
           <label>
-            ¿Qué necesitas ordenar primero?
+            ¿Qué plan te interesa?
             <select name="message" required defaultValue="">
               <option value="" disabled>Selecciona una opción</option>
-              <option>Necesito ordenar mi estrategia.</option>
-              <option>Necesito generar demanda.</option>
-              <option>Necesito ordenar procesos o sistemas.</option>
-              <option>Necesito trabajar equipo o cultura.</option>
-              <option>No estoy seguro todavía.</option>
+              <option>Plan Esencial</option>
+              <option>Plan Crece</option>
+              <option>Plan Impulso</option>
+              <option>Plan Elite</option>
+              <option>Necesito orientación</option>
             </select>
           </label>
           <input
@@ -939,6 +888,34 @@ function TestimonialMedia({ item, name }: { item: BrochureMedia; name: string })
   </div>;
 }
 
+function CountedNumber({ value, prefix, suffix }: { value: number; prefix: string; suffix: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [displayValue, setDisplayValue] = useState(value);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setDisplayValue(0);
+    let frame = 0;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      const start = performance.now();
+      const duration = 800;
+      const tick = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1);
+        setDisplayValue(Math.round(value * (1 - Math.pow(1 - progress, 3))));
+        if (progress < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }, { threshold: 0.6 });
+    observer.observe(node);
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
+  }, [value]);
+  return <span ref={ref} aria-label={`${prefix}${value.toLocaleString("es-PE")}${suffix}`}>
+    <span aria-hidden="true">{prefix}{displayValue.toLocaleString("es-PE")}{suffix}</span>
+  </span>;
+}
+
 function CaseStudy({
   project,
   index,
@@ -965,10 +942,6 @@ function CaseStudy({
       <div className={styles.caseEvidence} data-reveal>
         {media.length ? (
           <MediaGrid media={media} />
-        ) : project.id === "rebagliati" ? (
-          <figure className={styles.caseStoryFigure}>
-            <Image src="/brochure/story/caso-rebagliati.webp" alt="Caso Rebagliati: organigrama, talleres, entregables y modelo operativo" fill sizes="(max-width: 1050px) 92vw, 50vw" />
-          </figure>
         ) : (
           <div
             className={styles.processMap}

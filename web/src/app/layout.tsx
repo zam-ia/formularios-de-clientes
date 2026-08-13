@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Oswald, Poppins } from "next/font/google";
+import { Montserrat, Oswald } from "next/font/google";
 import { PUBLIC_SITE_URL } from "@/lib/publicSiteUrl";
 import "./globals.css";
 
-const poppins = Poppins({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-poppins",
@@ -47,7 +47,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${poppins.variable} ${oswald.variable}`}>
+    <html lang="es" className={`${montserrat.variable} ${oswald.variable}`}>
       <body>{children}</body>
     </html>
   );

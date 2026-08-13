@@ -49,6 +49,7 @@ import {
   type BrochureContent,
   type BrochureMedia,
   type BrochureMetric,
+  type BrochurePlan,
   type BrochureSection,
   type BrochureSectionType,
   type BrochureTeamMember,
@@ -74,10 +75,10 @@ type CropRequest = {
 
 const sectionLabels: Record<BrochureSectionType, string> = {
   problems: "Problemas que resolvemos",
-  manifesto: "Manifiesto",
-  solutions: "Soluciones",
+  solutions: "Video, Design, Social y Ads",
+  method: "Método MÁGICA / C-C-C",
+  plans: "Planes",
   metrics: "Datos y métricas",
-  nexo: "Método NEXO",
   cases: "Casos",
   testimonials: "Testimonios",
   showcase: "Galería multimedia",
@@ -367,6 +368,15 @@ export default function PanelClient() {
           visible: true,
         },
       ],
+    }));
+  }
+
+  function updatePlan(id: string, patch: Partial<BrochurePlan>) {
+    setContent((current) => ({
+      ...current,
+      plans: current.plans.map((item) =>
+        item.id === id ? { ...item, ...patch } : item,
+      ),
     }));
   }
 
@@ -906,7 +916,7 @@ export default function PanelClient() {
               </div>
             </section>
             <section className={styles.formCard}>
-              <h2>Manifiesto</h2>
+              <h2>Método MÁGICA · C-C-C</h2>
               <div className={styles.formGrid}>
                 <label className={styles.full}>
                   Frase central
@@ -935,8 +945,8 @@ export default function PanelClient() {
             <section className={styles.formCard}>
               <div className={styles.formCardHeader}>
                 <div>
-                  <h2>Soluciones</h2>
-                  <p>Añade, edita o elimina las áreas que ofreces.</p>
+                  <h2>Servicios de Fase 1</h2>
+                  <p>Edita Video, Design, Social y Ads sin volver a mezclar aquí el Método NEXO.</p>
                 </div>
                 <button className={styles.secondaryButton} onClick={addService}>
                   <Plus size={16} /> Añadir
@@ -998,8 +1008,35 @@ export default function PanelClient() {
             <section className={styles.formCard}>
               <div className={styles.formCardHeader}>
                 <div>
+                  <h2>Planes del brochure</h2>
+                  <p>Mantén nombres, precios y entregables iguales al pase de abordaje.</p>
+                </div>
+              </div>
+              <div className={styles.dataEditor}>
+                {content.plans.map((plan) => (
+                  <article key={plan.id} className={!plan.visible ? styles.dataMuted : ""}>
+                    <div className={styles.dataEditorHead}>
+                      <strong>{plan.name}</strong>
+                      <button type="button" onClick={() => updatePlan(plan.id, { visible: !plan.visible })} aria-label={plan.visible ? "Ocultar plan" : "Mostrar plan"}>
+                        {plan.visible ? <Eye size={17} /> : <EyeOff size={17} />}
+                      </button>
+                    </div>
+                    <div className={styles.testimonialInputs}>
+                      <label>Nombre<input value={plan.name} maxLength={80} onChange={(event) => updatePlan(plan.id, { name: event.target.value })} /></label>
+                      <label>Precio<input value={plan.price} maxLength={80} onChange={(event) => updatePlan(plan.id, { price: event.target.value })} /></label>
+                      <label>Badge<input value={plan.badge} maxLength={40} placeholder="Ej. Más elegido" onChange={(event) => updatePlan(plan.id, { badge: event.target.value })} /></label>
+                    </div>
+                    <label>Ideal para<textarea rows={2} value={plan.description} maxLength={260} onChange={(event) => updatePlan(plan.id, { description: event.target.value })} /></label>
+                    <label>Entregables — uno por línea<textarea rows={6} value={plan.features.join("\n")} onChange={(event) => updatePlan(plan.id, { features: event.target.value.split("\n").map((value) => value.trim()).filter(Boolean).slice(0, 12) })} /></label>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className={styles.formCard}>
+              <div className={styles.formCardHeader}>
+                <div>
                   <h2>Datos y números</h2>
-                  <p>Describe el modelo Crisdal, no resultados prometidos. El valor final siempre queda visible para buscadores y accesibilidad.</p>
+                  <p>Usa solo datos operativos reales. Los números se animan en pantalla, pero el valor final permanece en el HTML para buscadores y accesibilidad.</p>
                 </div>
                 <button className={styles.secondaryButton} onClick={addMetric}>
                   <Plus size={16} /> Añadir indicador

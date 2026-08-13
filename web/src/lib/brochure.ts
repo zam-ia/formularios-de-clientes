@@ -12,6 +12,16 @@ const serviceSchema = z.object({
   tag: z.string().max(40).default(""),
 });
 
+const planSchema = z.object({
+  id: z.string().min(1).max(80),
+  name: z.string().min(1).max(80),
+  price: z.string().min(1).max(80),
+  description: z.string().max(260).default(""),
+  features: z.array(z.string().min(1).max(180)).min(1).max(12),
+  badge: z.string().max(40).default(""),
+  visible: z.boolean().default(true),
+});
+
 const mediaSchema = z.object({
   id: z.string().min(1).max(100),
   kind: z.enum(["image", "video", "document"]),
@@ -33,10 +43,10 @@ const mediaSchema = z.object({
 
 export const brochureSectionTypes = [
   "problems",
-  "manifesto",
   "solutions",
+  "method",
+  "plans",
   "metrics",
-  "nexo",
   "cases",
   "testimonials",
   "showcase",
@@ -118,8 +128,8 @@ export const defaultBrochureTeam = [
   {
     id: "aldair",
     name: "Aldair Pérez",
-    role: "Strategy / Systems · 01",
-    focus: "ORDENAR COMPLEJIDAD · Administración · Operación · Procesos",
+    role: "Estrategia y Producción",
+    focus: "Dirección creativa · Producción audiovisual · Estrategia de contenido",
     imageUrl: "/brochure/team/aldair-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
@@ -128,8 +138,8 @@ export const defaultBrochureTeam = [
   {
     id: "milagros",
     name: "Milagros Ríos",
-    role: "Culture / People · 02",
-    focus: "ACTIVAR EQUIPOS · Cultura · Personas · Gestión del cambio",
+    role: "Atención y Redes",
+    focus: "Calendario · Publicación · Comunidad · Seguimiento al cliente",
     imageUrl: "/brochure/team/milagros-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
@@ -138,8 +148,8 @@ export const defaultBrochureTeam = [
   {
     id: "abi",
     name: "Abi",
-    role: "Growth / Communication · 03",
-    focus: "CONECTAR OPORTUNIDADES · Comunicación · Publicidad · Marca",
+    role: "Diseño y Publicidad",
+    focus: "Identidad visual · Piezas comerciales · Meta Ads · Contenido",
     imageUrl: "/brochure/team/abi-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
@@ -149,30 +159,30 @@ export const defaultBrochureTeam = [
 
 export const defaultBrochureMetrics = [
   {
-    id: "metric-capabilities",
-    value: 4,
+    id: "metric-industries",
+    value: 5,
     prefix: "",
     suffix: "",
-    label: "Frentes conectados",
-    description: "Strategy, Growth, Systems y Culture trabajando juntas.",
+    label: "Rubros atendidos",
+    description: "Salud, educación, bienestar, gastronomía y servicios.",
     visible: true,
   },
   {
-    id: "metric-view",
-    value: 360,
-    prefix: "",
-    suffix: "°",
-    label: "Visión del negocio",
-    description: "Decisiones que conectan operación, personas y resultados.",
-    visible: true,
-  },
-  {
-    id: "metric-route",
+    id: "metric-contact",
     value: 1,
     prefix: "",
     suffix: "",
-    label: "Ruta integrada",
-    description: "Sin coordinar múltiples proveedores aislados.",
+    label: "Punto de contacto",
+    description: "Un equipo que coordina contenido, diseño, redes y pauta contigo.",
+    visible: true,
+  },
+  {
+    id: "metric-cycle",
+    value: 4,
+    prefix: "",
+    suffix: "",
+    label: "Momentos del ciclo",
+    description: "Brief, producción, publicación y reporte con entregables claros.",
     visible: true,
   },
 ];
@@ -207,16 +217,7 @@ export const defaultBrochureMedia = [
 }));
 
 export const defaultBrochureStoryMedia = [
-  ["story-hero", "De desorden a crecimiento", "Visual de portada Crisdal", "/brochure/story/hero-system.webp"],
-  ["story-overview", "Crisdal en una mirada", "Equipo, servicios y sistema de marca", "/brochure/story/brand-overview.webp"],
-  ["story-problems", "Crecer no debería desordenarte", "Los tres problemas que frenan el crecimiento", "/brochure/story/problems.webp"],
-  ["story-manifesto", "Más conexión", "Más marketing no arregla un negocio desconectado", "/brochure/story/manifesto.webp"],
-  ["story-strategy", "Crisdal Strategy", "Diagnóstico, claridad y priorización", "/brochure/story/strategy.webp"],
-  ["story-growth", "Crisdal Growth", "Contenido, campaña, conversación, lead y seguimiento", "/brochure/story/growth.webp"],
-  ["story-systems", "Crisdal Systems", "Flujo integrado y automatización", "/brochure/story/systems.webp"],
-  ["story-culture", "Crisdal Culture", "Roles, acuerdos y adopción", "/brochure/story/culture.webp"],
-  ["story-nexo", "Marco NEXO", "Cómo conectamos estrategia, experiencia y optimización", "/brochure/story/nexo.webp"],
-  ["story-rebagliati", "Caso Rebagliati", "Evidencias, proceso y modelo operativo", "/brochure/story/caso-rebagliati.webp"],
+  ["story-overview", "Crisdal en una mirada", "Equipo, contenido y sistema visual", "/brochure/story/brand-overview.webp"],
 ].map(([id, title, caption, url]) => ({
   id,
   kind: "image" as const,
@@ -235,57 +236,73 @@ export const defaultBrochureStoryMedia = [
 
 export const defaultBrochureTestimonials: Array<z.infer<typeof testimonialSchema>> = [];
 
+export const defaultBrochurePlans = [
+  {
+    id: "esencial",
+    name: "Esencial",
+    price: "S/200 / mes",
+    description: "Para negocios que recién empiezan a mostrarse en redes.",
+    features: [
+      "1 video vertical profesional",
+      "5 publicaciones con diseño y copy",
+      "1 asesoría mensual de marketing",
+      "Entrega lista para publicar",
+    ],
+    badge: "",
+    visible: true,
+  },
+  {
+    id: "crece",
+    name: "Crece",
+    price: "Desde S/420 / mes",
+    description: "Para negocios que ya venden y necesitan presencia constante.",
+    features: [
+      "2 videos verticales",
+      "8 publicaciones con diseño y copy",
+      "Manejo completo de redes sociales",
+      "Gestión de campaña en Meta Ads",
+      "Reporte mensual de resultados",
+    ],
+    badge: "Más elegido",
+    visible: true,
+  },
+  {
+    id: "impulso",
+    name: "Impulso",
+    price: "Desde S/650 / mes",
+    description: "Para reducir oportunidades perdidas por respuestas tardías.",
+    features: [
+      "3 videos verticales",
+      "12 publicaciones",
+      "Redes sociales + campaña Meta Ads",
+      "Automatización de respuestas por WhatsApp",
+      "Seguimiento quincenal de resultados",
+    ],
+    badge: "",
+    visible: true,
+  },
+  {
+    id: "elite",
+    name: "Elite",
+    price: "Cotización personalizada",
+    description: "Para negocios que buscan un sistema comercial completo.",
+    features: [
+      "Todo lo incluido en Impulso",
+      "Página web o landing de ventas",
+      "Estrategia de contenido a 30 días",
+      "Reunión estratégica mensual",
+    ],
+    badge: "",
+    visible: true,
+  },
+] satisfies Array<z.infer<typeof planSchema>>;
+
 export const defaultBrochureSections = [
   {
     id: "problems",
     type: "problems" as const,
     visible: true,
-    eyebrow: "Crecer no debería desordenarte",
-    title: "",
-    body: "",
-    mediaIds: [],
-  },
-  {
-    id: "manifesto",
-    type: "manifesto" as const,
-    visible: true,
-    eyebrow: "",
-    title: "",
-    body: "",
-    mediaIds: [],
-  },
-  {
-    id: "solutions",
-    type: "solutions" as const,
-    visible: true,
-    eyebrow: "Un sistema conectado",
-    title: "",
-    body: "",
-    mediaIds: [],
-  },
-  {
-    id: "nexo",
-    type: "nexo" as const,
-    visible: true,
-    eyebrow: "Nuestra manera de trabajar",
-    title: "",
-    body: "",
-    mediaIds: [],
-  },
-  {
-    id: "metrics",
-    type: "metrics" as const,
-    visible: true,
-    eyebrow: "Modelo integrado",
-    title: "Un sistema pensado como uno solo.",
-    body: "No son resultados prometidos: describen cómo conectamos el negocio para avanzar con una sola ruta.",
-    mediaIds: [],
-  },
-  {
-    id: "cases",
-    type: "cases" as const,
-    visible: true,
-    eyebrow: "Casos reales",
+    eyebrow: "El problema",
     title: "",
     body: "",
     mediaIds: [],
@@ -295,8 +312,53 @@ export const defaultBrochureSections = [
     type: "showcase" as const,
     visible: true,
     eyebrow: "Trabajo reciente",
-    title: "Ideas que ya tomaron forma.",
-    body: "Videos, campañas, piezas y experiencias creadas junto a nuestros clientes.",
+    title: "Mira lo que ya hicimos.",
+    body: "Contenido, campañas, identidad y piezas creadas junto a negocios reales.",
+    mediaIds: [],
+  },
+  {
+    id: "solutions",
+    type: "solutions" as const,
+    visible: true,
+    eyebrow: "Qué hacemos",
+    title: "",
+    body: "",
+    mediaIds: [],
+  },
+  {
+    id: "method",
+    type: "method" as const,
+    visible: true,
+    eyebrow: "Método MÁGICA",
+    title: "",
+    body: "",
+    mediaIds: [],
+  },
+  {
+    id: "cases",
+    type: "cases" as const,
+    visible: true,
+    eyebrow: "Casos y evidencia",
+    title: "Trabajo real antes que promesas.",
+    body: "Separamos resultados validados del alcance visual de cada proyecto.",
+    mediaIds: [],
+  },
+  {
+    id: "route",
+    type: "route" as const,
+    visible: true,
+    eyebrow: "Cómo trabajamos",
+    title: "",
+    body: "",
+    mediaIds: [],
+  },
+  {
+    id: "plans",
+    type: "plans" as const,
+    visible: true,
+    eyebrow: "Planes mensuales",
+    title: "Elige el punto de partida que más te conviene.",
+    body: "Cuatro opciones claras. La inversión publicitaria y costos de terceros se cotizan por separado cuando corresponda.",
     mediaIds: [],
   },
   {
@@ -318,19 +380,19 @@ export const defaultBrochureSections = [
     mediaIds: [],
   },
   {
-    id: "team",
-    type: "team" as const,
+    id: "metrics",
+    type: "metrics" as const,
     visible: true,
-    eyebrow: "Equipo interdisciplinario",
-    title: "",
-    body: "",
+    eyebrow: "Una operación simple",
+    title: "Todo lo necesario, sin coordinar cuatro proveedores.",
+    body: "Datos que describen nuestra forma de trabajar; no son resultados prometidos.",
     mediaIds: [],
   },
   {
-    id: "route",
-    type: "route" as const,
+    id: "team",
+    type: "team" as const,
     visible: true,
-    eyebrow: "Cómo trabajamos",
+    eyebrow: "Equipo Crisdal",
     title: "",
     body: "",
     mediaIds: [],
@@ -361,23 +423,51 @@ export const defaultBrochureSections = [
 
 export const defaultBrochureCases = [
   {
-    id: "rebagliati",
-    client: "Rebagliati Diplomados",
-    eyebrow: "Caso de transformación",
-    title: "Del diagnóstico al orden operativo.",
+    id: "personal-training",
+    client: "Personal Training Perú",
+    eyebrow: "Contenido + crecimiento comercial",
+    title: "De S/170 mil a más de S/220 mil mensuales.",
     summary:
-      "Empezamos escuchando al equipo y entendiendo cómo trabajaba el negocio. A partir de ahí ordenamos procesos, responsabilidades y prioridades para construir una base más clara para crecer.",
+      "Un caso de captación, renovación y crecimiento comercial respaldado por contenido y una presencia digital más consistente.",
     stages: [
-      "Entender el contexto y escuchar al equipo.",
-      "Ordenar procesos, responsabilidades y comunicación.",
-      "Dejar una base clara para seguir creciendo.",
+      "Punto de partida: S/170 mil mensuales.",
+      "Intervención: identidad, contenido y piezas de conversión.",
+      "Resultado reportado: más de S/220 mil mensuales.",
     ],
-    mediaIds: [],
+    mediaIds: ["portfolio-training", "portfolio-training-social", "portfolio-training-brand"],
+  },
+  {
+    id: "change",
+    client: "Change The Slim Studio",
+    eyebrow: "Branding + contenido",
+    title: "Una marca fitness convertida en un sistema visual reconocible.",
+    summary:
+      "Desarrollamos aplicaciones para redes, prendas, papelería, espacios e identidad. El caso muestra alcance real del proyecto, sin atribuir métricas no validadas.",
+    stages: [
+      "Definición y orden visual de marca.",
+      "Contenido y aplicaciones comerciales.",
+      "Sistema consistente en canales físicos y digitales.",
+    ],
+    mediaIds: ["portfolio-change", "portfolio-change-system", "portfolio-change-experience"],
+  },
+  {
+    id: "san-juan",
+    client: "Colegio San Juan",
+    eyebrow: "Identidad + presencia institucional",
+    title: "Una experiencia de marca consistente dentro y fuera del colegio.",
+    summary:
+      "Trabajamos identidad, fachada, señalética y recepción para que cada punto de contacto comunicara la misma propuesta institucional.",
+    stages: [
+      "Diagnóstico de la experiencia visual.",
+      "Diseño de aplicaciones y señalética.",
+      "Implementación de una presencia institucional coherente.",
+    ],
+    mediaIds: ["portfolio-san-juan"],
   },
 ];
 
 export const brochureContentSchema = z.object({
-  version: z.number().int().positive().default(5),
+  version: z.number().int().positive().default(6),
   kicker: z.string().min(1).max(80),
   title: z.string().min(1).max(140),
   lead: z.string().min(1).max(500),
@@ -388,6 +478,7 @@ export const brochureContentSchema = z.object({
   ctaUrl: z.string().min(1).max(600),
   whatsappNumber: z.string().regex(/^\d{8,15}$/),
   services: z.array(serviceSchema).min(1).max(12),
+  plans: z.array(planSchema).min(1).max(8).default(defaultBrochurePlans),
   media: z.array(mediaSchema).max(120),
   sections: z
     .array(sectionSchema)
@@ -409,6 +500,7 @@ export type BrochureMedia = z.infer<typeof mediaSchema>;
 export type BrochureSection = z.infer<typeof sectionSchema>;
 export type BrochureCase = z.infer<typeof caseSchema>;
 export type BrochureMetric = z.infer<typeof metricSchema>;
+export type BrochurePlan = z.infer<typeof planSchema>;
 export type BrochureTestimonial = z.infer<typeof testimonialSchema>;
 export type BrochureTeamMember = z.infer<typeof teamMemberSchema>;
 export type BrochureSectionType = (typeof brochureSectionTypes)[number];
@@ -416,47 +508,48 @@ export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
 export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 5,
-  kicker: "Estrategia · Procesos · Cultura · Tecnología",
-  title: "Crecer con orden.",
-  lead: "Ayudamos a convertir un crecimiento que se siente pesado en una empresa más clara, rentable y preparada para lo que viene.",
-  heroMediaId: "story-hero",
-  storyTitle: "un negocio que trabaja desconectado.",
+  version: 6,
+  kicker: "Contenido · Video · Redes · Publicidad",
+  title: "Contenido que vende, no solo que se ve bonito.",
+  lead: "Ayudamos a negocios de Huancayo a crecer con contenido orgánico y publicidad bien hecha, sin depender de publicar porque toca.",
+  heroMediaId: "portfolio-training-social",
+  storyTitle: "Claridad. Contexto. Curiosidad.",
   story:
-    "No creemos en sumar herramientas por sumar. Primero entendemos qué está pasando, luego ordenamos lo esencial y recién entonces construimos una solución que el equipo pueda sostener.",
-  ctaLabel: "Solicitar diagnóstico",
-  ctaUrl: "#contacto",
+    "Tres criterios para crear piezas que se entienden, conectan con la situación real de tu cliente y despiertan una razón para detenerse.",
+  ctaLabel: "Ver nuestros planes",
+  ctaUrl: "#planes",
   whatsappNumber: "51987088359",
   services: [
     {
-      id: "strategy",
-      title: "Strategy",
+      id: "video",
+      title: "Video",
       description:
-        "Ponemos el problema sobre la mesa, definimos prioridades y trazamos una ruta clara para avanzar.",
-      tag: "Dirección",
+        "Grabamos y editamos videos verticales pensados para redes, no para quedar guardados en tu galería.",
+      tag: "Grabación · Edición · Vertical",
     },
     {
-      id: "growth",
-      title: "Growth",
+      id: "design",
+      title: "Design",
       description:
-        "Conectamos contenido, campañas y embudos con oportunidades comerciales que sí puedes seguir y medir.",
-      tag: "Demanda",
+        "Diseñamos posts, flyers y piezas publicitarias con identidad para que tu negocio se vea tan bien como es.",
+      tag: "Diseño · Copy · Identidad",
     },
     {
-      id: "systems",
-      title: "Systems",
+      id: "social",
+      title: "Social",
       description:
-        "Ordenamos procesos y usamos tecnología, automatización e IA para que el trabajo fluya con menos fricción.",
-      tag: "Sistema",
+        "Manejamos calendario, publicación y primera respuesta según el alcance del plan contratado.",
+      tag: "Calendario · Publicación · Comunidad",
     },
     {
-      id: "culture",
-      title: "Culture",
+      id: "ads",
+      title: "Ads",
       description:
-        "Aclaramos funciones y acompañamos al equipo para que las mejoras no dependan de una sola persona.",
-      tag: "Adopción",
+        "Configuramos campañas en Meta Ads para llevar tu contenido a personas con mayor afinidad con tu oferta.",
+      tag: "Campaña · Segmentación · Reporte",
     },
   ],
+  plans: defaultBrochurePlans,
   media: [...defaultBrochureMedia, ...defaultBrochureStoryMedia],
   sections: defaultBrochureSections,
   cases: defaultBrochureCases,
@@ -607,25 +700,33 @@ export async function getBrochureContent(): Promise<BrochureContent> {
           return storedVersion < 5 && updated ? { ...person, role: updated.role, focus: updated.focus, imageUrl: updated.imageUrl } : person;
         })
       : defaultBrochureTeam;
+    const phaseOneMedia = Array.isArray(raw.media)
+      ? migratedMedia
+      : [...defaultBrochureMedia, ...defaultBrochureStoryMedia];
     const parsed = brochureContentSchema.safeParse({
       ...raw,
-      version: 5,
-      heroMediaId: raw.heroMediaId || "story-hero",
+      version: 6,
+      kicker: storedVersion < 6 ? defaultBrochureContent.kicker : raw.kicker,
+      title: storedVersion < 6 ? defaultBrochureContent.title : raw.title,
+      lead: storedVersion < 6 ? defaultBrochureContent.lead : raw.lead,
+      heroMediaId: storedVersion < 6 ? defaultBrochureContent.heroMediaId : raw.heroMediaId || defaultBrochureContent.heroMediaId,
+      storyTitle: storedVersion < 6 ? defaultBrochureContent.storyTitle : raw.storyTitle,
+      story: storedVersion < 6 ? defaultBrochureContent.story : raw.story,
       ctaLabel:
-        storedVersion < 5
+        storedVersion < 6
           ? defaultBrochureContent.ctaLabel
           : raw.ctaLabel || defaultBrochureContent.ctaLabel,
       ctaUrl:
-        storedVersion < 5 && raw.ctaUrl === "/"
-          ? defaultBrochureContent.ctaUrl
-          : raw.ctaUrl || defaultBrochureContent.ctaUrl,
-      sections: migratedSections,
-      cases: raw.cases || defaultBrochureCases,
-      metrics: storedVersion < 5 ? defaultBrochureMetrics : raw.metrics || defaultBrochureMetrics,
+        storedVersion < 6 ? defaultBrochureContent.ctaUrl : raw.ctaUrl || defaultBrochureContent.ctaUrl,
+      services: storedVersion < 6 ? defaultBrochureContent.services : raw.services || defaultBrochureContent.services,
+      plans: storedVersion < 6 ? defaultBrochurePlans : raw.plans || defaultBrochurePlans,
+      sections: storedVersion < 6 ? defaultBrochureSections : migratedSections,
+      cases: storedVersion < 6 ? defaultBrochureCases : raw.cases || defaultBrochureCases,
+      metrics: storedVersion < 6 ? defaultBrochureMetrics : raw.metrics || defaultBrochureMetrics,
       testimonials: migratedTestimonials,
-      teamMembers: migratedTeam,
-      media: migratedMedia.length
-        ? migratedMedia.map((item) => ({
+      teamMembers: storedVersion < 6 ? defaultBrochureTeam : migratedTeam,
+      media: phaseOneMedia.length
+        ? phaseOneMedia.map((item) => ({
             ...(item as object),
             sizeBytes: (item as { sizeBytes?: number }).sizeBytes || 0,
             positionX: (item as { positionX?: number }).positionX ?? 50,
@@ -643,7 +744,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
 export async function saveBrochureContent(input: unknown) {
   const content = brochureContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 5,
+    version: 6,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

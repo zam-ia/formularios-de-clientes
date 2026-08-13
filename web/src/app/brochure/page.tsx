@@ -5,12 +5,12 @@ import BrochureLanding from './BrochureLanding';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Crisdal Agency | Crecer con orden',
-  description: 'Ayudamos a empresas en crecimiento a ordenar estrategia, procesos, cultura y tecnología para construir operaciones más claras, medibles y preparadas para crecer.',
+  title: { absolute: 'Crisdal Agency | Contenido, video, redes y publicidad en Huancayo' },
+  description: 'Planes de video, diseño, manejo de redes y Meta Ads para negocios de Huancayo que quieren contenido que venda.',
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'Crisdal Agency | Estrategia, Procesos, Cultura y Tecnología',
-    description: 'Transformamos crecimiento desordenado en una estructura más clara, rentable y preparada para escalar.',
+    title: 'Crisdal Agency | Contenido que vende',
+    description: 'Conoce nuestros planes de video, diseño, redes y publicidad para negocios de Huancayo.',
     type: 'website',
     locale: 'es_PE',
   },

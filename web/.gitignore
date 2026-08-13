@@ -17,6 +17,7 @@
 /.next/
 /.next-qa/
 /.next-brochure-qa/
+/.next-fase1-qa/
 /.next-stale-*/
 /out/
 
@@ -38,6 +39,7 @@ yarn-error.log*
 !.env.example
 
 # local design intermediates
+/fase1-*.png
 /public/avatar-crisdal.png
 /public/avatar-crisdal-key.png
 /public/avatar-crisdal-cutout.png
