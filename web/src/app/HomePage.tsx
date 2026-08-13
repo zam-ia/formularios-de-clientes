@@ -24,9 +24,9 @@ export default function HomePage({ content }: { content: SiteContent }) {
       <Link href="#inicio" className={styles.brand} aria-label="Crisdal Agency, inicio"><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized /></Link>
       <nav className={menuOpen ? styles.navOpen : ""} aria-label="Navegación principal">
         <a href="#inicio" onClick={() => setMenuOpen(false)}>Inicio</a>
-        <div className={styles.dropdown}><a href="#servicios">Servicios <ChevronDown /></a><div><a href="#servicios">IA & WhatsApp</a><a href="#servicios">Contenido audiovisual</a><a href="#servicios">Web, apps y branding</a></div></div>
-        <div className={styles.dropdown}><a href="#rubros">Rubros <ChevronDown /></a><div><a href="#salud">Salud & Estética</a><a href="#educacion">Educación</a></div></div>
-        <Link href="/aliados">Red de Aliados <span>PRIVADA</span></Link><a href="#resultados">Resultados</a><a href="#nosotros">Nosotros</a>
+        <div className={styles.dropdown}><a href="#servicios" onClick={() => setMenuOpen(false)}>Servicios <ChevronDown /></a><div><a href="#servicios" onClick={() => setMenuOpen(false)}>IA & WhatsApp</a><a href="#servicios" onClick={() => setMenuOpen(false)}>Contenido audiovisual</a><a href="#servicios" onClick={() => setMenuOpen(false)}>Web, apps y branding</a></div></div>
+        <div className={styles.dropdown}><a href="#rubros" onClick={() => setMenuOpen(false)}>Rubros <ChevronDown /></a><div><a href="#salud" onClick={() => setMenuOpen(false)}>Salud & Estética</a><a href="#educacion" onClick={() => setMenuOpen(false)}>Educación</a></div></div>
+        <Link href="/aliados" onClick={() => setMenuOpen(false)}>Red de Aliados <span>PRIVADA</span></Link><a href="#resultados" onClick={() => setMenuOpen(false)}>Resultados</a><a href="#nosotros" onClick={() => setMenuOpen(false)}>Nosotros</a>
       </nav>
       <a className={styles.headerCta} href={whatsapp} target="_blank" rel="noreferrer">Agenda tu diagnóstico <ArrowRight /></a>
       <button className={styles.menuButton} onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}>{menuOpen ? <X /> : <Menu />}</button>
