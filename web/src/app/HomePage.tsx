@@ -187,12 +187,12 @@ export default function HomePage({ content }: { content: SiteContent }) {
           <h1>{content.heroTitle.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</h1>
           <p>{content.heroLead}</p>
           <div className={styles.heroActions}>
-            <a href="#contacto" onClick={() => track("hero_cta_click", { placement: "hero" })}>
-              Solicitar diagnóstico <ArrowRight />
+            <a href="#casos" onClick={() => track("open_case", { placement: "hero" })}>
+              Ver trabajos <ArrowRight />
             </a>
-            <a href="#casos" onClick={() => track("case_study_open", { placement: "hero" })}>
-              <Play /> Ver casos
-            </a>
+            <Link href="/brochure#planes" onClick={() => track("click_plan", { placement: "hero" })}>
+              <Play /> Conocer planes
+            </Link>
           </div>
           <div className={styles.heroProof}>
             <span><Check /> Diagnóstico antes de ejecutar</span>
@@ -247,6 +247,14 @@ export default function HomePage({ content }: { content: SiteContent }) {
             </Link>
           </div>
         </article>
+        <div className={styles.caseQuickLinks}>
+          <Link href="/casos/change-the-slim-studio" onClick={() => track("open_case", { case: "Change" })}>
+            <span>Branding + contenido</span><strong>Change The Slim Studio</strong><ArrowRight />
+          </Link>
+          <Link href="/casos/colegio-san-juan" onClick={() => track("open_case", { case: "San Juan" })}>
+            <span>Educación + campaña</span><strong>Colegio San Juan</strong><ArrowRight />
+          </Link>
+        </div>
       </section>
 
       <section id="servicios" className={styles.services}>

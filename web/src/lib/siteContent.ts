@@ -30,7 +30,7 @@ const testimonialSchema = z.object({
 });
 
 export const siteContentSchema = z.object({
-  version: z.literal(2),
+  version: z.literal(3),
   whatsappNumber: z.string().regex(/^\d{8,15}$/),
   logoUrl: mediaUrlSchema,
   heroKicker: z.string().min(2).max(100),
@@ -75,16 +75,16 @@ export type SiteContent = z.infer<typeof siteContentSchema>;
 export type SiteTestimonial = z.infer<typeof testimonialSchema>;
 
 export const defaultSiteContent: SiteContent = {
-  version: 2,
+  version: 3,
   whatsappNumber: "51987088359",
   logoUrl: "/brand/crisdal-agency-logo.png",
   heroKicker: "Estrategia · Creatividad · Distribución · Conversión",
-  heroTitle: "CONVERTIMOS ATENCIÓN\nEN OPORTUNIDADES\nREALES.",
+  heroTitle: "CONVERTIMOS ATENCIÓN EN\nOPORTUNIDADES REALES.",
   heroLead:
     "Crisdal conecta estrategia, creatividad, tecnología y seguimiento para que tu negocio responda mejor, convierta con claridad y crezca sin desorden.",
   heroMediaKind: "image",
-  heroMedia: "/team/equipo-crisdal.webp",
-  heroPoster: "/team/equipo-crisdal.webp",
+  heroMedia: "/brochure/story/brand-overview.webp",
+  heroPoster: "/brochure/story/brand-overview.webp",
   whyTitle: "Una sola ruta. Menos piezas aisladas. Más claridad para avanzar.",
   sectorsTitle: "Conocemos el contexto antes de diseñar la solución.",
   healthTitle: "Salud y estética",
@@ -128,20 +128,20 @@ export const defaultSiteContent: SiteContent = {
       text: "Automatización, analítica y mejora continua para sostener el avance.",
     },
   ],
-  resultsTitle: "El trabajo se entiende mejor cuando se ve el recorrido completo.",
-  caseCategory: "Caso en preparación",
-  caseTitle: "Del problema real a una solución que el equipo puede sostener.",
+  resultsTitle: "Trabajo real antes que promesas.",
+  caseCategory: "Fitness · Contenido + crecimiento",
+  caseTitle: "Personal Training Perú: una presencia digital que acompañó el crecimiento.",
   caseChallenge:
-    "Documentamos el punto de partida para entender dónde se enfrían las oportunidades o se pierde tiempo.",
+    "El negocio necesitaba ordenar su identidad, sostener una comunicación frecuente y convertir atención en conversaciones.",
   caseSolution:
-    "Conectamos estrategia, contenido y sistemas en una ruta proporcional al negocio.",
+    "Conectamos identidad, contenido orgánico y piezas orientadas a captación y renovación.",
   caseExecution:
-    "Publicaremos aquí el proceso y los resultados únicamente cuando exista autorización del cliente.",
-  caseImage: "/team/equipo-crisdal.webp",
-  casePoster: "/team/equipo-crisdal.webp",
+    "Producción, diseño y distribución trabajaron como una sola ruta, con seguimiento comercial del cliente.",
+  caseImage: "/brochure/portfolio/personal-training-full.webp",
+  casePoster: "/brochure/portfolio/personal-training-full.webp",
   caseMediaKind: "image",
-  metricValue: "",
-  metricLabel: "",
+  metricValue: "+S/50 mil",
+  metricLabel: "crecimiento mensual reportado por el cliente",
   aboutTitle: "Creatividad con estructura. Tecnología con propósito.",
   aboutText:
     "Somos un equipo de Huancayo que conecta estrategia, comunicación, producción audiovisual y desarrollo para transformar ideas en sistemas que generan resultados sostenibles.",
@@ -163,19 +163,28 @@ export async function getSiteContent(): Promise<SiteContent> {
       .download(SITE_CONTENT_PATH);
     if (error || !data) return defaultSiteContent;
     const raw = JSON.parse(await data.text()) as Record<string, unknown>;
+    const storedVersion = Number(raw.version || 1);
     const legacyHero = String(raw.heroImage || defaultSiteContent.heroMedia);
     const legacyCaseText = String(raw.caseText || defaultSiteContent.caseChallenge);
     const legacyFinal = String(raw.finalImage || defaultSiteContent.finalMedia);
     const parsed = siteContentSchema.safeParse({
       ...defaultSiteContent,
       ...raw,
-      version: 2,
+      version: 3,
+      heroTitle: storedVersion < 3 ? defaultSiteContent.heroTitle : raw.heroTitle,
+      resultsTitle: storedVersion < 3 ? defaultSiteContent.resultsTitle : raw.resultsTitle,
+      caseCategory: storedVersion < 3 ? defaultSiteContent.caseCategory : raw.caseCategory,
+      caseTitle: storedVersion < 3 ? defaultSiteContent.caseTitle : raw.caseTitle,
       heroMedia: raw.heroMedia || legacyHero,
       heroPoster: raw.heroPoster || legacyHero,
-      caseChallenge: raw.caseChallenge || legacyCaseText,
-      caseSolution: raw.caseSolution || legacyCaseText,
-      caseExecution: raw.caseExecution || legacyCaseText,
-      casePoster: raw.casePoster || raw.caseImage || defaultSiteContent.casePoster,
+      caseChallenge: storedVersion < 3 ? defaultSiteContent.caseChallenge : raw.caseChallenge || legacyCaseText,
+      caseSolution: storedVersion < 3 ? defaultSiteContent.caseSolution : raw.caseSolution || legacyCaseText,
+      caseExecution: storedVersion < 3 ? defaultSiteContent.caseExecution : raw.caseExecution || legacyCaseText,
+      caseImage: storedVersion < 3 ? defaultSiteContent.caseImage : raw.caseImage,
+      casePoster: storedVersion < 3 ? defaultSiteContent.casePoster : raw.casePoster || raw.caseImage || defaultSiteContent.casePoster,
+      caseMediaKind: storedVersion < 3 ? defaultSiteContent.caseMediaKind : raw.caseMediaKind,
+      metricValue: storedVersion < 3 ? defaultSiteContent.metricValue : raw.metricValue,
+      metricLabel: storedVersion < 3 ? defaultSiteContent.metricLabel : raw.metricLabel,
       finalMedia: raw.finalMedia || legacyFinal,
       finalPoster: raw.finalPoster || legacyFinal,
       testimonials: raw.testimonials || [],
@@ -189,7 +198,7 @@ export async function getSiteContent(): Promise<SiteContent> {
 export async function saveSiteContent(input: unknown) {
   const content = siteContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 2,
+    version: 3,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

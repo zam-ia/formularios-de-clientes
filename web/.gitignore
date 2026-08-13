@@ -40,6 +40,9 @@ yarn-error.log*
 
 # local design intermediates
 /fase1-*.png
+/visual-*.png
+/henko-frame.png
+/dev-v2.*.log
 /public/avatar-crisdal.png
 /public/avatar-crisdal-key.png
 /public/avatar-crisdal-cutout.png

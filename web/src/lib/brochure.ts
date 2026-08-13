@@ -128,8 +128,8 @@ export const defaultBrochureTeam = [
   {
     id: "aldair",
     name: "Aldair Pérez",
-    role: "Estrategia y Producción",
-    focus: "Dirección creativa · Producción audiovisual · Estrategia de contenido",
+    role: "Co-Founder · Estrategia & Producción",
+    focus: "Administrador Industrial y Comunicador Audiovisual. Dirección de cuenta, estrategia, producción y visión.",
     imageUrl: "/brochure/team/aldair-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
@@ -138,18 +138,28 @@ export const defaultBrochureTeam = [
   {
     id: "milagros",
     name: "Milagros Ríos",
-    role: "Atención y Redes",
-    focus: "Calendario · Publicación · Comunidad · Seguimiento al cliente",
+    role: "Co-Founder · Personas & Experiencia",
+    focus: "Psicóloga. Cultura, experiencia del cliente, coordinación y seguimiento del equipo.",
     imageUrl: "/brochure/team/milagros-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
     visible: true,
   },
   {
+    id: "damaris",
+    name: "Damaris Pérez",
+    role: "Co-Founder · Comunicación & Contenido",
+    focus: "Comunicadora titulada. Narrativa, contenido, comunicación de marca y dirección editorial.",
+    imageUrl: "/brochure/team/equipo-crisdal-2026.webp",
+    positionX: 72,
+    positionY: 28,
+    visible: true,
+  },
+  {
     id: "abi",
     name: "Abi",
-    role: "Diseño y Publicidad",
-    focus: "Identidad visual · Piezas comerciales · Meta Ads · Contenido",
+    role: "Comercial & Brand Face",
+    focus: "Conexión comercial, presencia de marca, contenido y relación con nuevos clientes.",
     imageUrl: "/brochure/team/abi-crisdal-2026.webp",
     positionX: 50,
     positionY: 28,
@@ -200,6 +210,10 @@ export const defaultBrochureMedia = [
   ["patron", "El Patrón Pollos & Parrillas", "Sistema de comunicación y contenido comercial", "/brochure/portfolio/el-patron.webp"],
   ["san-juan", "Colegio San Juan", "Identidad, señalética y campaña educativa", "/brochure/portfolio/colegio-san-juan.webp"],
   ["training-social", "Personal Training · Contenido", "Estrategia social, historias y piezas de conversión", "/brochure/portfolio/personal-training-social.webp"],
+  ["training-full", "Personal Training · Caso completo", "Estrategia, contenido, comunidad y crecimiento comercial", "/brochure/portfolio/personal-training-full.webp"],
+  ["change-ecosystem", "Change · Ecosistema", "Marca aplicada en puntos de contacto físicos y digitales", "/brochure/portfolio/change-ecosystem.webp"],
+  ["san-juan-campaign", "Colegio San Juan · Campaña", "Admisión, identidad y comunicación educativa", "/brochure/portfolio/san-juan-campaign.webp"],
+  ["henko", "Corporación Henko", "Producción audiovisual inmobiliaria en locación", "/brochure/portfolio/corporacion-henko.webp"],
 ].map(([id, title, caption, url]) => ({
   id: `portfolio-${id}`,
   kind: "image" as const,
@@ -305,7 +319,7 @@ export const defaultBrochureSections = [
     eyebrow: "El problema",
     title: "",
     body: "",
-    mediaIds: [],
+    mediaIds: ["portfolio-henko"],
   },
   {
     id: "showcase",
@@ -434,7 +448,21 @@ export const defaultBrochureCases = [
       "Intervención: identidad, contenido y piezas de conversión.",
       "Resultado reportado: más de S/220 mil mensuales.",
     ],
-    mediaIds: ["portfolio-training", "portfolio-training-social", "portfolio-training-brand"],
+    mediaIds: ["portfolio-training-full", "portfolio-training-social"],
+  },
+  {
+    id: "corporacion-henko",
+    client: "Corporación Henko",
+    eyebrow: "Inmobiliaria · Producción audiovisual",
+    title: "Una propuesta inmobiliaria explicada con claridad y presencia.",
+    summary:
+      "Construimos una narrativa audiovisual para presentar el proyecto, ordenar su comunicación y acompañar su presencia comercial. Mostramos el alcance creativo sin publicar métricas aún no validadas.",
+    stages: [
+      "Reto: comunicar una oferta compleja de forma más simple.",
+      "Intervención: concepto, producción audiovisual y piezas comerciales.",
+      "Resultado: una presencia más consistente en sus puntos de contacto.",
+    ],
+    mediaIds: [],
   },
   {
     id: "change",
@@ -448,7 +476,7 @@ export const defaultBrochureCases = [
       "Contenido y aplicaciones comerciales.",
       "Sistema consistente en canales físicos y digitales.",
     ],
-    mediaIds: ["portfolio-change", "portfolio-change-system", "portfolio-change-experience"],
+    mediaIds: ["portfolio-change-ecosystem", "portfolio-change-system", "portfolio-change-experience"],
   },
   {
     id: "san-juan",
@@ -462,12 +490,12 @@ export const defaultBrochureCases = [
       "Diseño de aplicaciones y señalética.",
       "Implementación de una presencia institucional coherente.",
     ],
-    mediaIds: ["portfolio-san-juan"],
+    mediaIds: ["portfolio-san-juan-campaign", "portfolio-san-juan"],
   },
 ];
 
 export const brochureContentSchema = z.object({
-  version: z.number().int().positive().default(6),
+  version: z.number().int().positive().default(7),
   kicker: z.string().min(1).max(80),
   title: z.string().min(1).max(140),
   lead: z.string().min(1).max(500),
@@ -508,10 +536,10 @@ export type BrochureMediaLayout = (typeof brochureMediaLayouts)[number];
 export type BrochureWidgetSize = (typeof brochureWidgetSizes)[number];
 
 export const defaultBrochureContent: BrochureContent = {
-  version: 6,
+  version: 7,
   kicker: "Contenido · Video · Redes · Publicidad",
   title: "Contenido que vende, no solo que se ve bonito.",
-  lead: "Ayudamos a negocios de Huancayo a crecer con contenido orgánico y publicidad bien hecha, sin depender de publicar porque toca.",
+  lead: "Creamos y movemos contenido para que tu negocio deje de publicar por cumplir y empiece a generar conversaciones.",
   heroMediaId: "portfolio-training-social",
   storyTitle: "Claridad. Contexto. Curiosidad.",
   story:
@@ -705,26 +733,26 @@ export async function getBrochureContent(): Promise<BrochureContent> {
       : [...defaultBrochureMedia, ...defaultBrochureStoryMedia];
     const parsed = brochureContentSchema.safeParse({
       ...raw,
-      version: 6,
-      kicker: storedVersion < 6 ? defaultBrochureContent.kicker : raw.kicker,
-      title: storedVersion < 6 ? defaultBrochureContent.title : raw.title,
-      lead: storedVersion < 6 ? defaultBrochureContent.lead : raw.lead,
-      heroMediaId: storedVersion < 6 ? defaultBrochureContent.heroMediaId : raw.heroMediaId || defaultBrochureContent.heroMediaId,
-      storyTitle: storedVersion < 6 ? defaultBrochureContent.storyTitle : raw.storyTitle,
-      story: storedVersion < 6 ? defaultBrochureContent.story : raw.story,
+      version: 7,
+      kicker: storedVersion < 7 ? defaultBrochureContent.kicker : raw.kicker,
+      title: storedVersion < 7 ? defaultBrochureContent.title : raw.title,
+      lead: storedVersion < 7 ? defaultBrochureContent.lead : raw.lead,
+      heroMediaId: storedVersion < 7 ? defaultBrochureContent.heroMediaId : raw.heroMediaId || defaultBrochureContent.heroMediaId,
+      storyTitle: storedVersion < 7 ? defaultBrochureContent.storyTitle : raw.storyTitle,
+      story: storedVersion < 7 ? defaultBrochureContent.story : raw.story,
       ctaLabel:
-        storedVersion < 6
+        storedVersion < 7
           ? defaultBrochureContent.ctaLabel
           : raw.ctaLabel || defaultBrochureContent.ctaLabel,
       ctaUrl:
-        storedVersion < 6 ? defaultBrochureContent.ctaUrl : raw.ctaUrl || defaultBrochureContent.ctaUrl,
-      services: storedVersion < 6 ? defaultBrochureContent.services : raw.services || defaultBrochureContent.services,
-      plans: storedVersion < 6 ? defaultBrochurePlans : raw.plans || defaultBrochurePlans,
-      sections: storedVersion < 6 ? defaultBrochureSections : migratedSections,
-      cases: storedVersion < 6 ? defaultBrochureCases : raw.cases || defaultBrochureCases,
-      metrics: storedVersion < 6 ? defaultBrochureMetrics : raw.metrics || defaultBrochureMetrics,
+        storedVersion < 7 ? defaultBrochureContent.ctaUrl : raw.ctaUrl || defaultBrochureContent.ctaUrl,
+      services: storedVersion < 7 ? defaultBrochureContent.services : raw.services || defaultBrochureContent.services,
+      plans: storedVersion < 7 ? defaultBrochurePlans : raw.plans || defaultBrochurePlans,
+      sections: storedVersion < 7 ? defaultBrochureSections : migratedSections,
+      cases: storedVersion < 7 ? defaultBrochureCases : raw.cases || defaultBrochureCases,
+      metrics: storedVersion < 7 ? defaultBrochureMetrics : raw.metrics || defaultBrochureMetrics,
       testimonials: migratedTestimonials,
-      teamMembers: storedVersion < 6 ? defaultBrochureTeam : migratedTeam,
+      teamMembers: storedVersion < 7 ? defaultBrochureTeam : migratedTeam,
       media: phaseOneMedia.length
         ? phaseOneMedia.map((item) => ({
             ...(item as object),
@@ -744,7 +772,7 @@ export async function getBrochureContent(): Promise<BrochureContent> {
 export async function saveBrochureContent(input: unknown) {
   const content = brochureContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 6,
+    version: 7,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

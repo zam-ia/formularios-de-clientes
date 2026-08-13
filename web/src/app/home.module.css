@@ -115,6 +115,12 @@
 .sectionHead > p:last-child:not(.kicker) { max-width: 680px; color: var(--color-muted); font-size: 18px; line-height: 1.7; }
 .cases { background: var(--color-surface); }
 .caseCard { display: grid; grid-template-columns: 1.08fr .92fr; min-height: 620px; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-dark); color: white; box-shadow: 0 25px 80px rgba(34,28,18,.1); }
+.caseQuickLinks { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.caseQuickLinks a { min-height: 120px; padding: 24px; display: grid; grid-template-columns: 1fr auto; align-items: end; border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); text-decoration: none; background: white; transition: transform .2s, box-shadow .2s; }
+.caseQuickLinks a:hover { transform: translateY(-3px); box-shadow: 0 18px 50px rgba(34,28,18,.1); }
+.caseQuickLinks span { grid-column: 1/-1; color: #8f6500; font-size: 9px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.caseQuickLinks strong { margin-top: 12px; font-size: clamp(20px,2vw,28px); }
+.caseQuickLinks svg { width: 20px; color: #9a6900; }
 .caseMedia { position: relative; min-height: 620px; overflow: hidden; }
 .caseMedia > span { position: absolute; left: 22px; top: 22px; padding: 9px 12px; border-radius: 999px; background: var(--color-primary); color: #21190a; font-size: 8px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .caseContent { padding: clamp(32px, 5vw, 68px); display: flex; flex-direction: column; }
@@ -326,4 +332,7 @@
   .site [data-reveal] { opacity: 1; transform: none; transition: none; }
   .serviceGrid > a, .steps li > strong, .faq summary svg { transition: none; }
   .heroVisual video, .caseMedia video, .contactMedia video { display: none; }
+}
+@media (max-width: 680px) {
+  .caseQuickLinks { grid-template-columns: 1fr; }
 }

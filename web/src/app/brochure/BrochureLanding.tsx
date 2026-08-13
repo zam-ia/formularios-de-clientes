@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -404,6 +405,8 @@ function SectionContent({
   submitContact,
   contactState,
 }: SectionRendererProps) {
+  const [activeMagic, setActiveMagic] = useState(0);
+  const [openProblem, setOpenProblem] = useState<number | null>(null);
   const selectedMedia = section.mediaIds
     .map((id) => mediaById.get(id))
     .filter(Boolean) as BrochureMedia[];
@@ -411,26 +414,41 @@ function SectionContent({
     return (
       <section id="problema" className={styles.problemSection}>
         <div className={styles.sectionHead} data-reveal>
-          <p className={styles.eyebrow}>Crecer no debería desordenarte</p>
-          <h2>
-            ¿Tu empresa vende más, pero cada vez resulta más difícil
-            controlarla?
-          </h2>
+          <p className={styles.eyebrow}>Lo que hoy te frena</p>
+          <h2>¿Publicas, pero nadie te escribe?</h2>
           <p>
-            El problema no siempre es conseguir más clientes. Muchas veces el
-            crecimiento empieza a revelar fallas que antes permanecían ocultas.
+            Toca cada tarjeta. Detrás de una comunicación irregular suele haber
+            un problema concreto que sí podemos ordenar.
           </p>
         </div>
         <div className={styles.problemFlow}>
           {problems.map((item, index) => (
-            <article key={item.number} data-reveal>
-              <span>{item.number}</span>
-              {problemVisuals[index]}
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-              <strong>Resultado</strong>
-              <p>{item.result}</p>
-            </article>
+            <button
+              type="button"
+              key={item.number}
+              className={openProblem === index ? styles.problemCardOpen : ""}
+              onClick={() => {
+                setOpenProblem(openProblem === index ? null : index);
+                track("flip_problem_card", { card: item.title });
+              }}
+              aria-pressed={openProblem === index}
+              data-reveal
+            >
+              <span className={styles.problemCardInner}>
+                <span className={styles.problemCardFront}>
+                  <small>{item.number}</small>
+                  {problemVisuals[index]}
+                  <strong>{item.title}</strong>
+                  <em>Toca para entenderlo</em>
+                </span>
+                <span className={styles.problemCardBack}>
+                  <small>LO QUE OCURRE</small>
+                  <strong>{item.text}</strong>
+                  <i>Consecuencia</i>
+                  <span>{item.result}</span>
+                </span>
+              </span>
+            </button>
           ))}
         </div>
       </section>
@@ -440,11 +458,11 @@ function SectionContent({
     return (
       <section id="soluciones" className={styles.solutions}>
         <div className={styles.sectionHead} data-reveal>
-          <p className={styles.eyebrow}>Un sistema integrado</p>
-          <h2>Intervenimos donde se está frenando tu crecimiento.</h2>
+          <p className={styles.eyebrow}>Capacidades conectadas</p>
+          <h2>Video, diseño, redes y pauta. Un solo equipo.</h2>
           <p>
-            No necesitas contratar todo. Primero detectamos qué está limitando
-            el negocio y priorizamos la intervención.
+            Cada capacidad funciona sola. Juntas, convierten contenido en una
+            presencia constante y medible.
           </p>
         </div>
         <div className={styles.solutionGrid}>
@@ -459,12 +477,11 @@ function SectionContent({
               <article key={editable.id} data-reveal>
                 <figure className={styles.solutionStory}>
                   <VisualMedia item={selectedMedia[index]} fallback={solutionStoryImages[index] || "/brochure/story/strategy.webp"} alt={`Visual de Crisdal ${editable.title}`} sizes="(max-width: 900px) 92vw, 45vw" />
+                  <span className={styles.solutionShade} aria-hidden="true" />
                 </figure>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <p className={styles.solutionCode}>
-                  CRISDAL {editable.title.toUpperCase() || item.code}
-                </p>
-                <h3>{item.question}</h3>
+                <span className={styles.solutionNumber}>{String(index + 1).padStart(2, "0")}</span>
+                <p className={styles.solutionCode}>{editable.title.toUpperCase() || item.code}</p>
+                <h3>{editable.description}</h3>
                 <p>{editable.description || item.text}</p>
                 <div className={styles.solutionDiagram} aria-hidden="true">
                   {(solutionVisuals[index] || ["Entrada", "Sistema", "Avance"]).map((label) => <span key={label}>{label}</span>)}
@@ -486,22 +503,30 @@ function SectionContent({
       <section id="metodo" className={styles.magicSection}>
         <div className={styles.sectionHead} data-reveal>
           <p className={styles.eyebrow}>Método MÁGICA</p>
-          <h2>Cómo creamos contenido que vende.</h2>
+          <h2>Antes de publicar, cada pieza pasa tres pruebas.</h2>
           <p>{content.story}</p>
         </div>
-        <div className={styles.magicTrack} aria-label="Tres pilares del contenido Crisdal">
+        <div className={styles.magicTrack} role="tablist" aria-label="Tres pilares del contenido Crisdal">
           {["Claridad", "Contexto", "Curiosidad"].map((pillar, index) => (
-            <article key={pillar} data-reveal style={{ "--delay": `${index * 100}ms` } as React.CSSProperties}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeMagic === index}
+              className={activeMagic === index ? styles.magicActive : ""}
+              onClick={() => { setActiveMagic(index); track("activate_magica", { pillar }); }}
+              key={pillar}
+              data-reveal
+              style={{ "--delay": `${index * 100}ms` } as React.CSSProperties}
+            >
               <span>C</span>
               <div><strong>{pillar}</strong><p>{[
                 "Tu audiencia entiende qué ofreces y por qué importa.",
                 "La pieza conversa con una situación real del cliente.",
                 "Abrimos una razón para mirar, recordar y actuar.",
               ][index]}</p></div>
-            </article>
+            </button>
           ))}
         </div>
-        <p className={styles.magicNote}>MÁGICA seguirá creciendo como metodología. En esta fase mostramos únicamente los tres pilares ya definidos.</p>
       </section>
     );
 
@@ -674,12 +699,22 @@ function SectionContent({
   if (section.type === "industries")
     return (
       <section className={styles.industries}>
-        <p className={styles.eyebrow}>Proyectos / Industrias</p>
-        <div>
-          <span>Salud</span>
-          <span>Educación</span>
-          <span>Bienestar</span>
-          <span>Servicios profesionales</span>
+        <div className={styles.sectionHead}>
+          <p className={styles.eyebrow}>Experiencia por industria</p>
+          <h2>Conocemos el contexto antes de proponer.</h2>
+        </div>
+        <div className={styles.industryGrid}>
+          {[
+            ["fitness-bienestar", "Fitness & bienestar", "/brochure/portfolio/personal-training-full.webp", "Personal Training + Change"],
+            ["educacion", "Educación", "/brochure/portfolio/san-juan-campaign.webp", "Colegio San Juan"],
+            ["inmobiliaria", "Inmobiliaria", "/brochure/portfolio/corporacion-henko.webp", "Corporación Henko"],
+            ["salud-estetica", "Salud & estética", "/brochure/portfolio/clinica-vitalis.webp", "Vitalis + Sonríe + Aura"],
+          ].map(([slug, title, image, projects]) => (
+            <Link key={slug} href={`/industrias/${slug}`} onClick={() => track("open_industry", { industry: title })}>
+              <Image src={image} alt={title} fill unoptimized sizes="(max-width: 680px) 92vw, 45vw" />
+              <span><small>{projects}</small><strong>{title}</strong><em>Explorar <ArrowRight /></em></span>
+            </Link>
+          ))}
         </div>
       </section>
     );
@@ -688,8 +723,8 @@ function SectionContent({
     return (
       <section id="equipo" className={styles.teamSection}>
         <div className={styles.sectionHead} data-reveal>
-          <p className={styles.eyebrow}>Equipo interdisciplinario</p>
-          <h2>Un equipo real detrás de cada entrega.</h2>
+          <p className={styles.eyebrow}>Quiénes lo hacen posible</p>
+          <h2>Tres cofundadores. Un equipo que se mueve contigo.</h2>
         </div>
         <div className={styles.teamGrid}>
           {content.teamMembers.filter((person) => person.visible).map((person, index) => (
@@ -724,7 +759,7 @@ function SectionContent({
       <section id="ruta" className={styles.routeSection}>
         <div className={styles.sectionHead} data-reveal>
           <p className={styles.eyebrow}>Cómo trabajamos</p>
-          <h2>De la idea a una entrega que puedes usar.</h2>
+          <h2>Un equipo. Un flujo. Menos vueltas.</h2>
           <p>Un ciclo corto y visible para que siempre sepas qué sigue y qué recibirás.</p>
         </div>
         <ol className={styles.projectRoute}>
@@ -928,45 +963,25 @@ function CaseStudy({
   const media = project.mediaIds
     .map((id) => mediaById.get(id))
     .filter(Boolean) as BrochureMedia[];
-  return (
-    <article className={styles.caseSection}>
-      <div className={styles.caseCopy} data-reveal>
-        <p className={styles.eyebrow}>{project.eyebrow}</p>
-        <span className={styles.caseNumber}>
-          CASO {String(index + 1).padStart(2, "0")}
-        </span>
-        <h2>{project.client}</h2>
-        <h3>{project.title}</h3>
-        <p>{project.summary}</p>
-      </div>
-      <div className={styles.caseEvidence} data-reveal>
-        {media.length ? (
-          <MediaGrid media={media} />
-        ) : (
-          <div
-            className={styles.processMap}
-            aria-label="Mapa conceptual del proceso"
-          >
-            <span>Escuchar</span>
-            <span>Entender</span>
-            <span>Ordenar</span>
-            <span>Avanzar</span>
-            <i />
-            <i />
-            <i />
-          </div>
-        )}
-        <ol>
-          {project.stages.map((stage, stageIndex) => (
-            <li key={`${project.id}-${stageIndex}`}>
-              <span>Etapa {String(stageIndex + 1).padStart(2, "0")}</span>
-              <strong>{stage}</strong>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </article>
-  );
+  const cover = media[0];
+  const slug = project.id === "change" ? "change-the-slim-studio" : project.id === "san-juan" ? "colegio-san-juan" : project.id;
+  return <Link
+    href={`/casos/${slug}`}
+    className={styles.caseCover}
+    onClick={() => track("open_case", { case: project.client })}
+    data-reveal
+  >
+    <span className={styles.caseCoverMedia}>
+      <VisualMedia item={cover} fallback="/brochure/story/strategy.webp" alt={`Caso ${project.client}`} sizes="(max-width: 680px) 92vw, 45vw" />
+    </span>
+    <span className={styles.caseCoverShade} aria-hidden="true" />
+    <span className={styles.caseCoverCopy}>
+      <small>CASO {String(index + 1).padStart(2, "0")} · {project.eyebrow}</small>
+      <strong>{project.client}</strong>
+      <em>{project.title}</em>
+      <i>Ver caso <ArrowRight /></i>
+    </span>
+  </Link>;
 }
 
 function MediaShowcase({

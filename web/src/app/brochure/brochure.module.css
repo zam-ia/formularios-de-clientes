@@ -1893,3 +1893,188 @@
     width: 15px;
   }
 }
+
+/* Phase 1 V2: denser editorial rhythm and interaction-led modules */
+.hero {
+  min-height: min(900px, 92svh);
+  padding-top: clamp(118px, 12vh, 150px);
+  padding-bottom: 64px;
+}
+.hero h1 { font-size: clamp(58px, 6vw, 86px); line-height: .94; }
+.promise { max-width: 650px; font-size: clamp(18px, 1.7vw, 25px); }
+.problemSection,
+.solutions,
+.teamSection,
+.routeSection,
+.faqSection,
+.casesSection,
+.showcaseSection,
+.customSection,
+.metricsSection,
+.testimonialsSection,
+.magicSection,
+.plansSection { padding: clamp(88px, 8vw, 112px) max(20px, calc((100vw - 1220px) / 2)); }
+.problemSection { padding-top: clamp(120px, 11vw, 155px); }
+.sectionHead h2,
+.faqSection h2 { font-size: clamp(44px, 4.5vw, 56px); line-height: 1; letter-spacing: -.045em; }
+.sectionHead > p:last-child { font-size: 16px; }
+
+.problemFlow { margin-top: 54px; gap: 16px; border: 0; perspective: 1400px; }
+.problemFlow > button {
+  min-width: 0;
+  height: 390px;
+  padding: 0;
+  border: 0;
+  border-radius: 26px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 1200px;
+}
+.problemCardInner { position: relative; width: 100%; height: 100%; display: block; transform-style: preserve-3d; transition: transform .62s cubic-bezier(.2,.75,.2,1); }
+.problemCardOpen .problemCardInner { transform: rotateY(180deg); }
+.problemCardFront,
+.problemCardBack { position: absolute; inset: 0; padding: 28px; display: flex; flex-direction: column; border: 1px solid rgba(36,36,36,.13); border-radius: 26px; overflow: hidden; backface-visibility: hidden; background: rgba(255,255,255,.68); box-shadow: 0 22px 60px rgba(54,45,30,.07); }
+.problemCardBack { justify-content: center; transform: rotateY(180deg); background: var(--graphite); color: white; }
+.problemCardFront small,
+.problemCardBack small { font-size: 10px; font-weight: 850; letter-spacing: .15em; }
+.problemCardFront > strong { margin-top: 25px; font-size: clamp(24px,2vw,32px); line-height: 1.05; text-transform: uppercase; }
+.problemCardFront > em { margin-top: auto; color: #8a6000; font-size: 10px; font-style: normal; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.problemCardBack > strong { margin-top: 22px; font-size: clamp(20px,2vw,28px); line-height: 1.22; }
+.problemCardBack > i { margin-top: 35px; color: var(--yellow); font-size: 10px; font-style: normal; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+.problemCardBack > span { margin-top: 8px; color: rgba(255,255,255,.68); line-height: 1.6; }
+.problemFlow .inboxScene,
+.problemFlow .dependencyScene,
+.problemFlow .performanceScene { flex: none; width: 100%; height: 145px; margin-top: 24px; }
+
+.solutionGrid { gap: 16px; margin-top: 54px; border: 0; border-radius: 0; overflow: visible; }
+.solutionGrid article,
+.solutionGrid article:nth-child(2n),
+.solutionGrid article:nth-child(n + 3) { position: relative; min-height: 470px; padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; border: 0; border-radius: 26px; background: var(--graphite); color: white; }
+.solutionGrid article:hover { background: var(--graphite); transform: translateY(-4px); }
+.solutionStory { position: absolute; inset: 0; height: auto; margin: 0; border-radius: 0; }
+.solutionStory img,
+.solutionStory video { transform: scale(1.001); }
+.solutionGrid article:hover .solutionStory img,
+.solutionGrid article:hover .solutionStory video { transform: scale(1.04); }
+.solutionShade { position: absolute; inset: 0; background: linear-gradient(180deg,rgba(8,8,8,.08) 20%,rgba(15,15,15,.92) 88%); }
+.solutionNumber,
+.solutionCode,
+.solutionGrid h3,
+.solutionGrid article > p,
+.solutionDiagram,
+.solutionGrid article > a { position: relative; z-index: 2; }
+.solutionNumber { position: absolute; top: 24px; right: 24px; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; background: rgba(25,25,25,.48); backdrop-filter: blur(10px); }
+.solutionCode { margin: 0 0 13px; color: var(--yellow); }
+.solutionGrid h3 { max-width: 560px; font-size: clamp(25px,2.5vw,34px); }
+.solutionGrid article > p:not(.solutionCode) { display: none; }
+.solutionDiagram { max-width: 420px; margin-top: 20px; }
+.solutionDiagram span { border-color: rgba(255,255,255,.22); background: rgba(22,22,22,.48); color: rgba(255,255,255,.8); }
+.solutionGrid strong { display: none; }
+.solutionGrid article > a { color: white; }
+
+.magicTrack { max-width: 920px; margin-top: 52px; gap: 10px; border-radius: 30px; background: rgba(255,255,255,.04); }
+.magicTrack::before { display: none; }
+.magicTrack button { position: relative; z-index: 1; min-height: 240px; padding: 26px; display: flex; align-items: flex-start; gap: 18px; border: 1px solid rgba(255,255,255,.12); border-radius: 26px; background: transparent; color: white; font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: color .35s, transform .35s; animation: magicReveal .48s var(--delay) ease both; }
+.magicTrack button::before { content: ""; position: absolute; z-index: -1; inset: 8px; border-radius: 22px; background: var(--yellow); transform: scale(.75); opacity: 0; filter: blur(7px); transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .35s; }
+.magicTrack .magicActive::before { transform: scale(1); opacity: 1; filter: blur(0); }
+.magicTrack .magicActive { color: var(--graphite); }
+.magicTrack button > span { flex: none; width: 48px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; font-size: 22px; font-weight: 900; }
+.magicTrack .magicActive > span { border-color: rgba(36,36,36,.24); background: var(--graphite); color: var(--yellow); }
+.magicTrack p { color: rgba(255,255,255,.62); transition: color .35s; }
+.magicTrack .magicActive p { color: rgba(36,36,36,.7); }
+
+.casesList { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-top: 54px; }
+.caseCover { position: relative; min-height: 500px; display: block; overflow: hidden; border-radius: 28px; color: white; text-decoration: none; box-shadow: 0 25px 70px rgba(50,41,28,.12); }
+.caseCoverMedia,
+.caseCoverMedia > * { position: absolute !important; inset: 0; width: 100%; height: 100%; }
+.caseCoverMedia img,
+.caseCoverMedia video { width: 100%; height: 100%; object-fit: cover; transition: transform .75s cubic-bezier(.2,.8,.2,1); }
+.caseCover:hover .caseCoverMedia img,
+.caseCover:hover .caseCoverMedia video { transform: scale(1.045); }
+.caseCoverShade { position: absolute; inset: 0; background: linear-gradient(180deg,rgba(0,0,0,.03) 25%,rgba(17,17,17,.92) 95%); }
+.caseCoverCopy { position: absolute; inset: auto 0 0; z-index: 2; padding: 32px; display: flex; flex-direction: column; }
+.caseCoverCopy small { color: var(--yellow); font-size: 9px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.caseCoverCopy strong { margin-top: 12px; font-size: clamp(31px,3.3vw,48px); line-height: .98; text-transform: uppercase; }
+.caseCoverCopy em { max-width: 600px; margin-top: 10px; color: rgba(255,255,255,.72); font-size: 14px; font-style: normal; line-height: 1.45; }
+.caseCoverCopy i { margin-top: 20px; display: flex; align-items: center; gap: 8px; font-size: 10px; font-style: normal; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; transform: translateY(8px); opacity: 0; transition: .3s; }
+.caseCover:hover .caseCoverCopy i,
+.caseCover:focus-visible .caseCoverCopy i { opacity: 1; transform: none; }
+
+.industries { padding: clamp(88px, 8vw, 112px) max(20px, calc((100vw - 1220px) / 2)); }
+.industryGrid { margin-top: 52px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.industryGrid a { position: relative; min-height: 330px; overflow: hidden; border-radius: 25px; color: white; text-decoration: none; }
+.industryGrid a::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg,transparent 30%,rgba(13,13,13,.9)); }
+.industryGrid img { object-fit: cover; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.industryGrid a:hover img { transform: scale(1.04); }
+.industryGrid a > span { position: absolute; z-index: 2; inset: auto 0 0; padding: 26px; display: grid; }
+.industryGrid small { color: var(--yellow); font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.industryGrid strong { margin-top: 8px; font-size: clamp(26px,3vw,42px); }
+.industryGrid em { margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 10px; font-style: normal; text-transform: uppercase; }
+
+.teamGrid { grid-template-columns: repeat(4,minmax(0,1fr)); margin-top: 52px; }
+.teamGrid article { min-height: 500px; }
+.teamPortrait { height: 320px; }
+.teamGrid h3 { font-size: 22px; }
+.teamGrid p { font-size: 13px; }
+.integrationMap::before { width: 65%; height: 55%; border: 1px solid rgba(36,36,36,.15); border-radius: 50%; background: transparent; animation: orbitSpin 22s linear infinite; }
+.integrationMap::after { width: 45%; height: 72%; border: 1px solid rgba(250,183,19,.38); border-radius: 50%; background: transparent; animation: orbitSpin 18s linear reverse infinite; }
+.integrationMap:hover::before,
+.integrationMap:hover::after { animation-play-state: paused; }
+@keyframes orbitSpin { to { transform: rotate(360deg); } }
+
+.projectRoute { position: relative; gap: 14px; }
+.projectRoute::before { content: ""; position: absolute; left: 4%; right: 4%; top: 0; height: 2px; background: var(--yellow); transform-origin: left; animation: routeDraw 1.2s ease both; }
+.projectRoute li { position: relative; border-top: 0; border-right: 0; border-radius: 0 0 22px 22px; background: rgba(255,255,255,.045); }
+.projectRoute li::before { content: ""; position: absolute; top: -6px; left: 25px; width: 12px; height: 12px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 0 6px rgba(250,183,19,.12); }
+@keyframes routeDraw { from { transform: scaleX(0); } }
+.finalCta h2 { font-size: clamp(36px,4vw,44px); }
+
+@media (max-width: 1050px) {
+  .hero { min-height: auto; }
+  .teamGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .magicTrack { grid-template-columns: 1fr; }
+  .magicTrack button { min-height: auto; }
+  .projectRoute::before { left: 30px; right: auto; top: 4%; bottom: 4%; width: 2px; height: auto; transform-origin: top; animation: routeDrawVertical 1.2s ease both; }
+  .projectRoute li { padding-left: 55px; }
+  .projectRoute li::before { left: 24px; top: 28px; }
+  @keyframes routeDrawVertical { from { transform: scaleY(0); } }
+}
+@media (max-width: 680px) {
+  .hero { padding-top: 112px; padding-bottom: 56px; }
+  .hero h1 { font-size: clamp(38px,11.5vw,48px); line-height: .98; letter-spacing: -.05em; }
+  .problemSection,
+  .solutions,
+  .teamSection,
+  .routeSection,
+  .faqSection,
+  .casesSection,
+  .showcaseSection,
+  .customSection,
+  .metricsSection,
+  .testimonialsSection,
+  .magicSection,
+  .plansSection,
+  .industries { padding: 52px 18px; }
+  .sectionHead h2,
+  .faqSection h2 { font-size: clamp(29px,9vw,36px); }
+  .problemFlow > button { height: 360px; }
+  .solutionGrid article { min-height: 430px; padding: 24px; }
+  .casesList,
+  .industryGrid,
+  .teamGrid { grid-template-columns: 1fr; }
+  .caseCover { min-height: 430px; }
+  .caseCoverCopy { padding: 24px; }
+  .caseCoverCopy i { opacity: 1; transform: none; }
+  .industryGrid a { min-height: 290px; }
+  .teamGrid article { min-height: 470px; }
+  .teamPortrait { height: 310px; }
+  .finalCta h2 { font-size: clamp(28px,8.5vw,32px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .problemCardInner { transition: none; }
+  .integrationMap::before,
+  .integrationMap::after { animation: none; }
+}
