@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Oswald, Poppins } from "next/font/google";
+import { PUBLIC_SITE_URL } from "@/lib/publicSiteUrl";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -16,7 +17,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://crisdalagency.vercel.app"),
+  metadataBase: new URL(PUBLIC_SITE_URL),
   title: {
     default: "Crisdal Agency | Marketing, IA y automatización",
     template: "%s | Crisdal Agency",

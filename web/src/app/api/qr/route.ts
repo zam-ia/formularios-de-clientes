@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
+import { PUBLIC_SITE_URL } from '@/lib/publicSiteUrl';
 
 export const runtime = 'nodejs';
 
@@ -59,8 +60,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const format = url.searchParams.get('format') === 'png' ? 'png' : 'svg';
   const preview = url.searchParams.get('preview') === '1';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || url.origin;
-  const target = `${siteUrl.replace(/\/$/, '')}/brochure`;
+  const target = `${PUBLIC_SITE_URL}/brochure`;
   const svg = await ticketSvg(target);
   const disposition = preview ? 'inline' : `attachment; filename="qr-brochure-crisdal.${format}"`;
 

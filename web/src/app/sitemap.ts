@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { PUBLIC_SITE_URL } from "@/lib/publicSiteUrl";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://crisdalagency.vercel.app";
+  const base = PUBLIC_SITE_URL;
   return [
     { url: base, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/brochure`, changeFrequency: "weekly", priority: 0.9 },
