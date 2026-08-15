@@ -13,6 +13,7 @@ import {
   Calculator,
   Check,
   Copy,
+  ContactRound,
   Crop,
   Download,
   Eye,
@@ -41,6 +42,7 @@ import {
   UploadCloud,
   UsersRound,
   Video,
+  WalletCards,
   X,
 } from "lucide-react";
 import {
@@ -812,9 +814,17 @@ export default function PanelClient() {
           <Link href="/panel/cotizador">
             <Calculator /> Cotizador
           </Link>
+          <Link href="/panel/clientes">
+            <ContactRound /> Clientes
+          </Link>
           <Link href="/panel/agenda">
             <CalendarDays /> Agenda
           </Link>
+          {adminUser?.role === "owner" || adminUser?.role === "admin" ? (
+            <Link href="/panel/finanzas">
+              <WalletCards /> Finanzas
+            </Link>
+          ) : null}
           {adminUser?.role === "owner" ? (
             <Link href="/panel/usuarios">
               <UsersRound /> Usuarios

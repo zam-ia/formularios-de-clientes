@@ -85,6 +85,7 @@ export type CalendarEventType =
   | "other";
 export type CalendarEvent = {
   id: string;
+  client_id?: string;
   title: string;
   client_name: string;
   type: CalendarEventType;
@@ -103,12 +104,51 @@ export type CalendarEvent = {
   updated_at: string;
 };
 
+export type ClientStatus = "lead" | "active" | "paused" | "completed";
+export type FinanceAccount = "bcp" | "bbva" | "interbank" | "cash" | "other";
+export type AgencyClient = {
+  id: string;
+  company_name: string;
+  contact_name: string;
+  whatsapp: string;
+  email: string;
+  plan_name: string;
+  monthly_fee: number;
+  currency: "PEN" | "USD";
+  payment_account: FinanceAccount;
+  start_date: string;
+  end_date: string;
+  status: ClientStatus;
+  notes: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FinanceEntry = {
+  id: string;
+  type: "income" | "expense";
+  date: string;
+  amount: number;
+  currency: "PEN" | "USD";
+  account: FinanceAccount;
+  category: string;
+  client_id: string;
+  description: string;
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AdminData = {
-  version: 1;
+  version: 2;
   users: AdminUser[];
   quote_plans: QuotePlan[];
   quotes: Quote[];
   calendar_events: CalendarEvent[];
+  clients: AgencyClient[];
+  finance_entries: FinanceEntry[];
 };
 
 const initialDate = new Date(0).toISOString();
@@ -152,20 +192,24 @@ const starterPlans: QuotePlan[] = [
 ];
 
 const emptyData: AdminData = {
-  version: 1,
+  version: 2,
   users: [],
   quote_plans: starterPlans,
   quotes: [],
   calendar_events: [],
+  clients: [],
+  finance_entries: [],
 };
 
 function normalizeData(raw: Partial<AdminData>): AdminData {
   return {
-    version: 1,
+    version: 2,
     users: Array.isArray(raw.users) ? raw.users : [],
     quote_plans: Array.isArray(raw.quote_plans) ? raw.quote_plans : starterPlans,
     quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
     calendar_events: Array.isArray(raw.calendar_events) ? raw.calendar_events : [],
+    clients: Array.isArray(raw.clients) ? raw.clients : [],
+    finance_entries: Array.isArray(raw.finance_entries) ? raw.finance_entries : [],
   };
 }
 

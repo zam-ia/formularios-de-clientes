@@ -6,8 +6,10 @@ Ecosistema responsive de Crisdal construido con Next.js 16, Supabase Storage/Dat
 
 - `/panel/cotizador`: crea propuestas con planes, servicios, estrategias, descuentos y vigencia. Cada cotización genera un enlace público difícil de adivinar en `/cotizacion/[token]`, listo para WhatsApp o PDF.
 - `/panel/agenda`: calendario diario, semanal y mensual para grabaciones, reuniones, entregas, publicaciones, vacaciones y actividades internas.
+- `/panel/clientes`: fichas de clientes con contacto, plan, mensualidad, cuenta de pago y fecha de renovación. Los clientes quedan disponibles en el buscador de la agenda.
+- `/panel/finanzas`: ingresos y egresos por mes, moneda y cuenta (BCP, BBVA, Interbank, efectivo u otra), saldo del periodo y vencimientos próximos.
 - `/panel/usuarios`: el propietario crea accesos individuales y asigna los roles Propietario, Administración, Contenido/cotizaciones o Solo agenda.
-- Los nuevos datos administrativos se guardan como snapshots JSON en el bucket privado `crisdal-admin-data`, creado automáticamente. Esta fase no requiere ejecutar SQL adicional.
+- Los datos administrativos se guardan como snapshots JSON en el bucket privado `crisdal-admin-data`, creado automáticamente. Esta fase no requiere ejecutar SQL adicional.
 
 La cuenta principal definida con `ADMIN_USERNAME` y `ADMIN_PASSWORD` conserva el rol Propietario. Desde ella se puede crear el acceso de Milagros con su propia contraseña de al menos 12 caracteres.
 

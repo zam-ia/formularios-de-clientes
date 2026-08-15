@@ -153,7 +153,9 @@ function canAccessPath(session: AdminSession, pathname: string) {
   if (pathname.startsWith("/api/admin/users")) return false;
   if (session.role === "admin") return true;
   if (session.role === "editor") {
-    return !pathname.startsWith("/api/admin/allies") && !pathname.startsWith("/api/admin/loyalty");
+    return !pathname.startsWith("/api/admin/allies") &&
+      !pathname.startsWith("/api/admin/loyalty") &&
+      !pathname.startsWith("/api/admin/finance");
   }
   return pathname.startsWith("/api/admin/calendar") || pathname.startsWith("/api/admin/auth/");
 }
