@@ -20,16 +20,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as { username?: string; password?: string };
-    const valid = verifyAdminCredentials(body.username || '', body.password || '');
-    if (!valid) {
+    const session = await verifyAdminCredentials(body.username || '', body.password || '');
+    if (!session) {
       const count = (current?.count || 0) + 1;
       attempts.set(clientKey, { count, blockedUntil: count >= 5 ? Date.now() + 10 * 60 * 1000 : 0 });
       return NextResponse.json({ error: 'Usuario o contraseña incorrectos.' }, { status: 401 });
     }
 
     attempts.delete(clientKey);
-    const response = NextResponse.json({ success: true });
-    setAdminCookie(response);
+    const response = NextResponse.json({ success: true, user: session });
+    setAdminCookie(response, session);
     return response;
   } catch (error) {
     console.error('Admin login failed', { message: error instanceof Error ? error.message : 'unknown' });

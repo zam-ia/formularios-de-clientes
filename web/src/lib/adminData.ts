@@ -1,0 +1,252 @@
+import { randomBytes, randomUUID } from "node:crypto";
+import { getSupabaseServer } from "@/lib/supabaseServer";
+
+export const ADMIN_DATA_BUCKET = "crisdal-admin-data";
+const DATA_FOLDER = "private";
+const DATA_PATH = `${DATA_FOLDER}/agency-os.json`;
+
+export type AdminRole = "owner" | "admin" | "editor" | "calendar";
+export type AdminUser = {
+  id: string;
+  username: string;
+  display_name: string;
+  email: string | null;
+  role: AdminRole;
+  password_hash: string;
+  active: boolean;
+  last_login_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuotePlan = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  billing_label: string;
+  features: string[];
+  badge: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuoteItem = {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  discount_percent: number;
+  features: string[];
+};
+
+export type QuoteStrategy = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type QuoteStatus = "draft" | "sent" | "accepted" | "rejected" | "expired";
+export type Quote = {
+  id: string;
+  public_token: string;
+  quote_number: string;
+  client_name: string;
+  company_name: string;
+  client_whatsapp: string;
+  client_email: string;
+  title: string;
+  introduction: string;
+  currency: "PEN" | "USD";
+  items: QuoteItem[];
+  strategies: QuoteStrategy[];
+  global_discount_type: "percent" | "fixed";
+  global_discount_value: number;
+  valid_until: string;
+  terms: string[];
+  notes: string;
+  status: QuoteStatus;
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CalendarEventType =
+  | "recording"
+  | "meeting"
+  | "delivery"
+  | "publication"
+  | "vacation"
+  | "internal"
+  | "other";
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  client_name: string;
+  type: CalendarEventType;
+  start_at: string;
+  end_at: string;
+  all_day: boolean;
+  location: string;
+  assignees: string[];
+  description: string;
+  status: "scheduled" | "confirmed" | "completed" | "cancelled";
+  drive_url: string;
+  notify_whatsapp: boolean;
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminData = {
+  version: 1;
+  users: AdminUser[];
+  quote_plans: QuotePlan[];
+  quotes: Quote[];
+  calendar_events: CalendarEvent[];
+};
+
+const initialDate = new Date(0).toISOString();
+const starterPlans: QuotePlan[] = [
+  {
+    id: "plan-esencial",
+    name: "Esencial",
+    description: "Para negocios que recién empiezan a mostrarse en redes.",
+    price: 200,
+    billing_label: "por mes",
+    features: ["1 video vertical profesional", "5 publicaciones con diseño y copy", "1 asesoría mensual de marketing", "Entrega lista para publicar"],
+    badge: "",
+    active: true,
+    created_at: initialDate,
+    updated_at: initialDate,
+  },
+  {
+    id: "plan-crece",
+    name: "Crece",
+    description: "Para negocios que ya venden y necesitan presencia constante.",
+    price: 420,
+    billing_label: "desde / mes",
+    features: ["2 videos verticales", "8 publicaciones con diseño y copy", "Manejo completo de redes sociales", "Gestión de campaña en Meta Ads", "Reporte mensual de resultados"],
+    badge: "Más elegido",
+    active: true,
+    created_at: initialDate,
+    updated_at: initialDate,
+  },
+  {
+    id: "plan-impulso",
+    name: "Impulso",
+    description: "Para convertir la presencia digital en un sistema comercial más activo.",
+    price: 650,
+    billing_label: "desde / mes",
+    features: ["3 videos verticales", "12 publicaciones", "Redes sociales + campaña Meta Ads", "Automatización de respuestas", "Seguimiento quincenal"],
+    badge: "",
+    active: true,
+    created_at: initialDate,
+    updated_at: initialDate,
+  },
+];
+
+const emptyData: AdminData = {
+  version: 1,
+  users: [],
+  quote_plans: starterPlans,
+  quotes: [],
+  calendar_events: [],
+};
+
+function normalizeData(raw: Partial<AdminData>): AdminData {
+  return {
+    version: 1,
+    users: Array.isArray(raw.users) ? raw.users : [],
+    quote_plans: Array.isArray(raw.quote_plans) ? raw.quote_plans : starterPlans,
+    quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
+    calendar_events: Array.isArray(raw.calendar_events) ? raw.calendar_events : [],
+  };
+}
+
+export async function ensureAdminDataBucket() {
+  const storage = getSupabaseServer().storage;
+  const { data } = await storage.listBuckets();
+  if (!data?.some((bucket) => bucket.name === ADMIN_DATA_BUCKET)) {
+    const { error } = await storage.createBucket(ADMIN_DATA_BUCKET, {
+      public: false,
+      fileSizeLimit: 5 * 1024 * 1024,
+      allowedMimeTypes: ["application/json"],
+    });
+    if (error) throw error;
+  }
+}
+
+export async function readAdminData(): Promise<AdminData> {
+  await ensureAdminDataBucket();
+  const storage = getSupabaseServer().storage.from(ADMIN_DATA_BUCKET);
+  const { data: files } = await storage.list(DATA_FOLDER, {
+    limit: 100,
+    sortBy: { column: "name", order: "desc" },
+  });
+  const latest = files?.find((file) => /^agency-os-\d{13}-[a-f0-9-]+\.json$/.test(file.name));
+  const path = latest ? `${DATA_FOLDER}/${latest.name}` : DATA_PATH;
+  const { data, error } = await storage.download(path);
+  if (error || !data) return structuredClone(emptyData);
+  try {
+    return normalizeData(JSON.parse(await data.text()));
+  } catch {
+    return structuredClone(emptyData);
+  }
+}
+
+export async function writeAdminData(data: AdminData) {
+  await ensureAdminDataBucket();
+  const stamp = String(Date.now()).padStart(13, "0");
+  const path = `${DATA_FOLDER}/agency-os-${stamp}-${randomUUID()}.json`;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const { error } = await getSupabaseServer().storage.from(ADMIN_DATA_BUCKET).upload(path, blob, {
+    contentType: "application/json",
+    cacheControl: "0",
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function mutateAdminData<T>(mutation: (data: AdminData) => T | Promise<T>) {
+  const data = await readAdminData();
+  const result = await mutation(data);
+  await writeAdminData(data);
+  return result;
+}
+
+export function publicAdminUser(user: AdminUser) {
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.display_name,
+    email: user.email,
+    role: user.role,
+    active: user.active,
+    lastLoginAt: user.last_login_at,
+    createdAt: user.created_at,
+  };
+}
+
+export function nextQuoteNumber(quotes: Quote[]) {
+  const year = new Date().getFullYear();
+  const highest = quotes
+    .filter((quote) => quote.quote_number.startsWith(`COT-${year}-`))
+    .map((quote) => Number(quote.quote_number.split("-").at(-1)))
+    .filter(Number.isFinite)
+    .reduce((max, value) => Math.max(max, value), 0);
+  return `COT-${year}-${String(highest + 1).padStart(4, "0")}`;
+}
+
+export function createPublicQuoteToken() {
+  return randomBytes(18).toString("base64url");
+}
+
+export async function getQuoteByToken(token: string) {
+  return (await readAdminData()).quotes.find((quote) => quote.public_token === token) ?? null;
+}

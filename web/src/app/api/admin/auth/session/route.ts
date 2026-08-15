@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isAdminRequest } from '@/lib/adminAuth';
+import { adminSessionFromRequest } from '@/lib/adminAuth';
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json({ authenticated: isAdminRequest(request) });
+  const user = adminSessionFromRequest(request);
+  return NextResponse.json({ authenticated: Boolean(user), user });
 }

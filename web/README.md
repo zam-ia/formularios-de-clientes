@@ -1,6 +1,21 @@
 # Radiografía de Marca — Crisdal Agency
 
-Ecosistema responsive de Crisdal construido con Next.js 16, Supabase Storage/Database y notificaciones por Resend o Gmail SMTP. Incluye el formulario de onboarding, un brochure multimedia público y un panel privado para gestionar contenido, enlaces y el QR de impresión.
+Ecosistema responsive de Crisdal construido con Next.js 16, Supabase Storage/Database y notificaciones por Resend o Gmail SMTP. Incluye el formulario de onboarding, un brochure multimedia público y Crisdal OS: panel privado para contenido, cotizaciones, agenda, usuarios, enlaces y el QR de impresión.
+
+## Crisdal OS
+
+- `/panel/cotizador`: crea propuestas con planes, servicios, estrategias, descuentos y vigencia. Cada cotización genera un enlace público difícil de adivinar en `/cotizacion/[token]`, listo para WhatsApp o PDF.
+- `/panel/agenda`: calendario diario, semanal y mensual para grabaciones, reuniones, entregas, publicaciones, vacaciones y actividades internas.
+- `/panel/usuarios`: el propietario crea accesos individuales y asigna los roles Propietario, Administración, Contenido/cotizaciones o Solo agenda.
+- Los nuevos datos administrativos se guardan como snapshots JSON en el bucket privado `crisdal-admin-data`, creado automáticamente. Esta fase no requiere ejecutar SQL adicional.
+
+La cuenta principal definida con `ADMIN_USERNAME` y `ADMIN_PASSWORD` conserva el rol Propietario. Desde ella se puede crear el acceso de Milagros con su propia contraseña de al menos 12 caracteres.
+
+### Avisos de agenda por WhatsApp
+
+La agenda siempre prepara un mensaje y un botón **Compartir**, que abre WhatsApp para seleccionar el grupo de Crisdal. El enlace de invitación se configura con `NEXT_PUBLIC_WHATSAPP_GROUP_URL`.
+
+La API oficial estándar de WhatsApp Cloud no permite que una aplicación se una a un grupo usando únicamente su enlace de invitación. Si se configura `CALENDAR_NOTIFICATION_WEBHOOK_URL`, Crisdal OS también enviará el evento a ese webhook para conectarlo después con n8n, Make o una cuenta/proveedor con acceso oficial compatible.
 
 ## Red de Aliados
 

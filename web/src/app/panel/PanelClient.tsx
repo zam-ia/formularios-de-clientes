@@ -3,11 +3,14 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as tus from "tus-js-client";
 import {
   ArrowDown,
   ArrowUp,
+  CalendarDays,
+  Calculator,
   Check,
   Copy,
   Crop,
@@ -36,6 +39,7 @@ import {
   Smartphone,
   Trash2,
   UploadCloud,
+  UsersRound,
   Video,
   X,
 } from "lucide-react";
@@ -67,6 +71,13 @@ const LiveBrochure = dynamic(() => import("../brochure/BrochureLanding"), {
 
 type Tab = "links" | "content" | "structure" | "media";
 type Notice = { kind: "success" | "error" | "info"; text: string } | null;
+type PanelUser = {
+  id: string;
+  username: string;
+  displayName: string;
+  role: "owner" | "admin" | "editor" | "calendar";
+  source: "environment" | "user";
+};
 type CropRequest = {
   file: File;
   previewUrl: string;
@@ -179,8 +190,10 @@ function uploadResumable(
 }
 
 export default function PanelClient() {
+  const router = useRouter();
   const [authLoading, setAuthLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
+  const [adminUser, setAdminUser] = useState<PanelUser | null>(null);
   const [username, setUsername] = useState("crisdal");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -213,14 +226,19 @@ export default function PanelClient() {
   );
 
   useEffect(() => {
-    void api<{ authenticated: boolean }>("/api/admin/auth/session")
-      .then(async ({ authenticated: active }) => {
+    void api<{ authenticated: boolean; user: PanelUser | null }>("/api/admin/auth/session")
+      .then(async ({ authenticated: active, user }) => {
         setAuthenticated(active);
+        setAdminUser(user);
+        if (active && user?.role === "calendar") {
+          router.replace("/panel/agenda");
+          return;
+        }
         if (active) await loadContent();
       })
       .catch(() => setAuthenticated(false))
       .finally(() => setAuthLoading(false));
-  }, [loadContent]);
+  }, [loadContent, router]);
 
   useEffect(() => {
     if (!previewOpen) return;
@@ -248,12 +266,17 @@ export default function PanelClient() {
     setBusy(true);
     setNotice(null);
     try {
-      await api("/api/admin/auth/login", {
+      const result = await api<{ user: PanelUser }>("/api/admin/auth/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
       });
       setAuthenticated(true);
+      setAdminUser(result.user);
       setPassword("");
+      if (result.user.role === "calendar") {
+        router.replace("/panel/agenda");
+        return;
+      }
       await loadContent();
     } catch (error) {
       setNotice({
@@ -269,6 +292,7 @@ export default function PanelClient() {
   async function logout() {
     await api("/api/admin/auth/logout", { method: "POST", body: "{}" });
     setAuthenticated(false);
+    setAdminUser(null);
   }
   async function copy(value: string, label = "Enlace") {
     await navigator.clipboard.writeText(value);
@@ -785,6 +809,17 @@ export default function PanelClient() {
           <Link href="/panel/web">
             <Globe2 /> Editar sitio web
           </Link>
+          <Link href="/panel/cotizador">
+            <Calculator /> Cotizador
+          </Link>
+          <Link href="/panel/agenda">
+            <CalendarDays /> Agenda
+          </Link>
+          {adminUser?.role === "owner" ? (
+            <Link href="/panel/usuarios">
+              <UsersRound /> Usuarios
+            </Link>
+          ) : null}
         </nav>
         <div className={styles.sidebarFoot}>
           <Link href="/brochure" target="_blank">
