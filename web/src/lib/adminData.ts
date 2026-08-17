@@ -33,6 +33,17 @@ export type QuotePlan = {
   updated_at: string;
 };
 
+export type DiscountRule = {
+  id: string;
+  name: string;
+  description: string;
+  type: "percent" | "fixed";
+  value: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type QuoteItem = {
   id: string;
   name: string;
@@ -142,13 +153,14 @@ export type FinanceEntry = {
 };
 
 export type AdminData = {
-  version: 2;
+  version: 3;
   users: AdminUser[];
   quote_plans: QuotePlan[];
   quotes: Quote[];
   calendar_events: CalendarEvent[];
   clients: AgencyClient[];
   finance_entries: FinanceEntry[];
+  discount_rules: DiscountRule[];
 };
 
 const initialDate = new Date(0).toISOString();
@@ -192,24 +204,26 @@ const starterPlans: QuotePlan[] = [
 ];
 
 const emptyData: AdminData = {
-  version: 2,
+  version: 3,
   users: [],
   quote_plans: starterPlans,
   quotes: [],
   calendar_events: [],
   clients: [],
   finance_entries: [],
+  discount_rules: [],
 };
 
 function normalizeData(raw: Partial<AdminData>): AdminData {
   return {
-    version: 2,
+    version: 3,
     users: Array.isArray(raw.users) ? raw.users : [],
     quote_plans: Array.isArray(raw.quote_plans) ? raw.quote_plans : starterPlans,
     quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
     calendar_events: Array.isArray(raw.calendar_events) ? raw.calendar_events : [],
     clients: Array.isArray(raw.clients) ? raw.clients : [],
     finance_entries: Array.isArray(raw.finance_entries) ? raw.finance_entries : [],
+    discount_rules: Array.isArray(raw.discount_rules) ? raw.discount_rules : [],
   };
 }
 

@@ -24,6 +24,7 @@ import {
   Globe2,
   ImageIcon,
   Layers3,
+  LayoutDashboard,
   Link2,
   LoaderCircle,
   LogOut,
@@ -769,6 +770,9 @@ export default function PanelClient() {
           </button>
         </div>
         <nav>
+          <Link href="/panel/dashboard">
+            <LayoutDashboard /> Dashboard
+          </Link>
           <NavButton
             active={tab === "links"}
             onClick={() => {

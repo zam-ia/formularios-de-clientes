@@ -6,7 +6,7 @@ import { ArrowLeft, CalendarClock, CircleDollarSign, LoaderCircle, MessageCircle
 import type { AgencyClient, ClientStatus, FinanceAccount, QuotePlan } from "@/lib/adminData";
 import styles from "../os.module.css";
 
-type ClientForm = Omit<AgencyClient, "id" | "created_by" | "created_at" | "updated_at"> & { id?: string };
+type ClientForm = Omit<AgencyClient, "id" | "created_by" | "created_at" | "updated_at" | "monthly_fee"> & { id?: string; monthly_fee: number | "" };
 const statusLabels: Record<ClientStatus, string> = { lead: "Prospecto", active: "Activo", paused: "Pausado", completed: "Finalizado" };
 const accountLabels: Record<FinanceAccount, string> = { bcp: "BCP", bbva: "BBVA", interbank: "Interbank", cash: "Efectivo", other: "Otra cuenta" };
 
@@ -21,7 +21,7 @@ function blankClient(): ClientForm {
   const start = new Date();
   const end = new Date(start);
   end.setMonth(end.getMonth() + 1);
-  return { company_name: "", contact_name: "", whatsapp: "", email: "", plan_name: "", monthly_fee: 0, currency: "PEN", payment_account: "bcp", start_date: dateString(start), end_date: dateString(end), status: "active", notes: "" };
+  return { company_name: "", contact_name: "", whatsapp: "", email: "", plan_name: "", monthly_fee: "", currency: "PEN", payment_account: "bcp", start_date: dateString(start), end_date: dateString(end), status: "active", notes: "" };
 }
 function money(value: number, currency: "PEN" | "USD") { return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(value); }
 
@@ -62,7 +62,7 @@ export default function ClientsAdmin() {
     if (!form) return;
     setBusy(true); setNotice("");
     try {
-      await api("/api/admin/clients", { method: form.id ? "PUT" : "POST", body: JSON.stringify(form) });
+      await api("/api/admin/clients", { method: form.id ? "PUT" : "POST", body: JSON.stringify({ ...form, monthly_fee: Number(form.monthly_fee) }) });
       await load(); setForm(null); setNotice("Cliente guardado y disponible en la agenda.");
     } catch (error) { setNotice(error instanceof Error ? error.message : "No pudimos guardar el cliente."); }
     finally { setBusy(false); }
@@ -92,10 +92,10 @@ export default function ClientsAdmin() {
     {form ? <div className={styles.modalBackdrop}><section className={`${styles.modalCard} ${styles.wideModal}`}><button className={styles.iconClose} onClick={() => setForm(null)} aria-label="Cerrar"><X /></button><div className={styles.modalHeading}><span><UsersRound /></span><div><p>Ficha comercial</p><h2>{form.id ? "Editar cliente" : "Nuevo cliente"}</h2></div></div><div className={styles.formGrid}>
       <label>Empresa / marca<input value={form.company_name} onChange={(event) => setForm({ ...form, company_name: event.target.value })} /></label><label>Persona de contacto<input value={form.contact_name} onChange={(event) => setForm({ ...form, contact_name: event.target.value })} /></label>
       <label>WhatsApp<input value={form.whatsapp} onChange={(event) => setForm({ ...form, whatsapp: event.target.value })} placeholder="519…" /></label><label>Correo<input type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
-      <label>Plan<input list="client-plan-options" value={form.plan_name} onChange={(event) => choosePlan(event.target.value)} /><datalist id="client-plan-options">{plans.map((plan) => <option key={plan.id} value={plan.name} />)}</datalist></label><label>Mensualidad<input type="number" min="0" value={form.monthly_fee} onChange={(event) => setForm({ ...form, monthly_fee: Number(event.target.value) })} /></label>
+      <label>Plan<input list="client-plan-options" value={form.plan_name} onChange={(event) => choosePlan(event.target.value)} /><datalist id="client-plan-options">{plans.map((plan) => <option key={plan.id} value={plan.name} />)}</datalist></label><label>Mensualidad<input type="number" min="0" step="0.01" value={form.monthly_fee} placeholder="Ej. 850" onChange={(event) => setForm({ ...form, monthly_fee: event.target.value === "" ? "" : Number(event.target.value) })} /></label>
       <label>Moneda<select value={form.currency} onChange={(event) => setForm({ ...form, currency: event.target.value as ClientForm["currency"] })}><option value="PEN">Soles</option><option value="USD">Dólares</option></select></label><label>Cuenta de ingreso<select value={form.payment_account} onChange={(event) => setForm({ ...form, payment_account: event.target.value as FinanceAccount })}>{Object.entries(accountLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <label>Inicio del plan<input type="date" value={form.start_date} onChange={(event) => setForm({ ...form, start_date: event.target.value })} /></label><label>Fin del plan<input type="date" value={form.end_date} onChange={(event) => setForm({ ...form, end_date: event.target.value })} /></label>
       <label>Estado<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as ClientStatus })}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label className={styles.fullField}>Notas<textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
-    </div><div className={styles.modalActions}>{form.id ? <button className={styles.dangerAction} onClick={() => void remove()}><Trash2 /> Eliminar</button> : null}<span /><button onClick={() => setForm(null)}>Cancelar</button><button className={styles.primaryAction} disabled={busy || !form.company_name || !form.contact_name || !form.plan_name} onClick={() => void save()}>{busy ? <LoaderCircle className={styles.spin} /> : <Save />} Guardar</button></div></section></div> : null}
+    </div><div className={styles.modalActions}>{form.id ? <button className={styles.dangerAction} onClick={() => void remove()}><Trash2 /> Eliminar</button> : null}<span /><button onClick={() => setForm(null)}>Cancelar</button><button className={styles.primaryAction} disabled={busy || !form.company_name || !form.contact_name || !form.plan_name || form.monthly_fee === ""} onClick={() => void save()}>{busy ? <LoaderCircle className={styles.spin} /> : <Save />} Guardar</button></div></section></div> : null}
   </main>;
 }

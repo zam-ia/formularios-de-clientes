@@ -1,0 +1,83 @@
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import {
+  ArrowRight,
+  CalendarDays,
+  CircleDollarSign,
+  Clock3,
+  ContactRound,
+  FileCheck2,
+  FileClock,
+  Landmark,
+  LayoutDashboard,
+  Sparkles,
+  TrendingUp,
+  UsersRound,
+  WalletCards,
+} from "lucide-react";
+import { ADMIN_COOKIE, readAdminSession } from "@/lib/adminAuth";
+import { readAdminData, type FinanceAccount, type QuoteStatus } from "@/lib/adminData";
+import styles from "../os.module.css";
+
+export const metadata: Metadata = { title: "Dashboard | Crisdal OS", robots: { index: false, follow: false } };
+
+const accountLabels: Record<FinanceAccount, string> = { bcp: "BCP", bbva: "BBVA", interbank: "Interbank", cash: "Efectivo", other: "Otra" };
+const quoteLabels: Record<QuoteStatus, string> = { draft: "Borradores", sent: "Enviadas", accepted: "Aceptadas", rejected: "Rechazadas", expired: "Vencidas" };
+
+function limaDate(now: Date) {
+  const values = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now).map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+function money(value: number, currency: "PEN" | "USD" = "PEN") { return new Intl.NumberFormat("es-PE", { style: "currency", currency, maximumFractionDigits: 2 }).format(value); }
+function eventDate(value: string) { return new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", weekday: "short", day: "2-digit", month: "short", hour: "numeric", minute: "2-digit", hour12: true }).format(new Date(value)); }
+
+export default async function DashboardPage() {
+  const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
+  if (!session) redirect("/panel");
+  if (session.role === "calendar") redirect("/panel/agenda");
+  const data = await readAdminData();
+  const now = new Date();
+  const today = limaDate(now);
+  const month = today.slice(0, 7);
+  const todayMs = new Date(`${today}T00:00:00-05:00`).getTime();
+  const monthEntries = data.finance_entries.filter((entry) => entry.currency === "PEN" && entry.date.startsWith(month));
+  const income = monthEntries.filter((entry) => entry.type === "income").reduce((sum, entry) => sum + entry.amount, 0);
+  const expense = monthEntries.filter((entry) => entry.type === "expense").reduce((sum, entry) => sum + entry.amount, 0);
+  const activeClients = data.clients.filter((client) => client.status === "active");
+  const expectedIncome = activeClients.filter((client) => client.currency === "PEN").reduce((sum, client) => sum + client.monthly_fee, 0);
+  const renewals = activeClients.filter((client) => {
+    const end = new Date(`${client.end_date}T23:59:59-05:00`).getTime();
+    return end >= todayMs && end <= todayMs + 30 * 86400000;
+  }).toSorted((a, b) => a.end_date.localeCompare(b.end_date)).slice(0, 5);
+  const upcoming = data.calendar_events.filter((event) => event.status !== "cancelled" && new Date(event.end_at).getTime() >= now.getTime()).toSorted((a, b) => a.start_at.localeCompare(b.start_at)).slice(0, 5);
+  const quoteCounts = (Object.keys(quoteLabels) as QuoteStatus[]).map((status) => ({ status, count: data.quotes.filter((quote) => quote.status === status).length }));
+  const activeQuotes = data.quotes.filter((quote) => quote.status === "draft" || quote.status === "sent").length;
+  const accounts = (Object.keys(accountLabels) as FinanceAccount[]).map((account) => ({ account, balance: monthEntries.filter((entry) => entry.account === account).reduce((sum, entry) => sum + (entry.type === "income" ? entry.amount : -entry.amount), 0) }));
+  const maxAccount = Math.max(1, ...accounts.map((account) => Math.abs(account.balance)));
+  const showFinance = session.role === "owner" || session.role === "admin";
+
+  return <main className={styles.osPage}>
+    <header className={`${styles.osHeader} ${styles.dashboardHeader}`}><div><Link href="/panel"><ArrowRight className={styles.backArrow} size={17} /> Ir al editor central</Link><p>CRISDAL OS · CENTRO DE CONTROL</p><h1>Hola, {session.displayName.split(" ")[0]}.</h1><span>Todo lo importante de la agencia, priorizado para tomar decisiones y actuar rápido.</span></div><span className={styles.dashboardMark}><LayoutDashboard /><small>{new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", weekday: "long", day: "numeric", month: "long" }).format(now)}</small></span></header>
+
+    <section className={styles.dashboardMetrics}>
+      <Link href="/panel/clientes"><span><ContactRound /></span><div><small>CLIENTES ACTIVOS</small><strong>{activeClients.length}</strong><em>{data.clients.length} registrados</em></div><ArrowRight /></Link>
+      <Link href="/panel/agenda"><span><CalendarDays /></span><div><small>PRÓXIMAS ACTIVIDADES</small><strong>{upcoming.length}</strong><em>{renewals.length} renovaciones cercanas</em></div><ArrowRight /></Link>
+      <Link href="/panel/cotizador"><span><FileClock /></span><div><small>EMBUDO ABIERTO</small><strong>{activeQuotes}</strong><em>{data.quotes.length} cotizaciones creadas</em></div><ArrowRight /></Link>
+      {showFinance ? <Link href="/panel/finanzas"><span><TrendingUp /></span><div><small>INGRESO ESPERADO</small><strong>{money(expectedIncome)}</strong><em>{money(income)} registrado este mes</em></div><ArrowRight /></Link> : <Link href="/panel/cotizador"><span><Sparkles /></span><div><small>CATÁLOGO COMERCIAL</small><strong>{data.quote_plans.filter((plan) => plan.active).length}</strong><em>{data.discount_rules.filter((discount) => discount.active).length} descuentos activos</em></div><ArrowRight /></Link>}
+    </section>
+
+    <section className={styles.dashboardGrid}>
+      <article className={styles.dashboardPanel}><header><div><CalendarDays /><span><small>AGENDA</small><h2>Lo próximo</h2></span></div><Link href="/panel/agenda">Ver agenda <ArrowRight /></Link></header><div className={styles.dashboardList}>{upcoming.length ? upcoming.map((event) => <Link href="/panel/agenda" key={event.id}><span className={`${styles.dashboardEventIcon} ${styles[event.type]}`}><Clock3 /></span><div><strong>{event.title}</strong><small>{event.client_name || "Actividad interna"} · {eventDate(event.start_at)}</small></div><em>{event.status === "confirmed" ? "Confirmada" : event.status === "completed" ? "Completada" : "Programada"}</em></Link>) : <p>No hay actividades próximas. La agenda está libre.</p>}</div></article>
+
+      <article className={styles.dashboardPanel}><header><div><FileCheck2 /><span><small>COMERCIAL</small><h2>Estado de propuestas</h2></span></div><Link href="/panel/cotizador">Abrir cotizador <ArrowRight /></Link></header><div className={styles.pipelineChart}>{quoteCounts.map((item) => <div key={item.status}><span><strong>{item.count}</strong><small>{quoteLabels[item.status]}</small></span><i><b style={{ width: `${data.quotes.length ? Math.max(5, item.count / data.quotes.length * 100) : 0}%` }} /></i></div>)}</div></article>
+
+      <article className={styles.dashboardPanel}><header><div><UsersRound /><span><small>CLIENTES</small><h2>Renovaciones en 30 días</h2></span></div><Link href="/panel/clientes">Ver clientes <ArrowRight /></Link></header><div className={styles.renewalStack}>{renewals.length ? renewals.map((client) => <Link href="/panel/clientes" key={client.id}><span>{client.company_name}<small>{client.plan_name} · {money(client.monthly_fee, client.currency)}</small></span><strong>{client.end_date}</strong></Link>) : <p>No hay vencimientos próximos.</p>}</div></article>
+
+      {showFinance ? <article className={styles.dashboardPanel}><header><div><WalletCards /><span><small>FINANZAS · {month}</small><h2>Salud del mes</h2></span></div><Link href="/panel/finanzas">Ver detalle <ArrowRight /></Link></header><div className={styles.healthSummary}><span><small>Ingresos</small><strong>{money(income)}</strong></span><span><small>Egresos</small><strong>{money(expense)}</strong></span><span className={income - expense >= 0 ? styles.positiveBalance : styles.negativeBalance}><small>Saldo</small><strong>{money(income - expense)}</strong></span></div><div className={styles.accountChart}>{accounts.map((item) => <div key={item.account}><span><Landmark />{accountLabels[item.account]}<strong>{money(item.balance)}</strong></span><i><b style={{ width: `${Math.abs(item.balance) / maxAccount * 100}%` }} /></i></div>)}</div></article> : null}
+    </section>
+
+    <section className={styles.quickActions}><div><CircleDollarSign /><span><small>ACCESOS RÁPIDOS</small><h2>¿Qué quieres gestionar?</h2></span></div><nav><Link href="/panel/clientes">Registrar cliente <ArrowRight /></Link><Link href="/panel/cotizador">Crear cotización <ArrowRight /></Link><Link href="/panel/agenda">Agendar actividad <ArrowRight /></Link>{showFinance ? <Link href="/panel/finanzas">Registrar movimiento <ArrowRight /></Link> : null}</nav></section>
+  </main>;
+}

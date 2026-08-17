@@ -45,9 +45,22 @@ const planInputSchema = z.object({
   badge: z.string().trim().max(60),
   active: z.boolean(),
 });
+const discountInputSchema = z.object({
+  id: z.string().max(80).optional(),
+  name: z.string().trim().min(2).max(100),
+  description: z.string().trim().max(500),
+  type: z.enum(["percent", "fixed"]),
+  value: z.number().positive().max(10_000_000),
+  active: z.boolean(),
+}).superRefine((discount, context) => {
+  if (discount.type === "percent" && discount.value > 100) {
+    context.addIssue({ code: "custom", path: ["value"], message: "El porcentaje no puede superar 100%." });
+  }
+});
 const envelopeSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("quote"), data: quoteInputSchema }),
   z.object({ kind: z.literal("plan"), data: planInputSchema }),
+  z.object({ kind: z.literal("discount"), data: discountInputSchema }),
 ]);
 
 function quoteResponse(quote: { public_token: string } & Record<string, unknown>) {
@@ -60,6 +73,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     quotes: data.quotes.toSorted((a, b) => b.updated_at.localeCompare(a.updated_at)).map(quoteResponse),
     plans: data.quote_plans.toSorted((a, b) => a.price - b.price),
+    discounts: data.discount_rules.toSorted((a, b) => b.updated_at.localeCompare(a.updated_at)),
   });
 }
 
@@ -77,6 +91,16 @@ export async function POST(request: NextRequest) {
       return created;
     });
     return NextResponse.json({ plan }, { status: 201 });
+  }
+  if (parsed.data.kind === "discount") {
+    const discountInput = parsed.data.data;
+    const discount = await mutateAdminData((data) => {
+      const now = new Date().toISOString();
+      const created = { ...discountInput, id: randomUUID(), created_at: now, updated_at: now };
+      data.discount_rules.push(created);
+      return created;
+    });
+    return NextResponse.json({ discount }, { status: 201 });
   }
 
   const quoteInput = parsed.data.data;
@@ -114,6 +138,17 @@ export async function PUT(request: NextRequest) {
       });
       return NextResponse.json({ plan });
     }
+    if (parsed.data.kind === "discount") {
+      if (!parsed.data.data.id) throw new Error("missing");
+      const discountInput = parsed.data.data;
+      const discount = await mutateAdminData((data) => {
+        const current = data.discount_rules.find((item) => item.id === discountInput.id);
+        if (!current) throw new Error("missing");
+        Object.assign(current, discountInput, { updated_at: new Date().toISOString() });
+        return current;
+      });
+      return NextResponse.json({ discount });
+    }
 
     if (!parsed.data.data.id) throw new Error("missing");
     const quoteInput = parsed.data.data;
@@ -131,11 +166,12 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   if (!isAdminRequest(request, true)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  const parsed = z.object({ kind: z.enum(["quote", "plan"]), id: z.string().min(1).max(80) }).safeParse(await request.json());
+  const parsed = z.object({ kind: z.enum(["quote", "plan", "discount"]), id: z.string().min(1).max(80) }).safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Registro inválido." }, { status: 400 });
   await mutateAdminData((data) => {
     if (parsed.data.kind === "quote") data.quotes = data.quotes.filter((item) => item.id !== parsed.data.id);
-    else data.quote_plans = data.quote_plans.filter((item) => item.id !== parsed.data.id);
+    else if (parsed.data.kind === "plan") data.quote_plans = data.quote_plans.filter((item) => item.id !== parsed.data.id);
+    else data.discount_rules = data.discount_rules.filter((item) => item.id !== parsed.data.id);
   });
   return NextResponse.json({ success: true });
 }
