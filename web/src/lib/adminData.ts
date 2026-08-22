@@ -5,7 +5,7 @@ export const ADMIN_DATA_BUCKET = "crisdal-admin-data";
 const DATA_FOLDER = "private";
 const DATA_PATH = `${DATA_FOLDER}/agency-os.json`;
 
-export type AdminRole = "owner" | "admin" | "editor" | "calendar";
+export type AdminRole = "owner" | "admin" | "editor" | "calendar" | "project_manager" | "collaborator" | "finance" | "hr";
 export type AdminUser = {
   id: string;
   username: string;
@@ -152,8 +152,57 @@ export type FinanceEntry = {
   updated_at: string;
 };
 
+export type ProjectColumn = {
+  id: string;
+  name: string;
+  order: number;
+  color: string;
+};
+
+export type ProjectChecklistItem = {
+  id: string;
+  text: string;
+  completed: boolean;
+};
+
+export type ProjectTask = {
+  id: string;
+  client_id: string;
+  column_id: string;
+  title: string;
+  description: string;
+  content_type: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  due_date: string;
+  assignees: string[];
+  labels: string[];
+  checklist: ProjectChecklistItem[];
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Employee = {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  role_title: string;
+  area: string;
+  contract_type: "payroll" | "freelance" | "intern" | "partner";
+  start_date: string;
+  rate: number;
+  currency: "PEN" | "USD";
+  status: "active" | "leave" | "inactive";
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AdminData = {
-  version: 3;
+  version: 4;
   users: AdminUser[];
   quote_plans: QuotePlan[];
   quotes: Quote[];
@@ -161,6 +210,9 @@ export type AdminData = {
   clients: AgencyClient[];
   finance_entries: FinanceEntry[];
   discount_rules: DiscountRule[];
+  project_columns: ProjectColumn[];
+  project_tasks: ProjectTask[];
+  employees: Employee[];
 };
 
 const initialDate = new Date(0).toISOString();
@@ -203,8 +255,17 @@ const starterPlans: QuotePlan[] = [
   },
 ];
 
+const starterProjectColumns: ProjectColumn[] = [
+  { id: "todo", name: "Por hacer", order: 0, color: "#7b766e" },
+  { id: "production", name: "En grabación / diseño", order: 1, color: "#bd7c00" },
+  { id: "editing", name: "En edición", order: 2, color: "#7252b8" },
+  { id: "review", name: "Revisión cliente", order: 3, color: "#3165b9" },
+  { id: "approved", name: "Aprobado", order: 4, color: "#17835a" },
+  { id: "published", name: "Publicado", order: 5, color: "#11100e" },
+];
+
 const emptyData: AdminData = {
-  version: 3,
+  version: 4,
   users: [],
   quote_plans: starterPlans,
   quotes: [],
@@ -212,11 +273,14 @@ const emptyData: AdminData = {
   clients: [],
   finance_entries: [],
   discount_rules: [],
+  project_columns: starterProjectColumns,
+  project_tasks: [],
+  employees: [],
 };
 
 function normalizeData(raw: Partial<AdminData>): AdminData {
   return {
-    version: 3,
+    version: 4,
     users: Array.isArray(raw.users) ? raw.users : [],
     quote_plans: Array.isArray(raw.quote_plans) ? raw.quote_plans : starterPlans,
     quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
@@ -224,6 +288,9 @@ function normalizeData(raw: Partial<AdminData>): AdminData {
     clients: Array.isArray(raw.clients) ? raw.clients : [],
     finance_entries: Array.isArray(raw.finance_entries) ? raw.finance_entries : [],
     discount_rules: Array.isArray(raw.discount_rules) ? raw.discount_rules : [],
+    project_columns: Array.isArray(raw.project_columns) && raw.project_columns.length ? raw.project_columns : starterProjectColumns,
+    project_tasks: Array.isArray(raw.project_tasks) ? raw.project_tasks : [],
+    employees: Array.isArray(raw.employees) ? raw.employees : [],
   };
 }
 

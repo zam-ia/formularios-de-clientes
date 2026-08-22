@@ -9,11 +9,13 @@ import * as tus from "tus-js-client";
 import {
   ArrowDown,
   ArrowUp,
+  BriefcaseBusiness,
   CalendarDays,
   Calculator,
   Check,
   Copy,
   ContactRound,
+  Columns3,
   Crop,
   Download,
   Eye,
@@ -64,6 +66,7 @@ import {
   type BrochureWidgetSize,
 } from "@/lib/brochure";
 import { getSupabaseBrowser } from "@/lib/supabaseClient";
+import type { AdminRole } from "@/lib/adminData";
 import { FramingDialog, ImageCropDialog } from "./MediaEditors";
 import styles from "./panel.module.css";
 import authStyles from "./auth.module.css";
@@ -78,7 +81,7 @@ type PanelUser = {
   id: string;
   username: string;
   displayName: string;
-  role: "owner" | "admin" | "editor" | "calendar";
+  role: AdminRole;
   source: "environment" | "user";
 };
 type CropRequest = {
@@ -237,6 +240,10 @@ export default function PanelClient() {
           router.replace("/panel/agenda");
           return;
         }
+        if (active && user && ["project_manager", "collaborator", "finance", "hr"].includes(user.role)) {
+          router.replace("/panel/dashboard");
+          return;
+        }
         if (active) await loadContent();
       })
       .catch(() => setAuthenticated(false))
@@ -278,6 +285,10 @@ export default function PanelClient() {
       setPassword("");
       if (result.user.role === "calendar") {
         router.replace("/panel/agenda");
+        return;
+      }
+      if (["project_manager", "collaborator", "finance", "hr"].includes(result.user.role)) {
+        router.replace("/panel/dashboard");
         return;
       }
       await loadContent();
@@ -821,12 +832,20 @@ export default function PanelClient() {
           <Link href="/panel/clientes">
             <ContactRound /> Clientes
           </Link>
+          <Link href="/panel/proyectos">
+            <Columns3 /> Proyectos
+          </Link>
           <Link href="/panel/agenda">
             <CalendarDays /> Agenda
           </Link>
           {adminUser?.role === "owner" || adminUser?.role === "admin" ? (
             <Link href="/panel/finanzas">
               <WalletCards /> Finanzas
+            </Link>
+          ) : null}
+          {adminUser?.role === "owner" || adminUser?.role === "admin" ? (
+            <Link href="/panel/personal">
+              <BriefcaseBusiness /> Personal
             </Link>
           ) : null}
           {adminUser?.role === "owner" ? (

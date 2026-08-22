@@ -152,10 +152,23 @@ function canAccessPath(session: AdminSession, pathname: string) {
   if (session.role === "owner") return true;
   if (pathname.startsWith("/api/admin/users")) return false;
   if (session.role === "admin") return true;
+  if (session.role === "project_manager") {
+    return ["/api/admin/projects", "/api/admin/clients", "/api/admin/calendar", "/api/admin/quotes", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
+  }
+  if (session.role === "collaborator") {
+    return ["/api/admin/projects", "/api/admin/calendar", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
+  }
+  if (session.role === "finance") {
+    return ["/api/admin/finance", "/api/admin/clients", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
+  }
+  if (session.role === "hr") {
+    return ["/api/admin/employees", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
+  }
   if (session.role === "editor") {
     return !pathname.startsWith("/api/admin/allies") &&
       !pathname.startsWith("/api/admin/loyalty") &&
-      !pathname.startsWith("/api/admin/finance");
+      !pathname.startsWith("/api/admin/finance") &&
+      !pathname.startsWith("/api/admin/employees");
   }
   return pathname.startsWith("/api/admin/calendar") || pathname.startsWith("/api/admin/auth/");
 }

@@ -9,6 +9,6 @@ export const metadata: Metadata = { title: "Cotizador | Crisdal OS", robots: { i
 export default async function QuotesPage() {
   const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!session) redirect("/panel");
-  if (session.role === "calendar") redirect("/panel/agenda");
+  if (!["owner", "admin", "editor", "project_manager"].includes(session.role)) redirect("/panel/dashboard");
   return <QuoteAdmin />;
 }

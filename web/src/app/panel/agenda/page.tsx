@@ -9,5 +9,6 @@ export const metadata: Metadata = { title: "Agenda | Crisdal OS", robots: { inde
 export default async function CalendarPage() {
   const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!session) redirect("/panel");
+  if (["finance", "hr"].includes(session.role)) redirect("/panel/dashboard");
   return <CalendarAdmin currentUser={session.displayName} />;
 }

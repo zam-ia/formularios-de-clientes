@@ -9,6 +9,6 @@ export const metadata: Metadata = { title: "Clientes | Crisdal OS", robots: { in
 export default async function ClientsPage() {
   const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!session) redirect("/panel");
-  if (session.role === "calendar") redirect("/panel/agenda");
-  return <ClientsAdmin />;
+  if (!["owner", "admin", "editor", "project_manager", "finance"].includes(session.role)) redirect("/panel/dashboard");
+  return <ClientsAdmin readOnly={session.role === "finance"} />;
 }

@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!isAdminRequest(request, true)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  if (adminSessionFromRequest(request)?.role === "finance") return NextResponse.json({ error: "El rol Finanzas puede consultar clientes, pero no modificarlos." }, { status: 403 });
   const parsed = clientSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Revisa los datos del cliente." }, { status: 400 });
   const actor = adminSessionFromRequest(request)!;
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   if (!isAdminRequest(request, true)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  if (adminSessionFromRequest(request)?.role === "finance") return NextResponse.json({ error: "El rol Finanzas puede consultar clientes, pero no modificarlos." }, { status: 403 });
   const parsed = clientSchema.safeParse(await request.json());
   if (!parsed.success || !parsed.data.id) return NextResponse.json({ error: parsed.success ? "Falta el cliente." : parsed.error.issues[0]?.message }, { status: 400 });
   try {
@@ -69,11 +71,12 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   if (!isAdminRequest(request, true)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  if (adminSessionFromRequest(request)?.role === "finance") return NextResponse.json({ error: "El rol Finanzas puede consultar clientes, pero no modificarlos." }, { status: 403 });
   const parsed = z.object({ id: z.string().uuid() }).safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Cliente inválido." }, { status: 400 });
   try {
     await mutateAdminData((data) => {
-      const linked = data.finance_entries.some((entry) => entry.client_id === parsed.data.id) || data.calendar_events.some((event) => event.client_id === parsed.data.id);
+      const linked = data.finance_entries.some((entry) => entry.client_id === parsed.data.id) || data.calendar_events.some((event) => event.client_id === parsed.data.id) || data.project_tasks.some((task) => task.client_id === parsed.data.id);
       if (linked) throw new Error("linked");
       data.clients = data.clients.filter((client) => client.id !== parsed.data.id);
     });

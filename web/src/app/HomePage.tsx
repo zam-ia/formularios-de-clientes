@@ -16,6 +16,7 @@ import {
   Eye,
   Handshake,
   HeartPulse,
+  LayoutDashboard,
   Layers3,
   LoaderCircle,
   Menu,
@@ -163,13 +164,18 @@ export default function HomePage({ content }: { content: SiteContent }) {
           <a href="#nosotros" onClick={() => setMenuOpen(false)}>Nosotros</a>
           <a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
         </nav>
-        <a
-          className={styles.headerCta}
-          href="#contacto"
-          onClick={() => track("hero_cta_click", { placement: "header" })}
-        >
-          Solicitar diagnóstico <ArrowRight />
-        </a>
+        <div className={styles.headerActions}>
+          <Link className={styles.adminCta} href="/panel/dashboard" aria-label="Abrir panel administrativo de Crisdal Agency">
+            <LayoutDashboard /> <span>Panel administrativo</span>
+          </Link>
+          <a
+            className={styles.headerCta}
+            href="#contacto"
+            onClick={() => track("hero_cta_click", { placement: "header" })}
+          >
+            Solicitar diagnóstico <ArrowRight />
+          </a>
+        </div>
         <button
           className={styles.menuButton}
           onClick={() => setMenuOpen((open) => !open)}

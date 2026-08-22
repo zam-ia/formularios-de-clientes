@@ -9,6 +9,6 @@ export const metadata: Metadata = { title: "Finanzas | Crisdal OS", robots: { in
 export default async function FinancePage() {
   const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!session) redirect("/panel");
-  if (!['owner', 'admin'].includes(session.role)) redirect("/panel");
+  if (!["owner", "admin", "finance"].includes(session.role)) redirect("/panel/dashboard");
   return <FinanceAdmin />;
 }

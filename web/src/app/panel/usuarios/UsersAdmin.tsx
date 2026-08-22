@@ -19,7 +19,7 @@ type UserView = {
 };
 type FormState = { id?: string; username: string; displayName: string; email: string; role: AdminRole; active: boolean; password: string };
 const emptyForm: FormState = { username: "milagros", displayName: "Milagros", email: "", role: "admin", active: true, password: "" };
-const roleLabels: Record<AdminRole, string> = { owner: "Propietario", admin: "Administración", editor: "Contenido y cotizaciones", calendar: "Solo agenda" };
+const roleLabels: Record<AdminRole, string> = { owner: "Propietario", admin: "Administración", editor: "Contenido y cotizaciones", calendar: "Solo agenda", project_manager: "Project Manager", collaborator: "Colaborador creativo", finance: "Finanzas", hr: "Recursos Humanos" };
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
@@ -112,7 +112,7 @@ export default function UsersAdmin({ currentUser }: { currentUser: AdminSession 
           <label>Nombre completo<input value={form.displayName} onChange={(event) => setForm({ ...form, displayName: event.target.value })} required minLength={2} /></label>
           <label>Usuario<input value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value.toLowerCase().replace(/\s/g, "") })} required minLength={3} /></label>
           <label>Correo<input type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
-          <label>Permiso<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as AdminRole })}><option value="admin">Administración</option><option value="editor">Contenido y cotizaciones</option><option value="calendar">Solo agenda</option><option value="owner">Propietario</option></select></label>
+          <label>Permiso<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as AdminRole })}><option value="admin">Administración</option><option value="project_manager">Project Manager / Cuentas</option><option value="collaborator">Colaborador creativo</option><option value="editor">Contenido y cotizaciones</option><option value="finance">Finanzas</option><option value="hr">Recursos Humanos</option><option value="calendar">Solo agenda</option><option value="owner">Propietario</option></select></label>
           <label className={styles.fullField}>{form.id ? "Nueva contraseña (déjala vacía para conservarla)" : "Contraseña temporal"}<input type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required={!form.id} minLength={form.password ? 12 : undefined} autoComplete="new-password" /><small>Mínimo 12 caracteres. Compártela con la persona por un canal privado.</small></label>
           {form.id && <label className={styles.checkField}><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> Permitir acceso al panel</label>}
         </div>
