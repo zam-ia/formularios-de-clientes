@@ -155,6 +155,12 @@ function canAccessPath(session: AdminSession, pathname: string) {
   if (session.role === "project_manager") {
     return ["/api/admin/projects", "/api/admin/clients", "/api/admin/calendar", "/api/admin/quotes", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
   }
+  if (session.role === "sales") {
+    return ["/api/admin/quotes", "/api/admin/services", "/api/admin/commissions", "/api/admin/clients", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
+  }
+  if (session.role === "supervisor") {
+    return ["/api/admin/quotes", "/api/admin/services", "/api/admin/commissions", "/api/admin/clients", "/api/admin/projects", "/api/admin/calendar", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
+  }
   if (session.role === "collaborator") {
     return ["/api/admin/projects", "/api/admin/calendar", "/api/admin/auth/"].some((path) => pathname.startsWith(path));
   }

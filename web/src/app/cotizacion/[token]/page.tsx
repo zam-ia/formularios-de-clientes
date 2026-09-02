@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic";
 function totals(quote: Quote) {
   const subtotal = quote.items.reduce((sum, item) => sum + item.quantity * item.unit_price * (1 - item.discount_percent / 100), 0);
   const discount = quote.global_discount_type === "percent" ? subtotal * quote.global_discount_value / 100 : Math.min(subtotal, quote.global_discount_value);
-  return { subtotal, discount, total: Math.max(0, subtotal - discount) };
+  const beforeTax = Math.max(0, subtotal - discount);
+  const tax = beforeTax * (quote.tax_percent || 0) / 100;
+  return { subtotal, discount, beforeTax, tax, total: beforeTax + tax };
 }
 function money(value: number, currency: "PEN" | "USD") { return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(value); }
 
@@ -43,7 +45,7 @@ export default async function PublicQuotePage({ params }: { params: Promise<{ to
 
       <section className={styles.section}><div className={styles.sectionHeading}><p>02 · ALCANCE</p><h2>Qué incluye esta propuesta.</h2></div><div className={styles.serviceStack}>{quote.items.map((item) => <article key={item.id}><div><p>SERVICIO / PLAN</p><h3>{item.name}</h3><span>{item.description}</span>{item.features.length > 0 && <ul>{item.features.map((feature) => <li key={feature}><Check /> {feature}</li>)}</ul>}</div><aside><span>{item.quantity !== 1 ? `${item.quantity} × ` : ""}{money(item.unit_price, quote.currency)}</span>{item.discount_percent > 0 && <small>-{item.discount_percent}% en este servicio</small>}<strong>{money(item.quantity * item.unit_price * (1 - item.discount_percent / 100), quote.currency)}</strong></aside></article>)}</div></section>
 
-      <section className={styles.investment}><div><p>03 · INVERSIÓN</p><h2>Un alcance claro, sin costos escondidos.</h2><span>La propuesta puede ajustarse antes de la confirmación final.</span></div><aside><p><span>Subtotal</span><strong>{money(amount.subtotal, quote.currency)}</strong></p>{amount.discount > 0 && <p><span>Descuento especial</span><strong>-{money(amount.discount, quote.currency)}</strong></p>}<div><span>Inversión total</span><strong>{money(amount.total, quote.currency)}</strong></div></aside></section>
+      <section className={styles.investment}><div><p>03 · INVERSIÓN</p><h2>Un alcance claro, sin costos escondidos.</h2><span>La propuesta puede ajustarse antes de la confirmación final.</span></div><aside><p><span>Subtotal</span><strong>{money(amount.subtotal, quote.currency)}</strong></p>{amount.discount > 0 && <p><span>Descuento especial</span><strong>-{money(amount.discount, quote.currency)}</strong></p>}{amount.tax > 0 && <p><span>IGV ({quote.tax_percent || 0}%)</span><strong>{money(amount.tax, quote.currency)}</strong></p>}<div><span>Inversión total</span><strong>{money(amount.total, quote.currency)}</strong></div></aside></section>
 
       <section className={styles.terms}><div className={styles.sectionHeading}><p>04 · CONDICIONES</p><h2>Antes de empezar.</h2></div><ul>{quote.terms.map((term) => <li key={term}><ShieldCheck /> <span>{term}</span></li>)}</ul>{quote.notes && <blockquote>{quote.notes}</blockquote>}</section>
 

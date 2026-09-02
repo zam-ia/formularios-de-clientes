@@ -10,9 +10,11 @@ import {
   ArrowDown,
   ArrowUp,
   BriefcaseBusiness,
+  BookOpen,
   CalendarDays,
   Calculator,
   Check,
+  CircleDollarSign,
   Copy,
   ContactRound,
   Columns3,
@@ -240,7 +242,7 @@ export default function PanelClient() {
           router.replace("/panel/agenda");
           return;
         }
-        if (active && user && ["project_manager", "collaborator", "finance", "hr"].includes(user.role)) {
+        if (active && user && ["project_manager", "collaborator", "finance", "hr", "sales", "supervisor"].includes(user.role)) {
           router.replace("/panel/dashboard");
           return;
         }
@@ -287,7 +289,7 @@ export default function PanelClient() {
         router.replace("/panel/agenda");
         return;
       }
-      if (["project_manager", "collaborator", "finance", "hr"].includes(result.user.role)) {
+      if (["project_manager", "collaborator", "finance", "hr", "sales", "supervisor"].includes(result.user.role)) {
         router.replace("/panel/dashboard");
         return;
       }
@@ -828,6 +830,12 @@ export default function PanelClient() {
           </Link>
           <Link href="/panel/cotizador">
             <Calculator /> Cotizador
+          </Link>
+          <Link href="/panel/catalogo">
+            <BookOpen /> Catálogo comercial
+          </Link>
+          <Link href="/panel/comisiones">
+            <CircleDollarSign /> Comisiones
           </Link>
           <Link href="/panel/clientes">
             <ContactRound /> Clientes

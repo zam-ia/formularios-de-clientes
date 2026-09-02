@@ -7,7 +7,7 @@ import { mutateAdminData, publicAdminUser, readAdminData } from "@/lib/adminData
 export const runtime = "nodejs";
 
 const usernameSchema = z.string().trim().toLowerCase().regex(/^[a-z0-9._-]{3,32}$/);
-const roleSchema = z.enum(["owner", "admin", "editor", "calendar", "project_manager", "collaborator", "finance", "hr"]);
+const roleSchema = z.enum(["owner", "admin", "editor", "calendar", "project_manager", "collaborator", "finance", "hr", "sales", "supervisor"]);
 const createSchema = z.object({
   username: usernameSchema,
   displayName: z.string().trim().min(2).max(80),
