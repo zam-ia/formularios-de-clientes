@@ -182,7 +182,7 @@ export default function SiteAdmin() {
         {notice ? <div className={styles.notice}><Check /> {notice}<button onClick={() => setNotice("")} aria-label="Cerrar aviso"><X /></button></div> : null}
         <div className={styles.layout}>
           <nav>
-            <a href="#identity">Identidad</a><a href="#hero">Portada</a><a href="#case">Caso</a><a href="#services">Servicios</a><a href="#sectors">Rubros</a><a href="#testimonials">Testimonios</a><a href="#about">Nosotros</a><a href="#final">Cierre</a>
+            <a href="#identity">Identidad</a><a href="#hero">Portada</a><a href="#stats">Cifras</a><a href="#case">Caso</a><a href="#services">Servicios</a><a href="#sectors">Rubros</a><a href="#testimonials">Testimonios</a><a href="#about">Nosotros</a><a href="#final">Cierre</a>
           </nav>
           <div className={styles.forms}>
             <EditorSection id="identity" title="Identidad y contacto" text="Logo principal y número que reciben los botones de WhatsApp.">
@@ -200,6 +200,20 @@ export default function SiteAdmin() {
                 <label className={styles.full}>Introducción<textarea rows={4} value={content.heroLead} onChange={(e) => update("heroLead", e.target.value)} /></label>
                 <MediaField label="Recurso principal" guide="Imagen 1600 × 1800 px o video MP4/WEBM comprimido · máximo 50 MB" value={content.heroMedia} kind={content.heroMediaKind} loading={uploading === "heroMedia"} upload={(file) => void upload("heroMedia", file)} allowVideo />
                 <MediaField label="Póster y versión móvil" guide="WebP/AVIF recomendado 1200 × 1400 px. Se usa si el video falla o se reduce motion." value={content.heroPoster} kind="image" loading={uploading === "heroPoster"} upload={(file) => void upload("heroPoster", file)} />
+              </div>
+            </EditorSection>
+
+            <EditorSection id="stats" title="Cifras animadas" text="Cuatro datos breves que aparecen con contador al entrar en pantalla. Usa solo cifras reales o conceptos verificables.">
+              <div className={styles.grid}>
+                {content.stats.map((stat, index) => <div className={styles.service} key={stat.id}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div className={styles.grid}>
+                    <label>Antes <small>Ej. + o S/</small><input value={stat.prefix} maxLength={8} onChange={(e) => update("stats", content.stats.map((item, itemIndex) => itemIndex === index ? { ...item, prefix: e.target.value } : item))} /></label>
+                    <label>Número entero<input inputMode="numeric" value={stat.value} onChange={(e) => update("stats", content.stats.map((item, itemIndex) => itemIndex === index ? { ...item, value: e.target.value.replace(/\D/g, "").slice(0, 6) } : item))} /></label>
+                    <label>Después <small>Ej. %, ° o K</small><input value={stat.suffix} maxLength={12} onChange={(e) => update("stats", content.stats.map((item, itemIndex) => itemIndex === index ? { ...item, suffix: e.target.value } : item))} /></label>
+                    <label>Descripción<input value={stat.label} onChange={(e) => update("stats", content.stats.map((item, itemIndex) => itemIndex === index ? { ...item, label: e.target.value } : item))} /></label>
+                  </div>
+                </div>)}
               </div>
             </EditorSection>
 

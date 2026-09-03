@@ -32,8 +32,16 @@ const testimonialSchema = z.object({
   visible: z.boolean().default(true),
 });
 
+const siteStatSchema = z.object({
+  id: z.string().min(1).max(80),
+  prefix: z.string().max(8).default(""),
+  value: z.string().regex(/^\d{1,6}$/),
+  suffix: z.string().max(12).default(""),
+  label: z.string().min(3).max(100),
+});
+
 export const siteContentSchema = z.object({
-  version: z.literal(4),
+  version: z.literal(5),
   whatsappNumber: z.string().regex(/^\d{8,15}$/),
   logoUrl: mediaUrlSchema,
   heroKicker: z.string().min(2).max(100),
@@ -42,6 +50,7 @@ export const siteContentSchema = z.object({
   heroMediaKind: z.enum(["image", "video"]),
   heroMedia: mediaUrlSchema,
   heroPoster: mediaUrlSchema,
+  stats: z.array(siteStatSchema).length(4),
   whyTitle: z.string().min(5).max(180),
   sectorsTitle: z.string().min(5).max(180),
   healthTitle: z.string().min(5).max(180),
@@ -78,7 +87,7 @@ export type SiteContent = z.infer<typeof siteContentSchema>;
 export type SiteTestimonial = z.infer<typeof testimonialSchema>;
 
 export const defaultSiteContent: SiteContent = {
-  version: 4,
+  version: 5,
   whatsappNumber: "51987088359",
   logoUrl: "/brand/crisdal-agency-logo.png",
   heroKicker: "Estrategia · Creatividad · Distribución · Conversión",
@@ -88,6 +97,12 @@ export const defaultSiteContent: SiteContent = {
   heroMediaKind: "image",
   heroMedia: "/brochure/story/brand-overview.webp",
   heroPoster: "/brochure/story/brand-overview.webp",
+  stats: [
+    { id: "capabilities", prefix: "", value: "4", suffix: "", label: "disciplinas conectadas" },
+    { id: "route", prefix: "", value: "1", suffix: "", label: "ruta estratégica" },
+    { id: "vision", prefix: "", value: "360", suffix: "°", label: "visión del proyecto" },
+    { id: "isolated", prefix: "", value: "0", suffix: "", label: "piezas aisladas" },
+  ],
   whyTitle: "Una sola ruta. Menos piezas aisladas. Más claridad para avanzar.",
   sectorsTitle: "Conocemos el contexto antes de diseñar la solución.",
   healthTitle: "Salud y estética",
@@ -181,13 +196,14 @@ export async function getSiteContent(): Promise<SiteContent> {
     const parsed = siteContentSchema.safeParse({
       ...defaultSiteContent,
       ...raw,
-      version: 4,
+      version: 5,
       heroTitle: storedVersion < 3 ? defaultSiteContent.heroTitle : raw.heroTitle,
       resultsTitle: storedVersion < 3 ? defaultSiteContent.resultsTitle : raw.resultsTitle,
       caseCategory: storedVersion < 3 ? defaultSiteContent.caseCategory : raw.caseCategory,
       caseTitle: storedVersion < 3 ? defaultSiteContent.caseTitle : raw.caseTitle,
       heroMedia: raw.heroMedia || legacyHero,
       heroPoster: raw.heroPoster || legacyHero,
+      stats: Array.isArray(raw.stats) && raw.stats.length === 4 ? raw.stats : defaultSiteContent.stats,
       caseChallenge: storedVersion < 3 ? defaultSiteContent.caseChallenge : raw.caseChallenge || legacyCaseText,
       caseSolution: storedVersion < 3 ? defaultSiteContent.caseSolution : raw.caseSolution || legacyCaseText,
       caseExecution: storedVersion < 3 ? defaultSiteContent.caseExecution : raw.caseExecution || legacyCaseText,
@@ -217,7 +233,7 @@ export async function getSiteContent(): Promise<SiteContent> {
 export async function saveSiteContent(input: unknown) {
   const content = siteContentSchema.parse({
     ...(typeof input === "object" && input ? input : {}),
-    version: 4,
+    version: 5,
     updatedAt: new Date().toISOString(),
   });
   await ensureBrochureBucket();

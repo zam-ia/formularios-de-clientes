@@ -17,7 +17,6 @@ import {
   Handshake,
   HeartPulse,
   LayoutDashboard,
-  Layers3,
   LoaderCircle,
   Menu,
   MessageCircle,
@@ -27,7 +26,6 @@ import {
   Route,
   Send,
   Sparkles,
-  Target,
   Users,
   Workflow,
   X,
@@ -76,10 +74,13 @@ function track(event: string, params: Record<string, string> = {}) {
 
 export default function HomePage({ content }: { content: SiteContent }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
   const [contactState, setContactState] = useState<
     "idle" | "sending" | "sent" | "error"
   >("idle");
   const formStarted = useRef(false);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  const heroVisualRef = useRef<HTMLDivElement>(null);
   const whatsapp = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent("Hola Crisdal, quiero solicitar un diagnóstico para mi negocio.")}`;
 
   useEffect(() => {
@@ -100,6 +101,8 @@ export default function HomePage({ content }: { content: SiteContent }) {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       if (max <= 0) return;
       const progress = window.scrollY / max;
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${progress})`;
+      setHeaderScrolled(window.scrollY > 24);
       [50, 90].forEach((point) => {
         if (progress >= point / 100 && !sent.has(point)) {
           sent.add(point);
@@ -108,11 +111,35 @@ export default function HomePage({ content }: { content: SiteContent }) {
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => {
       observer.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  function moveHeroVisual(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+    event.currentTarget.style.setProperty("--pointer-x", `${x * 100}%`);
+    event.currentTarget.style.setProperty("--pointer-y", `${y * 100}%`);
+    event.currentTarget.style.setProperty("--rotate-x", `${(0.5 - y) * 5}deg`);
+    event.currentTarget.style.setProperty("--rotate-y", `${(x - 0.5) * 6}deg`);
+  }
+
+  function resetHeroVisual() {
+    heroVisualRef.current?.style.setProperty("--rotate-x", "0deg");
+    heroVisualRef.current?.style.setProperty("--rotate-y", "0deg");
+  }
+
+  function moveServiceCard(event: React.PointerEvent<HTMLAnchorElement>) {
+    if (event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty("--card-x", `${event.clientX - bounds.left}px`);
+    event.currentTarget.style.setProperty("--card-y", `${event.clientY - bounds.top}px`);
+  }
 
   async function submitContact(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -153,7 +180,8 @@ export default function HomePage({ content }: { content: SiteContent }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <header className={styles.header}>
+      <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ""}`}>
+        <span ref={progressRef} className={styles.scrollProgress} aria-hidden="true" />
         <a className={styles.brand} href="#inicio" aria-label="Crisdal Agency, inicio">
           <Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized />
         </a>
@@ -190,7 +218,7 @@ export default function HomePage({ content }: { content: SiteContent }) {
         <div className={styles.heroGrid} aria-hidden="true" />
         <div className={styles.heroCopy} data-reveal>
           <p className={styles.kicker}><i /> {content.heroKicker}</p>
-          <h1>{content.heroTitle.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</h1>
+          <h1>{content.heroTitle.split("\n").map((line, index) => <span key={`${line}-${index}`} style={{ animationDelay: `${index * 120 + 120}ms` }}>{line}<br /></span>)}</h1>
           <p>{content.heroLead}</p>
           <div className={styles.heroActions}>
             <a href="#casos" onClick={() => track("open_case", { placement: "hero" })}>
@@ -206,7 +234,13 @@ export default function HomePage({ content }: { content: SiteContent }) {
             <span><Check /> Resultados trazables</span>
           </div>
         </div>
-        <div className={styles.heroVisual} data-reveal>
+        <div
+          ref={heroVisualRef}
+          className={styles.heroVisual}
+          data-reveal
+          onPointerMove={moveHeroVisual}
+          onPointerLeave={resetHeroVisual}
+        >
           <Media
             kind={content.heroMediaKind}
             src={content.heroMedia}
@@ -216,17 +250,33 @@ export default function HomePage({ content }: { content: SiteContent }) {
           />
           <span className={styles.visualBadge}><Sparkles /> Estrategia conectada</span>
           <span className={styles.visualIndex}>CRISDAL / 2026</span>
+          <span className={styles.visualSignal}><i /> EN MOVIMIENTO</span>
         </div>
         <a className={styles.scrollCue} href="#prueba"><ArrowDownRight /> Explorar</a>
       </section>
 
-      <section id="prueba" className={styles.proofStrip} aria-label="Diferenciales de Crisdal">
+      <section id="prueba" className={styles.proofStrip} aria-label="Capacidades de Crisdal">
         <p>UNA RUTA CONECTADA</p>
+        <div className={styles.proofViewport}>
+          <div className={styles.proofTrack}>
+            {[...content.services, ...content.services].map((service, index) => (
+              <span key={`${service.id}-${index}`} aria-hidden={index >= content.services.length}>
+                <i /> {service.title}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.stats} aria-label="Crisdal en cifras">
+        <p data-reveal>ESTRUCTURA PARA CRECER</p>
         <div>
-          <span><Target /> Estrategia</span>
-          <span><Palette /> Creatividad</span>
-          <span><Layers3 /> Tecnología</span>
-          <span><BarChart3 /> Medición</span>
+          {content.stats.map((stat) => (
+            <article key={stat.id} data-reveal>
+              <strong>{stat.prefix}<AnimatedNumber value={stat.value} />{stat.suffix}</strong>
+              <span>{stat.label}</span>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -274,6 +324,7 @@ export default function HomePage({ content }: { content: SiteContent }) {
                 href="#contacto"
                 className={`${service.size === "wide" ? styles.serviceWide : service.size === "regular" ? styles.serviceRegular : styles.serviceCompact} ${service.mediaUrl ? styles.serviceWithMedia : ""}`}
                 data-reveal
+                onPointerMove={moveServiceCard}
                 onClick={() => track("service_open", { service: service.title })}
               >
                 {service.mediaUrl ? <span className={styles.serviceMedia} aria-hidden="true">
@@ -329,7 +380,7 @@ export default function HomePage({ content }: { content: SiteContent }) {
       {content.testimonials.some((item) => item.visible) ? (
         <section className={styles.testimonials}>
           <SectionHeading kicker="Experiencias autorizadas" title="Lo que cambia cuando las piezas empiezan a conversar." />
-          <div>
+          <div className={styles.testimonialRail}>
             {content.testimonials.filter((item) => item.visible).map((item) => (
               <blockquote key={item.id} data-reveal>
                 <Quote />
@@ -431,4 +482,39 @@ function Media({ kind, src, poster, alt, priority = false }: { kind: "image" | "
       <Image src={src} alt={alt} fill priority={priority} unoptimized sizes="(max-width: 800px) 100vw, 48vw" />
     </div>
   );
+}
+
+function AnimatedNumber({ value }: { value: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState("0");
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const target = Number.parseInt(value, 10) || 0;
+    let frame = 0;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setDisplay(String(target));
+        return;
+      }
+      const startedAt = performance.now();
+      const tick = (now: number) => {
+        const progress = Math.min((now - startedAt) / 1200, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplay(String(Math.round(target * eased)));
+        if (progress < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }, { threshold: 0.6 });
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [value]);
+
+  return <span ref={ref}>{display}</span>;
 }
