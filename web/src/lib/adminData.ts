@@ -88,6 +88,8 @@ export type Quote = {
   terms: string[];
   notes: string;
   status: QuoteStatus;
+  advisor_id?: string;
+  advisor_name?: string;
   created_by: string;
   created_by_name: string;
   created_at: string;
@@ -139,6 +141,8 @@ export type AgencyClient = {
   end_date: string;
   status: ClientStatus;
   notes: string;
+  advisor_id?: string;
+  advisor_name?: string;
   created_by: string;
   created_at: string;
   updated_at: string;

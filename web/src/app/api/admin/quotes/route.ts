@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { adminSessionFromRequest, isAdminRequest } from "@/lib/adminAuth";
-import { createPublicQuoteToken, mutateAdminData, nextQuoteNumber, readAdminData } from "@/lib/adminData";
+import { createPublicQuoteToken, mutateAdminData, nextQuoteNumber, readAdminData, type Quote } from "@/lib/adminData";
 import { PUBLIC_SITE_URL } from "@/lib/publicSiteUrl";
 
 export const runtime = "nodejs";
@@ -13,13 +13,13 @@ const itemSchema = z.object({
   code: z.string().max(30).optional(),
   category: z.string().max(80).optional(),
   unit: z.string().max(80).optional(),
-  base_cost: z.number().min(0).max(10_000_000).optional(),
-  tax_percent: z.number().min(0).max(100).optional(),
+  base_cost: z.number().int().min(0).max(10_000_000).optional(),
+  tax_percent: z.number().int().min(0).max(100).optional(),
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(800),
-  quantity: z.number().positive().max(1000),
-  unit_price: z.number().min(0).max(10_000_000),
-  discount_percent: z.number().min(0).max(100),
+  quantity: z.number().int().positive().max(1000),
+  unit_price: z.number().int().min(0).max(10_000_000),
+  discount_percent: z.number().int().min(0).max(100),
   features: z.array(z.string().trim().min(1).max(240)).max(30),
 });
 const strategySchema = z.object({ id: z.string().min(1).max(80), title: z.string().trim().min(1).max(120), description: z.string().trim().min(1).max(1000) });
@@ -36,18 +36,20 @@ const quoteInputSchema = z.object({
   items: z.array(itemSchema).min(1).max(30),
   strategies: z.array(strategySchema).max(12),
   global_discount_type: z.enum(["percent", "fixed"]),
-  global_discount_value: z.number().min(0).max(10_000_000),
-  tax_percent: z.number().min(0).max(100).optional(),
+  global_discount_value: z.number().int().min(0).max(10_000_000),
+  tax_percent: z.number().int().min(0).max(100).optional(),
   valid_until: z.string().date(),
   terms: z.array(z.string().trim().min(1).max(500)).max(20),
   notes: z.string().trim().max(2000),
   status: z.enum(["draft", "sent", "accepted", "approved", "won", "lost", "rejected", "expired"]),
+  advisor_id: z.string().max(80).optional().default(""),
+  advisor_name: z.string().trim().max(140).optional().default(""),
 });
 const planInputSchema = z.object({
   id: z.string().max(80).optional(),
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().max(800),
-  price: z.number().min(0).max(10_000_000),
+  price: z.number().int().min(0).max(10_000_000),
   billing_label: z.string().trim().max(80),
   features: z.array(z.string().trim().min(1).max(240)).max(30),
   badge: z.string().trim().max(60),
@@ -58,7 +60,7 @@ const discountInputSchema = z.object({
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().max(500),
   type: z.enum(["percent", "fixed"]),
-  value: z.number().positive().max(10_000_000),
+  value: z.number().int().positive().max(10_000_000),
   active: z.boolean(),
 }).superRefine((discount, context) => {
   if (discount.type === "percent" && discount.value > 100) {
@@ -80,7 +82,7 @@ function quoteForRole(quote: Awaited<ReturnType<typeof readAdminData>>["quotes"]
   return quoteResponse({ ...quote, items: quote.items.map((item) => { const sanitized = { ...item }; delete sanitized.base_cost; return sanitized; }) });
 }
 
-function quoteBase(input: z.infer<typeof quoteInputSchema>) {
+function quoteBase(input: Pick<Quote, "items" | "global_discount_type" | "global_discount_value">) {
   const subtotal = input.items.reduce((sum, item) => sum + item.quantity * item.unit_price * (1 - item.discount_percent / 100), 0);
   const discount = input.global_discount_type === "percent" ? subtotal * input.global_discount_value / 100 : Math.min(subtotal, input.global_discount_value);
   return Math.max(0, subtotal - discount);
@@ -108,14 +110,16 @@ function syncCommission(data: Awaited<ReturnType<typeof readAdminData>>, quote: 
   }
   const baseAmount = quoteBase(quote);
   const month = quote.updated_at.slice(0, 7);
-  const monthlySales = data.quotes.filter((item) => item.created_by === quote.created_by && item.status === "won" && item.updated_at.startsWith(month)).reduce((sum, item) => sum + quoteBase(item), 0);
+  const advisorId = quote.advisor_id || quote.created_by;
+  const advisorName = quote.advisor_name || quote.created_by_name;
+  const monthlySales = data.quotes.filter((item) => (item.advisor_id || item.created_by) === advisorId && item.status === "won" && item.updated_at.startsWith(month)).reduce((sum, item) => sum + quoteBase(item), 0);
   const lineSubtotal = quote.items.reduce((sum, item) => sum + item.quantity * item.unit_price * (1 - item.discount_percent / 100), 0) || 1;
   let weightedCommission = 0;
   let weightedPercent = 0;
   const fixedRules = new Set<string>();
   for (const item of quote.items) {
     const service = item.service_id ? data.catalog_services.find((current) => current.id === item.service_id) : undefined;
-    const candidates = data.commission_rules.filter((rule) => rule.active && (!rule.user_id || rule.user_id === quote.created_by) && (!rule.category_id || rule.category_id === service?.category_id));
+    const candidates = data.commission_rules.filter((rule) => rule.active && (!rule.user_id || rule.user_id === advisorId) && (!rule.category_id || rule.category_id === service?.category_id));
     const rule = candidates.toSorted((a, b) => Number(Boolean(b.user_id)) * 2 + Number(Boolean(b.category_id)) - Number(Boolean(a.user_id)) * 2 - Number(Boolean(a.category_id)))[0];
     if (!rule) continue;
     const lineBase = item.quantity * item.unit_price * (1 - item.discount_percent / 100) * (baseAmount / lineSubtotal);
@@ -127,8 +131,8 @@ function syncCommission(data: Awaited<ReturnType<typeof readAdminData>>, quote: 
   const fixedAmount = [...fixedRules].reduce((sum, id) => sum + (data.commission_rules.find((rule) => rule.id === id)?.fixed_amount || 0), 0);
   const now = new Date().toISOString();
   const payload = {
-    user_id: quote.created_by,
-    user_name: quote.created_by_name,
+    user_id: advisorId,
+    user_name: advisorName,
     quote_id: quote.id,
     quote_number: quote.quote_number,
     base_amount: baseAmount,
@@ -144,15 +148,26 @@ export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   const actor = adminSessionFromRequest(request)!;
   const data = await readAdminData();
+  const advisors = data.users
+    .filter((user) => user.active && ["sales", "supervisor", "admin", "owner"].includes(user.role))
+    .map((user) => ({ id: user.id, displayName: user.display_name, role: user.role }));
+  if (!advisors.some((user) => user.id === "environment-owner")) advisors.unshift({ id: "environment-owner", displayName: "Crisdal Agency", role: "owner" });
+  if (!advisors.some((user) => user.id === actor.id) && ["owner", "admin", "supervisor", "sales"].includes(actor.role)) {
+    advisors.unshift({ id: actor.id, displayName: actor.displayName, role: actor.role });
+  }
   return NextResponse.json({
-    quotes: data.quotes.filter((quote) => actor.role !== "sales" || quote.created_by === actor.id).toSorted((a, b) => b.updated_at.localeCompare(a.updated_at)).map((quote) => quoteForRole(quote, actor.role)),
+    quotes: data.quotes.filter((quote) => actor.role !== "sales" || (quote.advisor_id || quote.created_by) === actor.id).toSorted((a, b) => b.updated_at.localeCompare(a.updated_at)).map((quote) => quoteForRole(quote, actor.role)),
     plans: data.quote_plans.toSorted((a, b) => a.price - b.price),
     discounts: data.discount_rules.toSorted((a, b) => b.updated_at.localeCompare(a.updated_at)),
     services: data.catalog_services.filter((service) => service.active).map((service) => actor.role === "sales" ? { ...service, base_cost: undefined } : service),
     categories: data.service_categories.filter((category) => category.active),
-    clients: data.clients.filter((client) => client.status !== "completed"),
+    clients: data.clients.filter((client) => client.status !== "completed" && (actor.role !== "sales" || (client.advisor_id || client.created_by) === actor.id)),
+    advisors,
     settings: data.commercial_settings,
     currentRole: actor.role,
+    currentUserId: actor.id,
+    currentUserName: actor.displayName,
+    canAssign: ["owner", "admin", "supervisor"].includes(actor.role),
   });
 }
 
@@ -190,15 +205,24 @@ export async function POST(request: NextRequest) {
     const quote = await mutateAdminData((data) => {
       validateQuoteRules(data, quoteInput, actor.role);
       const now = new Date().toISOString();
-      const created = { ...quoteInput, tax_percent: quoteInput.tax_percent ?? data.commercial_settings.default_tax_percent, id: randomUUID(), public_token: createPublicQuoteToken(), quote_number: nextQuoteNumber(data.quotes), created_by: actor.id, created_by_name: actor.displayName, created_at: now, updated_at: now };
+      const canAssign = ["owner", "admin", "supervisor"].includes(actor.role);
+      const advisorId = actor.role === "sales" ? actor.id : (canAssign ? quoteInput.advisor_id || actor.id : actor.id);
+      const advisor = data.users.find((user) => user.id === advisorId && user.active && ["sales", "supervisor", "admin", "owner"].includes(user.role));
+      const advisorName = advisorId === actor.id ? actor.displayName : advisorId === "environment-owner" ? "Crisdal Agency" : advisor?.display_name || "";
+      if (!advisorName) throw new Error("advisor");
+      const created = { ...quoteInput, advisor_id: advisorId, advisor_name: advisorName, tax_percent: quoteInput.tax_percent ?? data.commercial_settings.default_tax_percent, id: randomUUID(), public_token: createPublicQuoteToken(), quote_number: nextQuoteNumber(data.quotes), created_by: actor.id, created_by_name: actor.displayName, created_at: now, updated_at: now };
       data.quotes.push(created);
       syncCommission(data, created);
+      if (created.status === "won" && created.client_id) {
+        const client = data.clients.find((item) => item.id === created.client_id);
+        if (client) Object.assign(client, { advisor_id: advisorId, advisor_name: advisorName, updated_at: now });
+      }
       return created;
     });
     return NextResponse.json({ quote: quoteForRole(quote, actor.role) }, { status: 201 });
   } catch (error) {
     const reason = error instanceof Error ? error.message : "invalid";
-    const messages: Record<string, string> = { service: "Uno de los servicios ya no está disponible.", "line-discount": "El descuento de un servicio supera el máximo permitido.", "below-cost": "El precio final de un servicio está por debajo del mínimo permitido.", "global-discount": "El descuento global supera tu límite permitido." };
+    const messages: Record<string, string> = { advisor: "El asesor seleccionado no está disponible.", service: "Uno de los servicios ya no está disponible.", "line-discount": "El descuento de un servicio supera el máximo permitido.", "below-cost": "El precio final de un servicio está por debajo del mínimo permitido.", "global-discount": "El descuento global supera tu límite permitido." };
     return NextResponse.json({ error: messages[reason] || "Revisa los valores de la cotización." }, { status: 409 });
   }
 }
@@ -240,16 +264,26 @@ export async function PUT(request: NextRequest) {
     const quote = await mutateAdminData((data) => {
       const current = data.quotes.find((item) => item.id === quoteInput.id);
       if (!current) throw new Error("missing");
-      if (actor.role === "sales" && current.created_by !== actor.id) throw new Error("forbidden");
+      if (actor.role === "sales" && (current.advisor_id || current.created_by) !== actor.id) throw new Error("forbidden");
       validateQuoteRules(data, quoteInput, actor.role);
-      Object.assign(current, quoteInput, { tax_percent: quoteInput.tax_percent ?? data.commercial_settings.default_tax_percent, updated_at: new Date().toISOString() });
+      const canAssign = ["owner", "admin", "supervisor"].includes(actor.role);
+      const advisorId = actor.role === "sales" ? actor.id : (canAssign ? quoteInput.advisor_id || current.advisor_id || current.created_by : current.advisor_id || current.created_by);
+      const advisor = data.users.find((user) => user.id === advisorId && user.active && ["sales", "supervisor", "admin", "owner"].includes(user.role));
+      const advisorName = advisorId === actor.id ? actor.displayName : advisorId === "environment-owner" ? "Crisdal Agency" : advisor?.display_name || (advisorId === current.advisor_id ? current.advisor_name : "") || (advisorId === current.created_by ? current.created_by_name : "");
+      if (!advisorName) throw new Error("advisor");
+      const updatedAt = new Date().toISOString();
+      Object.assign(current, quoteInput, { advisor_id: advisorId, advisor_name: advisorName, tax_percent: quoteInput.tax_percent ?? data.commercial_settings.default_tax_percent, updated_at: updatedAt });
       syncCommission(data, current);
+      if (current.status === "won" && current.client_id) {
+        const client = data.clients.find((item) => item.id === current.client_id);
+        if (client) Object.assign(client, { advisor_id: advisorId, advisor_name: advisorName, updated_at: updatedAt });
+      }
       return current;
     });
     return NextResponse.json({ quote: quoteForRole(quote, adminSessionFromRequest(request)!.role) });
   } catch (error) {
     const reason = error instanceof Error ? error.message : "missing";
-    const messages: Record<string, string> = { forbidden: "Solo puedes modificar tus propias cotizaciones.", service: "Uno de los servicios ya no está disponible.", "line-discount": "El descuento de un servicio supera el máximo permitido.", "below-cost": "El precio final de un servicio está por debajo del mínimo permitido.", "global-discount": "El descuento global supera tu límite permitido." };
+    const messages: Record<string, string> = { forbidden: "Solo puedes modificar las cotizaciones que tienes asignadas.", advisor: "El asesor seleccionado no está disponible.", service: "Uno de los servicios ya no está disponible.", "line-discount": "El descuento de un servicio supera el máximo permitido.", "below-cost": "El precio final de un servicio está por debajo del mínimo permitido.", "global-discount": "El descuento global supera tu límite permitido." };
     return NextResponse.json({ error: messages[reason] || "No encontramos el registro que quieres actualizar." }, { status: reason === "missing" ? 404 : 409 });
   }
 }
@@ -264,7 +298,7 @@ export async function DELETE(request: NextRequest) {
     await mutateAdminData((data) => {
       if (parsed.data.kind === "quote") {
         const quote = data.quotes.find((item) => item.id === parsed.data.id);
-        if (actor.role === "sales" && quote?.created_by !== actor.id) throw new Error("forbidden");
+        if (actor.role === "sales" && (quote?.advisor_id || quote?.created_by) !== actor.id) throw new Error("forbidden");
         data.quotes = data.quotes.filter((item) => item.id !== parsed.data.id);
         data.commissions = data.commissions.filter((record) => record.quote_id !== parsed.data.id || record.status === "paid");
       }

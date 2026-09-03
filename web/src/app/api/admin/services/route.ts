@@ -13,17 +13,17 @@ const serviceSchema = z.object({
   name: z.string().trim().min(2).max(140),
   description: z.string().trim().max(1200),
   unit: z.string().trim().min(2).max(80),
-  base_cost: z.number().min(0).max(10_000_000),
-  suggested_price: z.number().min(0).max(10_000_000),
+  base_cost: z.number().int().min(0).max(10_000_000),
+  suggested_price: z.number().int().min(0).max(10_000_000),
   estimated_time: z.string().trim().max(80),
-  tax_percent: z.number().min(0).max(100),
-  max_discount_percent: z.number().min(0).max(100),
+  tax_percent: z.number().int().min(0).max(100),
+  max_discount_percent: z.number().int().min(0).max(100),
   active: z.boolean(),
 }).superRefine((service, context) => {
   if (service.suggested_price < service.base_cost) context.addIssue({ code: "custom", path: ["suggested_price"], message: "El precio sugerido no puede ser menor al costo base." });
 });
 const categorySchema = z.object({ id: z.string().max(80).optional(), name: z.string().trim().min(2).max(80), description: z.string().trim().max(400), active: z.boolean() });
-const settingsSchema = z.object({ default_tax_percent: z.number().min(0).max(100), max_global_discount_percent: z.number().min(0).max(100), allow_below_cost: z.boolean() });
+const settingsSchema = z.object({ default_tax_percent: z.number().int().min(0).max(100), max_global_discount_percent: z.number().int().min(0).max(100), allow_below_cost: z.boolean() });
 const envelopeSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("service"), data: serviceSchema }),
   z.object({ kind: z.literal("category"), data: categorySchema }),

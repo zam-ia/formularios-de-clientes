@@ -10,10 +10,10 @@ const ruleSchema = z.object({
   id: z.string().uuid().optional(),
   user_id: z.string().max(80),
   category_id: z.string().max(80),
-  commission_percent: z.number().min(0).max(100),
-  fixed_amount: z.number().min(0).max(1_000_000),
-  min_sales_threshold: z.number().min(0).max(10_000_000),
-  extra_percent_above_threshold: z.number().min(0).max(100),
+  commission_percent: z.number().int().min(0).max(100),
+  fixed_amount: z.number().int().min(0).max(1_000_000),
+  min_sales_threshold: z.number().int().min(0).max(10_000_000),
+  extra_percent_above_threshold: z.number().int().min(0).max(100),
   active: z.boolean(),
 });
 const envelopeSchema = z.discriminatedUnion("action", [
