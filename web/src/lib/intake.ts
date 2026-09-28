@@ -17,14 +17,14 @@ export const intakeSchema = z.object({
   service_types: z.array(z.string().max(100)).min(1).max(2),
   business_name: z.string().trim().min(2).max(120),
   sector: z.string().trim().min(1).max(120),
-  location: z.string().trim().min(2).max(120),
-  business_age: z.string().trim().min(1).max(80),
+  location: text(120),
+  business_age: text(80),
   social_links: text(600),
 
-  brand_words: z.array(z.string().trim().min(1).max(40)).length(3),
-  brand_assets_status: z.string().trim().min(1).max(120),
+  brand_words: z.array(z.string().trim().min(1).max(40)).max(3).default([]),
+  brand_assets_status: text(120),
   brand_colors_text: text(300),
-  brand_tone: z.string().trim().min(1).max(120),
+  brand_tone: text(120),
   brand_avoid: text(500),
 
   primary_goal: z.string().trim().min(1).max(120),
@@ -33,11 +33,11 @@ export const intakeSchema = z.object({
 
   ideal_customer: z.string().trim().min(5).max(600),
   customer_problem: z.string().trim().min(5).max(500),
-  customer_channels: z.array(z.string().max(80)).min(1).max(8),
+  customer_channels: z.array(z.string().max(80)).max(8).default([]),
   main_objection: text(300),
 
   star_offer: z.string().trim().min(2).max(200),
-  average_price: z.string().trim().min(1).max(100),
+  average_price: text(100),
   differentiator: z.string().trim().min(5).max(600),
   current_promo: text(300),
   competitors: text(300),
@@ -55,7 +55,7 @@ export const intakeSchema = z.object({
   contact_name: z.string().trim().min(2).max(120),
   contact_whatsapp: z.string().regex(/^\+[1-9]\d{7,14}$/),
   contact_email: z.union([z.literal(''), z.string().email().max(180)]).nullable().optional(),
-  best_contact_time: z.string().trim().min(1).max(80),
+  best_contact_time: text(80),
   consent: z.literal(true),
 
   files: z.array(uploadedFileSchema).max(2).default([]),

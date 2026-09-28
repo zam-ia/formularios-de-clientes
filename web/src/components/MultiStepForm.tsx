@@ -9,12 +9,12 @@ import {
   BriefcaseBusiness,
   Check,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   FileCheck2,
   ImageUp,
   LoaderCircle,
   MessageCircle,
-  Palette,
   RotateCcw,
   ShieldCheck,
   Sparkles,
@@ -59,7 +59,7 @@ declare global {
 const STORAGE_KEY = `crisdal-radiografia-${FORM_VERSION}`;
 const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/mp4'];
 const maxFileSize = 20 * 1024 * 1024;
-const stepIcons = [BriefcaseBusiness, Palette, Target, Users, Sparkles, ImageUp, Clock3];
+const stepIcons = [BriefcaseBusiness, Target, Users, ImageUp, Clock3];
 
 function newDraft(): Draft {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -119,6 +119,7 @@ export default function MultiStepForm() {
   const [turnstileToken, setTurnstileToken] = useState('');
   const [website, setWebsite] = useState('');
   const [tracking, setTracking] = useState<Record<string, string | null>>({});
+  const [optionalSections, setOptionalSections] = useState<Record<string, boolean>>({});
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileWidget = useRef<string>('');
   const topRef = useRef<HTMLDivElement>(null);
@@ -126,6 +127,9 @@ export default function MultiStepForm() {
 
   const step = formSteps[stepIndex];
   const visibleFields = useMemo(() => step?.fields.filter((field) => isFieldVisible(field.id, values)) ?? [], [step, values]);
+  const essentialFields = useMemo(() => visibleFields.filter((field) => !field.optional), [visibleFields]);
+  const optionalFields = useMemo(() => visibleFields.filter((field) => field.optional), [visibleFields]);
+  const optionalOpen = step ? (optionalSections[step.id] ?? optionalFields.some((field) => hasValue(values[field.id]))) : false;
   const progress = Math.round(((stepIndex + 1) / formSteps.length) * 100);
 
   const renderTurnstile = useCallback(() => {
@@ -203,6 +207,7 @@ export default function MultiStepForm() {
     setStartedAt(fresh.startedAt);
     setStepIndex(0);
     setErrors({});
+    setOptionalSections({});
     setResumeDraft(null);
     setView('form');
   }
@@ -389,9 +394,9 @@ export default function MultiStepForm() {
               <div className="welcome-mark"><Sparkles size={24} /></div>
               <p className="eyebrow">Antes de empezar</p>
               <h2 id="welcome-title">Ordenemos lo esencial de tu marca.</h2>
-              <p className="welcome-lead">En unos minutos entenderemos qué vendes, a quién ayudas, qué quieres lograr y qué materiales ya tienes.</p>
+              <p className="welcome-lead">En pocos pasos entenderemos qué vendes, a quién ayudas, qué quieres lograr y qué materiales ya tienes.</p>
               <div className="welcome-facts">
-                <span><Clock3 size={18} /> 6–8 minutos</span>
+                <span><Clock3 size={18} /> 4–5 minutos</span>
                 <span><FileCheck2 size={18} /> Tu avance se guarda</span>
               </div>
               <button className="button button-primary button-large" onClick={() => Object.keys(values).length ? setView('form') : startFresh()}>{Object.keys(values).length ? 'Continuar mi radiografía' : 'Empezar mi radiografía'} <ArrowRight size={19} /></button>
@@ -415,7 +420,7 @@ export default function MultiStepForm() {
               </div>
 
               <div className="fields">
-                {visibleFields.map((field) => (
+                {essentialFields.map((field) => (
                   <FieldControl
                     key={field.id}
                     field={field}
@@ -428,6 +433,40 @@ export default function MultiStepForm() {
                     onRemove={(file) => removeFile(field, file)}
                   />
                 ))}
+                {optionalFields.length > 0 && (
+                  <div className="optional-section">
+                    <button
+                      type="button"
+                      className="optional-toggle"
+                      aria-expanded={optionalOpen}
+                      aria-controls={`optional-${step.id}`}
+                      onClick={() => setOptionalSections((current) => ({ ...current, [step.id]: !optionalOpen }))}
+                    >
+                      <span>
+                        <strong>{optionalOpen ? 'Ocultar detalles adicionales' : 'Quiero contarles un poco más'}</strong>
+                        <small>{optionalFields.length} {optionalFields.length === 1 ? 'pregunta opcional' : 'preguntas opcionales'} · puedes continuar sin completarlas</small>
+                      </span>
+                      <ChevronDown size={20} aria-hidden="true" />
+                    </button>
+                    {optionalOpen && (
+                      <div className="optional-fields" id={`optional-${step.id}`}>
+                        {optionalFields.map((field) => (
+                          <FieldControl
+                            key={field.id}
+                            field={field}
+                            value={values[field.id]}
+                            error={errors[field.id]}
+                            uploadedFile={files.find((file) => file.category === field.category)}
+                            uploadProgress={uploadState[field.id] ?? 0}
+                            onChange={(value) => setField(field.id, value)}
+                            onUpload={(file) => uploadFile(field, file)}
+                            onRemove={(file) => removeFile(field, file)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {step.id === 'resources' && values.own_materials === 'No, hay que producir' && <div className="inline-note"><Check size={18} /> Perfecto. Lo tendremos en cuenta para la propuesta de producción.</div>}
@@ -447,14 +486,13 @@ export default function MultiStepForm() {
               <h2 id="review-title">Tu radiografía, en una vista</h2>
               <p className="review-intro">Confirma que todo esté correcto. Puedes volver a cualquier sección.</p>
               <div className="summary-grid">
-                <Summary title="Marca" body={`${values.business_name || '—'} · ${(values.brand_words as string[] || []).join(', ')}`} onEdit={() => editStep(1)} />
-                <Summary title="Prioridad" body={`${values.primary_goal || '—'} · ${values.four_week_result || '—'}`} onEdit={() => editStep(2)} />
-                <Summary title="Cliente" body={String(values.ideal_customer || '—')} onEdit={() => editStep(3)} />
-                <Summary title="Oferta" body={`${values.star_offer || '—'} · ${values.average_price || '—'}`} onEdit={() => editStep(4)} />
-                <Summary title="Acción esperada" body={String(values.primary_cta || '—')} onEdit={() => editStep(2)} />
-                <Summary title="Material" body={String(values.own_materials || '—')} onEdit={() => editStep(5)} />
-                <Summary title="Fecha" body={String(values.deadline_date || values.deadline_type || '—')} onEdit={() => editStep(6)} />
-                <Summary title="Contacto" body={`${values.contact_name || '—'} · ${normalizeWhatsapp(String(values.contact_whatsapp || ''))}`} onEdit={() => editStep(6)} />
+                <Summary title="Negocio" body={`${values.business_name || '—'} · ${values.sector || '—'}`} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'business'))} />
+                <Summary title="Prioridad" body={`${values.primary_goal || '—'} · ${values.four_week_result || '—'}`} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'direction'))} />
+                <Summary title="Cliente" body={String(values.ideal_customer || '—')} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'audience'))} />
+                <Summary title="Oferta" body={`${values.star_offer || '—'} · ${values.average_price || 'precio por definir'}`} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'direction'))} />
+                <Summary title="Material" body={String(values.own_materials || '—')} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'resources'))} />
+                <Summary title="Fecha" body={String(values.deadline_date || values.deadline_type || '—')} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'contact'))} />
+                <Summary title="Contacto" body={`${values.contact_name || '—'} · ${normalizeWhatsapp(String(values.contact_whatsapp || ''))}`} onEdit={() => editStep(formSteps.findIndex((item) => item.id === 'contact'))} />
               </div>
 
               <label className="honeypot" aria-hidden="true">Sitio web<input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} /></label>
