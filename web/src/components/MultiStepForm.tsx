@@ -115,6 +115,7 @@ export default function MultiStepForm() {
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notified, setNotified] = useState<boolean | null>(null);
+  const [deliveryMode, setDeliveryMode] = useState<'database' | 'email_backup' | null>(null);
   const [turnstileToken, setTurnstileToken] = useState('');
   const [website, setWebsite] = useState('');
   const [tracking, setTracking] = useState<Record<string, string | null>>({});
@@ -331,6 +332,7 @@ export default function MultiStepForm() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'No pudimos enviar la radiografía.');
       setNotified(result.notified ?? null);
+      setDeliveryMode(result.delivery === 'email_backup' ? 'email_backup' : 'database');
       localStorage.removeItem(STORAGE_KEY);
       setView('success');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -472,6 +474,7 @@ export default function MultiStepForm() {
               <h2 id="success-title">Radiografía recibida.</h2>
               <p>Ya tenemos el contexto para empezar con más claridad. Revisaremos tus respuestas y te escribiremos por WhatsApp.</p>
               <div className="code-card"><span>Tu código de seguimiento</span><strong>{submissionCode}</strong></div>
+              {deliveryMode === 'email_backup' && <p className="success-note">Tu información fue entregada directamente al equipo de Crisdal mediante nuestro canal de respaldo. No necesitas volver a enviarla.</p>}
               {notified === false && <p className="success-note">Tu información quedó guardada correctamente. La notificación por correo está pendiente, pero no necesitas volver a enviarla.</p>}
               <a className="button button-primary button-large" href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={20} /> Escribir a Crisdal por WhatsApp</a>
               <button className="button button-ghost" onClick={() => navigator.clipboard.writeText(submissionCode)}><FileCheck2 size={18} /> Copiar mi código</button>

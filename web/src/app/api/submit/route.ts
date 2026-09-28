@@ -6,6 +6,34 @@ import { sendSubmissionNotification } from '@/lib/notify';
 export const runtime = 'nodejs';
 export const maxDuration = 20;
 
+type SubmissionSummary = {
+  id?: string;
+  draft_id: string;
+  submission_code: string;
+  business_name: string;
+  contact_whatsapp: string;
+  contact_email?: string | null;
+};
+
+function errorDetails(error: unknown) {
+  if (!error || typeof error !== 'object') return { code: 'unknown', message: String(error || 'unknown') };
+  const candidate = error as { code?: string; name?: string; message?: string; cause?: { code?: string } };
+  return {
+    code: candidate.code || candidate.cause?.code || candidate.name || 'unknown',
+    message: candidate.message || 'unknown',
+  };
+}
+
+function fallbackSubmission(payload: ReturnType<typeof intakeSchema.parse>): SubmissionSummary {
+  return {
+    draft_id: payload.draft_id,
+    submission_code: payload.submission_code,
+    business_name: payload.business_name,
+    contact_whatsapp: payload.contact_whatsapp,
+    contact_email: payload.contact_email || null,
+  };
+}
+
 async function verifyTurnstile(token: string | undefined, ip: string | null) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) return true;
@@ -69,44 +97,96 @@ export async function POST(request: Request) {
       submitted_at: new Date().toISOString(),
     };
 
-    const { data: submission, error } = await supabase
-      .from('onboarding_submissions')
-      .insert(insert)
-      .select('id, draft_id, submission_code, business_name, contact_whatsapp, contact_email')
-      .single();
+    let submission: SubmissionSummary | null = null;
+    let persisted = false;
+    let duplicate = false;
+    let persistenceFailure: { code: string; message: string } | null = null;
 
-    if (error?.code === '23505') {
-      const { data: existing } = await supabase
-        .from('onboarding_submissions')
-        .select('id, draft_id, submission_code, business_name, contact_whatsapp, contact_email')
-        .eq('draft_id', payload.draft_id)
-        .single();
-      if (existing) return NextResponse.json({ success: true, submission: existing, duplicate: true });
-    }
-
-    if (error || !submission) {
-      console.error('Submission insert failed', { code: error?.code });
-      return NextResponse.json({ error: 'No pudimos guardar la radiografía. Inténtalo nuevamente.' }, { status: 500 });
-    }
-
-    if (files.length) {
-      const fileRows = files.map((file) => ({ ...file, submission_id: submission.id }));
-      const { error: fileError } = await supabase.from('onboarding_files').insert(fileRows);
-      if (fileError) console.error('File metadata insert failed', { code: fileError.code });
-    }
-
-    let notified = false;
     try {
-      await sendSubmissionNotification(payload);
-      notified = true;
-      await supabase.from('onboarding_submissions').update({ email_status: 'sent', email_error_code: null }).eq('id', submission.id);
-    } catch (notifyError) {
-      const code = notifyError instanceof Error ? notifyError.message.slice(0, 100) : 'email_failed';
-      console.error('Notification failed', { code });
-      await supabase.from('onboarding_submissions').update({ email_status: 'failed', email_error_code: code }).eq('id', submission.id);
+      const { data, error } = await supabase
+        .from('onboarding_submissions')
+        .insert(insert)
+        .select('id, draft_id, submission_code, business_name, contact_whatsapp, contact_email')
+        .single();
+
+      if (error?.code === '23505') {
+        const { data: existing, error: existingError } = await supabase
+          .from('onboarding_submissions')
+          .select('id, draft_id, submission_code, business_name, contact_whatsapp, contact_email')
+          .eq('draft_id', payload.draft_id)
+          .maybeSingle();
+        if (existingError) throw existingError;
+        if (existing) {
+          submission = existing;
+          persisted = true;
+          duplicate = true;
+        } else {
+          throw error;
+        }
+      } else if (error || !data) {
+        throw error || new Error('submission_missing');
+      } else {
+        submission = data;
+        persisted = true;
+      }
+    } catch (databaseError) {
+      persistenceFailure = errorDetails(databaseError);
+      submission = fallbackSubmission(payload);
+      console.error('Submission persistence failed', persistenceFailure);
     }
 
-    return NextResponse.json({ success: true, submission, notified }, { status: 201 });
+    if (persisted && files.length && submission?.id) {
+      const fileRows = files.map((file) => ({ ...file, submission_id: submission!.id }));
+      const { error: fileError } = await supabase.from('onboarding_files').insert(fileRows);
+      if (fileError) console.error('File metadata insert failed', errorDetails(fileError));
+    }
+
+    let notified: boolean | null = duplicate ? null : false;
+    let notificationFailure = '';
+    if (!duplicate || !persisted) {
+      try {
+        await sendSubmissionNotification(payload, {
+          databaseBackup: !persisted,
+          skipPrivateLinks: !persisted,
+        });
+        notified = true;
+      } catch (notifyError) {
+        notificationFailure = errorDetails(notifyError).message.slice(0, 100);
+        console.error('Notification failed', errorDetails(notifyError));
+      }
+    }
+
+    if (persisted && submission?.id && !duplicate) {
+      try {
+        await supabase
+          .from('onboarding_submissions')
+          .update({
+            email_status: notified ? 'sent' : 'failed',
+            email_error_code: notified ? null : notificationFailure || 'email_failed',
+          })
+          .eq('id', submission.id);
+      } catch (statusError) {
+        console.error('Email status update failed', errorDetails(statusError));
+      }
+    }
+
+    if (!persisted && !notified) {
+      return NextResponse.json({
+        error: 'No pudimos conectar con nuestros servidores. Tu avance sigue guardado en este dispositivo. Inténtalo nuevamente en unos minutos o escríbenos por WhatsApp.',
+        retryable: true,
+        code: payload.submission_code,
+      }, { status: 503 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      submission,
+      notified,
+      persisted,
+      duplicate,
+      delivery: persisted ? 'database' : 'email_backup',
+      warningCode: persistenceFailure?.code,
+    }, { status: persisted ? 201 : 202 });
   } catch (error) {
     console.error('Submit route failed', { message: error instanceof Error ? error.message : 'unknown' });
     return NextResponse.json({ error: 'Ocurrió un error inesperado. Inténtalo nuevamente.' }, { status: 500 });

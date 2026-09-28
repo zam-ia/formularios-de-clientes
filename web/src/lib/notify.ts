@@ -191,10 +191,15 @@ export function buildSubmissionEmail(submission: IntakePayload, files: Submissio
   return { html, text };
 }
 
-export async function sendSubmissionNotification(submission: IntakePayload) {
+export async function sendSubmissionNotification(
+  submission: IntakePayload,
+  options: { databaseBackup?: boolean; skipPrivateLinks?: boolean } = {},
+) {
   const to = process.env.NOTIFY_EMAIL || "crisdalagency@gmail.com";
-  const subject = `Nueva Radiografía — ${submission.business_name} — ${submission.submission_code}`;
-  const files = await createPrivateFileLinks(submission.files);
+  const subject = `${options.databaseBackup ? "[RESPALDO DIRECTO] " : ""}Nueva Radiografía — ${submission.business_name} — ${submission.submission_code}`;
+  const files = options.skipPrivateLinks
+    ? submission.files
+    : await createPrivateFileLinks(submission.files);
   const { html, text } = buildSubmissionEmail(submission, files);
 
   return sendEmail({
