@@ -136,6 +136,7 @@
 .stats article > span { margin-top:8px; color:rgba(255,255,255,.55); font-size:10px; line-height:1.4; }
 
 .cases, .services, .sectors, .testimonials, .faq { padding: var(--space-10) max(24px, calc((100vw - var(--container)) / 2)); }
+.cases, .services, .method, .difference, .sectors, .about, .testimonials, .faq, .contact { content-visibility:auto; contain-intrinsic-size:800px; }
 .sectionHead { max-width: 880px; margin-bottom: var(--space-8); }
 .sectionHead h2, .methodIntro h2, .difference h2, .aboutCopy h2, .contact h2 { margin: 0; font-size: clamp(44px, 5.1vw, 68px); font-weight: 850; line-height: .98; letter-spacing: -.055em; text-transform: uppercase; }
 .sectionHead > p:last-child:not(.kicker) { max-width: 680px; color: var(--color-muted); font-size: 18px; line-height: 1.7; }

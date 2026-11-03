@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { setAdminCookie, verifyAdminCredentials } from '@/lib/adminAuth';
+import { getAdminUsername, setAdminCookie, verifyAdminCredentials } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as { username?: string; password?: string };
+    const configuredPassword = process.env.ADMIN_PASSWORD;
+    if ((body.username || '').trim().toLowerCase() === getAdminUsername() && configuredPassword && configuredPassword.length < 12) {
+      return NextResponse.json({ error: 'La contraseña administrativa configurada debe tener al menos 12 caracteres.' }, { status: 503 });
+    }
     const session = await verifyAdminCredentials(body.username || '', body.password || '');
     if (!session) {
       const count = (current?.count || 0) + 1;

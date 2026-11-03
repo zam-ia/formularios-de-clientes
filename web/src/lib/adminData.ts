@@ -4,6 +4,8 @@ import { getSupabaseServer } from "@/lib/supabaseServer";
 export const ADMIN_DATA_BUCKET = "crisdal-admin-data";
 const DATA_FOLDER = "private";
 const DATA_PATH = `${DATA_FOLDER}/agency-os.json`;
+const CURRENT_DATA_PATH = `${DATA_FOLDER}/agency-os-current.json`;
+const ADMIN_CACHE_MS = 15_000;
 
 export type AdminRole = "owner" | "admin" | "editor" | "calendar" | "project_manager" | "collaborator" | "finance" | "hr" | "sales" | "supervisor";
 export type AdminUser = {
@@ -374,6 +376,10 @@ const emptyData: AdminData = {
   commercial_settings: { default_tax_percent: 18, max_global_discount_percent: 15, allow_below_cost: false },
 };
 
+let bucketReady = false;
+let adminCache: { data: AdminData; expiresAt: number } | null = null;
+let mutationQueue: Promise<unknown> = Promise.resolve();
+
 function normalizeData(raw: Partial<AdminData>): AdminData {
   return {
     version: 5,
@@ -396,8 +402,10 @@ function normalizeData(raw: Partial<AdminData>): AdminData {
 }
 
 export async function ensureAdminDataBucket() {
+  if (bucketReady) return;
   const storage = getSupabaseServer().storage;
-  const { data } = await storage.listBuckets();
+  const { data, error: listError } = await storage.listBuckets();
+  if (listError) throw listError;
   if (!data?.some((bucket) => bucket.name === ADMIN_DATA_BUCKET)) {
     const { error } = await storage.createBucket(ADMIN_DATA_BUCKET, {
       public: false,
@@ -406,23 +414,62 @@ export async function ensureAdminDataBucket() {
     });
     if (error) throw error;
   }
+  bucketReady = true;
 }
 
-export async function readAdminData(): Promise<AdminData> {
-  await ensureAdminDataBucket();
-  const storage = getSupabaseServer().storage.from(ADMIN_DATA_BUCKET);
-  const { data: files } = await storage.list(DATA_FOLDER, {
-    limit: 100,
-    sortBy: { column: "name", order: "desc" },
-  });
-  const latest = files?.find((file) => /^agency-os-\d{13}-[a-f0-9-]+\.json$/.test(file.name));
-  const path = latest ? `${DATA_FOLDER}/${latest.name}` : DATA_PATH;
-  const { data, error } = await storage.download(path);
-  if (error || !data) return structuredClone(emptyData);
+async function downloadAdminFile(path: string) {
+  const { data, error } = await getSupabaseServer().storage.from(ADMIN_DATA_BUCKET).download(path);
+  if (error || !data) return null;
   try {
     return normalizeData(JSON.parse(await data.text()));
   } catch {
-    return structuredClone(emptyData);
+    return null;
+  }
+}
+
+function rememberAdminData(data: AdminData) {
+  adminCache = { data: structuredClone(data), expiresAt: Date.now() + ADMIN_CACHE_MS };
+  return structuredClone(data);
+}
+
+export async function readAdminData(options: { bypassCache?: boolean } = {}): Promise<AdminData> {
+  if (!options.bypassCache && adminCache && adminCache.expiresAt > Date.now()) return structuredClone(adminCache.data);
+  await ensureAdminDataBucket();
+  const storage = getSupabaseServer().storage.from(ADMIN_DATA_BUCKET);
+  const current = await downloadAdminFile(CURRENT_DATA_PATH);
+  if (current) return rememberAdminData(current);
+
+  const { data: files, error: listError } = await storage.list(DATA_FOLDER, {
+    limit: 100,
+    sortBy: { column: "name", order: "desc" },
+  });
+  if (listError) throw listError;
+  const latest = files?.find((file) => /^agency-os-\d{13}-[a-f0-9-]+\.json$/.test(file.name));
+  const path = latest ? `${DATA_FOLDER}/${latest.name}` : DATA_PATH;
+  const legacy = await downloadAdminFile(path);
+  if (!legacy) return rememberAdminData(emptyData);
+
+  const serialized = JSON.stringify(legacy, null, 2);
+  const { error: migrationError } = await storage.upload(CURRENT_DATA_PATH, new Blob([serialized], { type: "application/json" }), {
+    contentType: "application/json",
+    cacheControl: "0",
+    upsert: true,
+  });
+  if (migrationError) {
+    console.warn("Could not create the current admin data snapshot.", migrationError.message);
+  }
+  return rememberAdminData(legacy);
+}
+
+export async function readAdminDataSafe() {
+  try {
+    return { data: await readAdminData(), warning: "" };
+  } catch (error) {
+    console.error("Admin data is temporarily unavailable.", error);
+    return {
+      data: structuredClone(adminCache?.data ?? emptyData),
+      warning: "No pudimos sincronizar algunos datos en este momento. Puedes navegar por el panel e intentarlo nuevamente en unos segundos.",
+    };
   }
 }
 
@@ -430,20 +477,33 @@ export async function writeAdminData(data: AdminData) {
   await ensureAdminDataBucket();
   const stamp = String(Date.now()).padStart(13, "0");
   const path = `${DATA_FOLDER}/agency-os-${stamp}-${randomUUID()}.json`;
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const { error } = await getSupabaseServer().storage.from(ADMIN_DATA_BUCKET).upload(path, blob, {
+  const serialized = JSON.stringify(data, null, 2);
+  const storage = getSupabaseServer().storage.from(ADMIN_DATA_BUCKET);
+  const { error } = await storage.upload(CURRENT_DATA_PATH, new Blob([serialized], { type: "application/json" }), {
+    contentType: "application/json",
+    cacheControl: "0",
+    upsert: true,
+  });
+  if (error) throw error;
+  const { error: backupError } = await storage.upload(path, new Blob([serialized], { type: "application/json" }), {
     contentType: "application/json",
     cacheControl: "0",
   });
-  if (error) throw error;
+  if (backupError) console.warn("Could not create an admin data backup.", backupError.message);
+  rememberAdminData(data);
   return data;
 }
 
 export async function mutateAdminData<T>(mutation: (data: AdminData) => T | Promise<T>) {
-  const data = await readAdminData();
-  const result = await mutation(data);
-  await writeAdminData(data);
-  return result;
+  const run = async () => {
+    const data = await readAdminData({ bypassCache: true });
+    const result = await mutation(data);
+    await writeAdminData(data);
+    return result;
+  };
+  const pending = mutationQueue.then(run, run);
+  mutationQueue = pending.then(() => undefined, () => undefined);
+  return pending;
 }
 
 export function publicAdminUser(user: AdminUser) {

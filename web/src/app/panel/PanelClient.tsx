@@ -309,6 +309,8 @@ export default function PanelClient() {
     await api("/api/admin/auth/logout", { method: "POST", body: "{}" });
     setAuthenticated(false);
     setAdminUser(null);
+    router.replace("/panel");
+    router.refresh();
   }
   async function copy(value: string, label = "Enlace") {
     await navigator.clipboard.writeText(value);

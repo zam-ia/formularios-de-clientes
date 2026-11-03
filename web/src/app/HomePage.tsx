@@ -73,6 +73,10 @@ function track(event: string, params: Record<string, string> = {}) {
   );
 }
 
+function isRemoteMedia(src: string) {
+  return /^https?:\/\//i.test(src);
+}
+
 export default function HomePage({ content, catalog }: { content: SiteContent; catalog: WebCatalog }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
@@ -184,7 +188,7 @@ export default function HomePage({ content, catalog }: { content: SiteContent; c
       <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ""}`}>
         <span ref={progressRef} className={styles.scrollProgress} aria-hidden="true" />
         <a className={styles.brand} href="#inicio" aria-label="Crisdal Agency, inicio">
-          <Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized />
+          <Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized={isRemoteMedia(content.logoUrl)} />
         </a>
         <nav className={menuOpen ? styles.navOpen : ""} aria-label="Navegación principal">
           <Link href="/servicios" onClick={() => setMenuOpen(false)}>Servicios</Link>
@@ -328,7 +332,7 @@ export default function HomePage({ content, catalog }: { content: SiteContent; c
                 onClick={() => track("service_open", { service: service.title })}
               >
                 {(service.cardMedia || service.heroMedia) ? <span className={styles.serviceMedia} aria-hidden="true">
-                  {/\.(mp4|webm)(\?|$)/i.test(service.cardMedia || service.heroMedia) ? <video src={service.cardMedia || service.heroMedia} muted autoPlay loop playsInline preload="metadata" /> : <Image src={service.cardMedia || service.heroMedia} alt="" fill unoptimized sizes="(max-width:767px) 50vw, 20vw" />}
+                  {/\.(mp4|webm)(\?|$)/i.test(service.cardMedia || service.heroMedia) ? <video src={service.cardMedia || service.heroMedia} muted loop playsInline preload="none" /> : <Image src={service.cardMedia || service.heroMedia} alt="" fill unoptimized={isRemoteMedia(service.cardMedia || service.heroMedia)} sizes="(max-width:767px) 50vw, 20vw" />}
                 </span> : null}
                 {(service.cardMedia || service.heroMedia) ? <i className={styles.serviceShade} aria-hidden="true" /> : null}
                 <span>{String(index + 1).padStart(2, "0")}</span>
@@ -394,7 +398,7 @@ export default function HomePage({ content, catalog }: { content: SiteContent; c
 
       <section id="nosotros" className={styles.about}>
         <div className={styles.aboutMedia} data-reveal>
-          <Image src={content.aboutImage} alt="Equipo de Crisdal Agency en Huancayo" fill unoptimized sizes="(max-width: 800px) 100vw, 52vw" />
+          <Image src={content.aboutImage} alt="Equipo de Crisdal Agency en Huancayo" fill unoptimized={isRemoteMedia(content.aboutImage)} sizes="(max-width: 800px) 100vw, 52vw" />
           <span>HUANCAYO · PERÚ</span>
         </div>
         <div className={styles.aboutCopy} data-reveal>
@@ -455,7 +459,7 @@ export default function HomePage({ content, catalog }: { content: SiteContent; c
       </section>
 
       <footer className={styles.footer}>
-        <div><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} unoptimized /><p>Transformamos ideas en resultados.</p></div>
+        <div><Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} unoptimized={isRemoteMedia(content.logoUrl)} /><p>Transformamos ideas en resultados.</p></div>
         <div><strong>Explora</strong><a href="#servicios">Servicios</a><a href="#casos">Casos</a><Link href="/brochure">Brochure</Link><Link href="/aliados">Red de Aliados</Link></div>
         <div><strong>Contacto</strong><a href={whatsapp}>WhatsApp</a><a href="mailto:crisdalagency@gmail.com">crisdalagency@gmail.com</a><span>Huancayo, Perú</span></div>
         <p>© 2026 Crisdal Agency · Estrategia, creatividad y tecnología.</p>
@@ -474,12 +478,12 @@ function SectionHeading({ kicker, title, text }: { kicker: string; title: string
 function Media({ kind, src, poster, alt, priority = false }: { kind: "image" | "video"; src: string; poster: string; alt: string; priority?: boolean }) {
   return kind === "video" ? (
     <div className={styles.mediaAsset}>
-      <Image src={poster} alt={alt} fill priority={priority} unoptimized sizes="(max-width: 800px) 100vw, 48vw" />
-      <video src={src} poster={poster} muted loop autoPlay playsInline preload={priority ? "auto" : "metadata"} aria-label={alt} />
+      <Image src={poster} alt={alt} fill priority={priority} unoptimized={isRemoteMedia(poster)} sizes="(max-width: 800px) 100vw, 48vw" />
+      <video src={src} poster={poster} muted loop autoPlay={priority} controls={!priority} playsInline preload={priority ? "metadata" : "none"} aria-label={alt} />
     </div>
   ) : (
     <div className={styles.mediaAsset}>
-      <Image src={src} alt={alt} fill priority={priority} unoptimized sizes="(max-width: 800px) 100vw, 48vw" />
+      <Image src={src} alt={alt} fill priority={priority} unoptimized={isRemoteMedia(src)} sizes="(max-width: 800px) 100vw, 48vw" />
     </div>
   );
 }

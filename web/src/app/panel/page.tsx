@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
-import PanelClient from './PanelClient';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { ADMIN_COOKIE, readAdminSession } from '@/lib/adminAuth';
+import PanelLogin from './PanelLogin';
 
 export const metadata: Metadata = {
   title: 'Panel privado | Crisdal Agency',
@@ -7,6 +10,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function PanelPage() {
-  return <PanelClient />;
+export default async function PanelPage() {
+  const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
+  if (session) redirect('/panel/dashboard');
+  return <PanelLogin />;
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ADMIN_COOKIE, readAdminSession } from "@/lib/adminAuth";
 import QuoteAdmin from "./QuoteAdmin";
+import AdminNav from "../AdminNav";
 
 export const metadata: Metadata = { title: "Cotizador | Crisdal OS", robots: { index: false, follow: false } };
 
@@ -10,5 +11,5 @@ export default async function QuotesPage() {
   const session = readAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!session) redirect("/panel");
   if (!["owner", "admin", "editor", "project_manager", "sales", "supervisor"].includes(session.role)) redirect("/panel/dashboard");
-  return <QuoteAdmin />;
+  return <><AdminNav role={session.role} /><QuoteAdmin /></>;
 }
