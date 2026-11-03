@@ -40,9 +40,11 @@ export function Breadcrumb({ children }: { children: ReactNode }) {
 
 export function MediaVisual({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
   const video = /\.(mp4|webm)(\?|$)/i.test(src);
+  const editorial = src.startsWith("/catalog/services/");
   if (!src) return <div className={`${styles.mediaPending} ${className}`}><span>Material visual pendiente</span><small>Se añadirá desde el panel con material auténtico de Crisdal.</small></div>;
   return <div className={`${styles.mediaVisual} ${className}`}>
     {video ? <video src={src} controls muted playsInline preload="metadata" aria-label={alt} /> : <Image src={src} alt={alt} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw" />}
+    {editorial ? <small className={styles.editorialBadge}>Visual editorial del servicio</small> : null}
   </div>;
 }
 

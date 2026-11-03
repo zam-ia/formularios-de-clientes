@@ -192,6 +192,45 @@ const projectDefaults: Record<string, Omit<WebProject, "id" | "slug" | "title" |
   },
 };
 
+const serviceMediaDefaults: Record<string, Pick<WebService, "heroMedia" | "heroAlt" | "cardMedia" | "cardAlt">> = {
+  fotografia: {
+    heroMedia: "/catalog/services/fotografia-hero.webp",
+    heroAlt: "Ilustración editorial de fotografía profesional con lente y luz de estudio",
+    cardMedia: "/catalog/services/fotografia-card.webp",
+    cardAlt: "Ilustración editorial del servicio de fotografía profesional",
+  },
+  contenido: {
+    heroMedia: "/catalog/services/contenido-hero.webp",
+    heroAlt: "Ilustración editorial de creación de contenido y edición de video vertical",
+    cardMedia: "/catalog/services/contenido-card.webp",
+    cardAlt: "Ilustración editorial del servicio de contenido y Reels",
+  },
+  video: {
+    heroMedia: "/catalog/services/video-hero.webp",
+    heroAlt: "Ilustración editorial de producción de video empresarial con cámara y set",
+    cardMedia: "/catalog/services/video-card.webp",
+    cardAlt: "Ilustración editorial del servicio de video empresarial",
+  },
+  streaming: {
+    heroMedia: "/catalog/services/streaming-hero.webp",
+    heroAlt: "Ilustración editorial de transmisión en vivo con cámaras y control multicámara",
+    cardMedia: "/catalog/services/streaming-card.webp",
+    cardAlt: "Ilustración editorial del servicio de streaming",
+  },
+  eventos: {
+    heroMedia: "/catalog/services/eventos-hero.webp",
+    heroAlt: "Ilustración editorial de cobertura audiovisual para eventos",
+    cardMedia: "/catalog/services/eventos-card.webp",
+    cardAlt: "Ilustración editorial del servicio de fotografía y video de eventos",
+  },
+  marketing: {
+    heroMedia: "/catalog/services/marketing-hero.webp",
+    heroAlt: "Ilustración editorial de planificación de marketing sin datos ni resultados simulados",
+    cardMedia: "/catalog/services/marketing-card.webp",
+    cardAlt: "Ilustración editorial del servicio de marketing mensual",
+  },
+};
+
 const seedServices = (seed.services as SeedService[]).map((service) => ({
   id: service.id,
   title: service.title,
@@ -203,16 +242,33 @@ const seedServices = (seed.services as SeedService[]).map((service) => ({
   aim: service.aim,
   recommended: service.recommended || "",
   visible: true,
-  heroMedia: "",
-  heroAlt: "",
-  cardMedia: "",
-  cardAlt: "",
+  heroMedia: serviceMediaDefaults[service.id]?.heroMedia || "",
+  heroAlt: serviceMediaDefaults[service.id]?.heroAlt || "",
+  cardMedia: serviceMediaDefaults[service.id]?.cardMedia || "",
+  cardAlt: serviceMediaDefaults[service.id]?.cardAlt || "",
   seoTitle: `${service.title} en Huancayo`,
   seoDescription: service.sub,
   benefits: service.benefit_sections || [],
   faqs: service.faqs || [],
   plans: (service.plans || []).map((plan) => normalizePlan(plan, service.id)),
 }));
+
+function withDefaultServiceMedia(catalog: WebCatalog): WebCatalog {
+  return {
+    ...catalog,
+    services: catalog.services.map((service) => {
+      const fallback = serviceMediaDefaults[service.id];
+      if (!fallback) return service;
+      return {
+        ...service,
+        heroMedia: service.heroMedia || fallback.heroMedia,
+        heroAlt: service.heroAlt || fallback.heroAlt,
+        cardMedia: service.cardMedia || fallback.cardMedia,
+        cardAlt: service.cardAlt || fallback.cardAlt,
+      };
+    }),
+  };
+}
 
 const seedProjects = seed.seed_projects.map((project) => ({
   id: project.slug,
@@ -257,7 +313,7 @@ export async function getWebCatalog(): Promise<WebCatalog> {
       .download(WEB_CATALOG_PATH);
     if (error || !data) return structuredClone(defaultWebCatalog);
     const parsed = webCatalogSchema.safeParse(JSON.parse(await data.text()));
-    return parsed.success ? parsed.data : structuredClone(defaultWebCatalog);
+    return parsed.success ? withDefaultServiceMedia(parsed.data) : structuredClone(defaultWebCatalog);
   } catch {
     return structuredClone(defaultWebCatalog);
   }
