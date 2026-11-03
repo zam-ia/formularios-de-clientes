@@ -828,6 +828,11 @@ export default function PanelClient() {
           <Link href="/panel/web">
             <Globe2 /> Editar sitio web
           </Link>
+          {adminUser && ["owner", "admin", "editor"].includes(adminUser.role) ? (
+            <Link href="/panel/web/catalogo">
+              <ImageIcon /> Catálogo web y portafolio
+            </Link>
+          ) : null}
           <Link href="/panel/cotizador">
             <Calculator /> Cotizador
           </Link>

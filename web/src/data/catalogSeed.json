@@ -1,0 +1,601 @@
+{
+  "title": "CRISDAL - Catálogo propuesto para CMS",
+  "version": "2026-11-02",
+  "notice": "Todos los planes y precios nuevos se importan como borrador y requieren aprobación de Dirección. No publicar automáticamente.",
+  "source_site": "https://crisdalagency.vercel.app",
+  "services": [
+    {
+      "id": "fotografia",
+      "title": "Fotografía profesional",
+      "slug": "fotografia-profesional",
+      "eyebrow": "FOTOGRAFÍA COMERCIAL",
+      "headline": "Tu negocio merece imágenes que generen confianza.",
+      "sub": "Fotografía de productos, espacios y profesionales para mostrar lo que ofreces con claridad y una presentación cuidada.",
+      "purpose": "Construir una biblioteca visual que sirva para redes, WhatsApp y catálogos sin improvisar fotografías cada semana.",
+      "aim": "Solicitar sesión fotográfica",
+      "recommended": "FOTO MARCA",
+      "publication_status": "draft",
+      "approval_status": "pending",
+      "faqs": [
+        {
+          "question": "¿Entregan las fotografías en alta calidad?",
+          "answer": "Sí, en los formatos digitales acordados para el servicio. Impresiones y archivos originales se cotizan aparte."
+        },
+        {
+          "question": "¿Pueden fotografiar mis productos?",
+          "answer": "Sí. El alcance se define por cantidad, tipo de producto, preparación del set y retoque requerido."
+        },
+        {
+          "question": "¿También hacen catálogos para WhatsApp?",
+          "answer": "Podemos ordenar la selección y proponer textos según el paquete; una tienda online completa se cotiza por separado."
+        }
+      ],
+      "benefit_sections": [
+        "Producto y catálogo",
+        "Marca personal y equipo",
+        "Locales, espacios y experiencia"
+      ],
+      "shot_list": [
+        "Hero: fotografía real del profesional o producto en su contexto, horizontal 16:9",
+        "Detrás de cámaras: cámara, iluminación y preparación del set, 4:5",
+        "Comparativa ética: escena real antes/después de color y exposición, sin alterar producto",
+        "Resultados: cuadrícula de 6 fotografías finales, 1:1 y 4:5"
+      ],
+      "portfolio_requirements": [
+        "Fotografía comercial real de un negocio",
+        "BTS de sesión y preparación",
+        "Galería de fotografías finales",
+        "Breve descripción del uso comercial"
+      ],
+      "plans": [
+        {
+          "name": "FOTO ESENCIAL",
+          "price": 290,
+          "headline": "Renueva la primera impresión de tu negocio.",
+          "includes": "1 hora · 12 fotos editadas · 3 retoques detallados · 1 ubicación · entrega digital.",
+          "bonuses": [
+            "BONO 1: Mini guía de publicación. PDF de una página: 5 formas de utilizar las fotos en redes."
+          ],
+          "limit": "1 marca, 1 locación, sin montaje de producto complejo.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "FOTO MARCA",
+          "price": 590,
+          "headline": "Construye una biblioteca visual para campañas y redes.",
+          "includes": "Hasta 2 horas · 30 fotos editadas · 5 retoques detallados · 2 esquemas de iluminación.",
+          "bonuses": [
+            "BONO 1: Selección TOP 5. Cinco imágenes priorizadas para campañas con su objetivo sugerido.",
+            "BONO 2: Copys para publicar. Cinco textos breves adaptables a las fotografías."
+          ],
+          "limit": "1 marca, 1 locación, fotografía comercial estándar.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "FOTO CATÁLOGO",
+          "price": 990,
+          "headline": "Contenido preparado para exhibir productos y facilitar la consulta.",
+          "includes": "Hasta 3 horas · 50 fotos seleccionadas · hasta 15 productos · 8 retoques detallados · microvideo hasta 20 s.",
+          "bonuses": [
+            "BONO 1: Plantilla de orden comercial. Orden sugerido de exposición para WhatsApp o catálogo.",
+            "BONO 2: Kit de descripciones. 5 descripciones breves de producto listas para adaptar."
+          ],
+          "limit": "Hasta 15 SKU, productos entregados preparados; composiciones simples.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        }
+      ]
+    },
+    {
+      "id": "contenido",
+      "title": "Creación de contenido y Reels",
+      "slug": "creacion-de-contenido",
+      "eyebrow": "CONTENIDO ESTRATÉGICO",
+      "headline": "Una jornada de grabación. Varias razones para que te elijan.",
+      "sub": "Diseñamos ideas, guiones y videos cortos para que tu negocio tenga algo relevante que mostrar, explicar y ofrecer.",
+      "purpose": "Crear contenidos que hablen de problemas, beneficios, objeciones y ofertas, evitando publicar solo por llenar el calendario.",
+      "aim": "Cotizar mis Reels",
+      "recommended": "REELS CAPTACIÓN",
+      "publication_status": "draft",
+      "approval_status": "pending",
+      "faqs": [
+        {
+          "question": "¿Necesito salir frente a cámara?",
+          "answer": "No necesariamente. Podemos desarrollar videos de producto, tomas de apoyo o voz en off según la estrategia y los recursos disponibles."
+        },
+        {
+          "question": "¿También publican los videos?",
+          "answer": "Estos paquetes incluyen producción y entrega. La publicación o gestión mensual se contrata cuando figure expresamente en el alcance."
+        },
+        {
+          "question": "¿Puedo grabar cinco videos en fechas distintas?",
+          "answer": "Los paquetes están diseñados para una sola jornada; nuevas visitas se cotizan por separado."
+        }
+      ],
+      "benefit_sections": [
+        "Ganchos y guionización",
+        "Grabación por bloques",
+        "Edición, subtítulos y CTA"
+      ],
+      "shot_list": [
+        "Hero: grabación real de un negocio con cámara y protagonista, 16:9",
+        "Proceso: vista de guion, planos grabados y monitor de edición, 4:5",
+        "Evidencia: mosaico de 3 portadas de Reels con enlace de reproducción",
+        "Resultado: video real vertical insertado con miniatura y controles"
+      ],
+      "portfolio_requirements": [
+        "Reels reproducibles o enlace verificable",
+        "Capturas de la campaña y materiales finales",
+        "BTS del día de producción",
+        "Objetivo específico de cada pieza"
+      ],
+      "plans": [
+        {
+          "name": "REELS START",
+          "price": 390,
+          "headline": "Prueba dos mensajes de venta con contenido propio.",
+          "includes": "2 Reels de 15–40 s · hasta 1 hora de grabación · guiones breves · edición, subtítulos y textos.",
+          "bonuses": [
+            "BONO 1: Respuestas express. 3 modelos de respuesta para consultas que lleguen por WhatsApp."
+          ],
+          "limit": "Una jornada; edición estándar; sin actores ni animación compleja.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "REELS CAPTACIÓN",
+          "price": 790,
+          "headline": "Cubre varias objeciones del comprador con una producción.",
+          "includes": "5 Reels de 15–45 s · hasta 2 horas de grabación · 5 textos comerciales · 8 fotos de apoyo.",
+          "bonuses": [
+            "BONO 1: Ruta de publicación. Orden recomendado de los 5 videos según su objetivo.",
+            "BONO 2: Kit de objeciones. 5 respuestas cortas para preguntas de potenciales clientes."
+          ],
+          "limit": "Una jornada, una sede, 5 guiones ligeros.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "REELS DOMINANTE",
+          "price": 1390,
+          "headline": "Obtén variedad de contenido y argumentos comerciales para el mes.",
+          "includes": "9 Reels hasta 45 s · hasta 3 horas de grabación · estrategia de ganchos · 15 fotos · calendario sugerido.",
+          "bonuses": [
+            "BONO 1: Banco de próximos ganchos. 10 ideas de apertura para futuras publicaciones.",
+            "BONO 2: Plantilla de seguimiento. Hoja editable para registrar contactos que llegan desde redes."
+          ],
+          "limit": "Una jornada; guiones coordinados; máximo 2 protagonistas.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        }
+      ]
+    },
+    {
+      "id": "video",
+      "title": "Video empresarial y corporativo",
+      "slug": "video-empresarial",
+      "eyebrow": "PRODUCCIÓN AUDIOVISUAL",
+      "headline": "Presenta tu empresa con la claridad y presencia que merece.",
+      "sub": "Transformamos lo que haces en una historia audiovisual útil para reuniones comerciales, páginas web, anuncios y redes.",
+      "purpose": "Mostrar propuesta, equipo y diferenciadores de una empresa con un video matriz y materiales derivados.",
+      "aim": "Cotizar video empresarial",
+      "recommended": "AUTORIDAD",
+      "publication_status": "draft",
+      "approval_status": "pending",
+      "faqs": [
+        {
+          "question": "¿Nos ayudan con el guion?",
+          "answer": "Sí. El guion y nivel de desarrollo creativo dependen del plan."
+        },
+        {
+          "question": "¿Pueden grabar en más de una sede?",
+          "answer": "Es posible con cotización adicional por desplazamiento, personal y tiempo de producción."
+        },
+        {
+          "question": "¿Incluye locución o actores?",
+          "answer": "Solo cuando consten expresamente en la propuesta. Servicios externos y producción especial se presupuestan aparte."
+        }
+      ],
+      "benefit_sections": [
+        "Entrevistas y vocería",
+        "Narrativa comercial",
+        "Versiones para diferentes canales"
+      ],
+      "shot_list": [
+        "Hero: entrevista real con iluminación profesional dentro de la empresa, 16:9",
+        "Proceso: dirección del vocero, audio y cámara en set, 4:5",
+        "Resultado: reproductor del video principal 16:9",
+        "Galería: 2 miniaturas de clips y 2 fotogramas finales"
+      ],
+      "portfolio_requirements": [
+        "Video empresarial reproducible",
+        "Fotogramas de la producción y BTS",
+        "Resumen de objetivo y concepto",
+        "Entregables y usos del video"
+      ],
+      "plans": [
+        {
+          "name": "PRESENTACIÓN",
+          "price": 590,
+          "headline": "Haz que un prospecto entienda qué haces en menos de un minuto.",
+          "includes": "1 video de 30–45 s · guion comercial · hasta 90 min de grabación · edición profesional · versión vertical.",
+          "bonuses": [
+            "BONO 1: Texto de presentación. Pitch escrito de hasta 70 palabras para el perfil o mensajes."
+          ],
+          "limit": "1 locación, un vocero, edición simple.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "AUTORIDAD",
+          "price": 1090,
+          "headline": "Un video de presentación y dos piezas para reforzar autoridad.",
+          "includes": "1 video de 60–90 s · entrevista o vocería · hasta 2 h de grabación · 2 clips derivados de 15–30 s.",
+          "bonuses": [
+            "BONO 1: Portada profesional. Fotograma seleccionado con título para miniatura.",
+            "BONO 2: Mensajes de envío. 3 textos para compartir el video por WhatsApp, correo o redes."
+          ],
+          "limit": "1 locación, hasta 1 entrevista, clips derivados de la pieza matriz.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "INSTITUCIONAL PREMIUM",
+          "price": 1990,
+          "headline": "Una pieza institucional para presentaciones, captación y reputación.",
+          "includes": "Video principal 2–3 min · hasta 4 h de rodaje · hasta 2 entrevistas · color/audio · 3 clips verticales derivados.",
+          "bonuses": [
+            "BONO 1: Guía de activación de 30 días. Sugerencias de dónde y cuándo utilizar las piezas.",
+            "BONO 2: Miniatura editorial. 1 portada estática del video con plantilla aprobada."
+          ],
+          "limit": "1 locación; sin guion técnico con actores ni motion graphics complejos.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        }
+      ]
+    },
+    {
+      "id": "streaming",
+      "title": "Streaming y transmisiones en vivo",
+      "slug": "streaming-eventos",
+      "eyebrow": "TRANSMISIÓN DE EVENTOS",
+      "headline": "Que tu evento llegue también a quienes no están en la sala.",
+      "sub": "Producción técnica de transmisiones en vivo para ceremonias, capacitaciones, congresos y actividades institucionales.",
+      "purpose": "Producir una transmisión clara y estable, con responsables definidos y preparación técnica antes del evento.",
+      "aim": "Consultar disponibilidad de streaming",
+      "recommended": "STREAMING PLUS",
+      "publication_status": "draft",
+      "approval_status": "pending",
+      "faqs": [
+        {
+          "question": "¿Incluye internet?",
+          "answer": "La conexión debe verificarse antes del evento. Internet dedicado, respaldo o enlaces especializados se cotizan cuando sean necesarios."
+        },
+        {
+          "question": "¿Transmiten por Facebook y YouTube?",
+          "answer": "La plataforma se acuerda antes de la producción; múltiples destinos simultáneos requieren validación técnica."
+        },
+        {
+          "question": "¿Qué pasa si el lugar tiene mala señal?",
+          "answer": "Realizamos diagnóstico y proponemos medidas de respaldo; no se promete transmisión sin condiciones técnicas mínimas."
+        }
+      ],
+      "benefit_sections": [
+        "Cámaras y realización",
+        "Integración de audio",
+        "Grabación y clips posteriores"
+      ],
+      "shot_list": [
+        "Hero: realizador frente a monitores y cámaras en evento real, 16:9",
+        "Proceso: mesa de audio, switcher y operadores en plena transmisión, 4:5",
+        "Resultado: reproductor o enlace autorizado de emisión pasada",
+        "Galería: foto de operador, cámara, escenario y pantalla de emisión"
+      ],
+      "portfolio_requirements": [
+        "Evento transmitido con autorización",
+        "BTS de instalación de equipos",
+        "Captura real de emisión y fragmentos",
+        "Ficha técnica sin exponer credenciales ni datos privados"
+      ],
+      "plans": [
+        {
+          "name": "STREAMING ESENCIAL",
+          "price": 690,
+          "headline": "Transmite lo esencial y conserva un registro útil.",
+          "includes": "Hasta 3 h · 1 cámara · directo YouTube o Facebook · audio integrado · grabación · resumen 1–2 min · 1 Reel.",
+          "bonuses": [
+            "BONO 1: Kit de difusión. Texto de invitación y recordatorio listo para difundir el enlace."
+          ],
+          "limit": "Se requiere conexión verificada y señal de audio disponible; una cámara.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "STREAMING PLUS",
+          "price": 1290,
+          "headline": "Una transmisión más dinámica para asistentes y espectadores remotos.",
+          "includes": "Hasta 4 h · 2 cámaras · realización multicámara · gráficos básicos · grabación · resumen 3–4 min · 1 Reel.",
+          "bonuses": [
+            "BONO 1: Pieza previa de difusión. 1 arte digital con plantilla base para anunciar el streaming.",
+            "BONO 2: Mensaje postevento. Texto listo para compartir la repetición con participantes."
+          ],
+          "limit": "Requiere operador de realización, 2 cámaras disponibles, audio y conectividad.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "STREAMING PRO",
+          "price": 1990,
+          "headline": "Transmisión y materiales posteriores para seguir comunicando el evento.",
+          "includes": "Hasta 5 h · 2 cámaras · realización técnica · gráficos personalizados simples · grabación · video 4–6 min · 2 Reels.",
+          "bonuses": [
+            "BONO 1: Tarjeta digital de agradecimiento. 1 pieza gráfica de cierre según plantilla.",
+            "BONO 2: Kit de difusión posterior. 3 mensajes para compartir transmisión y clips."
+          ],
+          "limit": "Pruebas técnicas y personal dedicado; internet dedicado, switcher alquilado o extras, aparte.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        }
+      ]
+    },
+    {
+      "id": "eventos",
+      "title": "Fotografía y video de eventos",
+      "slug": "fotografia-video-eventos",
+      "eyebrow": "RECUERDOS AUDIOVISUALES",
+      "headline": "Hay momentos que merecen algo más que quedarse en el teléfono.",
+      "sub": "Cobertura audiovisual de celebraciones, matrimonios, quinceaños y eventos especiales con una historia cuidada y entregables claros.",
+      "purpose": "Conservar el evento en formatos que la familia o institución pueda ver, compartir y guardar.",
+      "aim": "Consultar fecha disponible",
+      "recommended": "HISTORIA",
+      "publication_status": "draft",
+      "approval_status": "pending",
+      "faqs": [
+        {
+          "question": "¿Incluyen drone?",
+          "answer": "No está incluido salvo que se especifique expresamente en la propuesta."
+        },
+        {
+          "question": "¿Cuántas personas cubren el evento?",
+          "answer": "La dotación depende del plan y del alcance confirmado. La cobertura simultánea de foto y video requiere capacidad real suficiente."
+        },
+        {
+          "question": "¿Entregan todas las fotografías sin editar?",
+          "answer": "El plan indica la cantidad editada. Archivos crudos y adicionales son acuerdos separados."
+        }
+      ],
+      "benefit_sections": [
+        "Cobertura de momentos clave",
+        "Película y Reels de recuerdo",
+        "Selección fotográfica"
+      ],
+      "shot_list": [
+        "Hero: momento real emotivo de ceremonia, sin imágenes inventadas, 16:9",
+        "BTS: operador con gimbal o cámara durante recepción, 4:5",
+        "Resultados: miniaturas de película, Reel y galería fotográfica",
+        "Galería: 3 fotos representativas del evento con autorización"
+      ],
+      "portfolio_requirements": [
+        "Película o extracto autorizado",
+        "Fotografías finales de momentos reales",
+        "Detrás de cámaras sin obstaculizar el evento",
+        "Identificación del tipo de evento y alcance"
+      ],
+      "plans": [
+        {
+          "name": "MOMENTO",
+          "price": 890,
+          "headline": "Un recuerdo breve y emotivo de los mejores momentos.",
+          "includes": "Hasta 4 h · 1 filmmaker/1 cámara · resumen de 2–3 min · 1 Reel · 20 fotos editadas.",
+          "bonuses": [
+            "BONO 1: Portada de recuerdo. 1 tarjeta digital con foto del evento y fecha."
+          ],
+          "limit": "Cobertura sencilla, un operador híbrido y entregables limitados.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "HISTORIA",
+          "price": 1590,
+          "headline": "Una historia más completa con distintos ángulos y momentos.",
+          "includes": "Hasta 6 h · 2 cámaras · película 4–6 min · 2 Reels · 60 fotos editadas.",
+          "bonuses": [
+            "BONO 1: Portada personalizada. 1 tarjeta editorial con título y foto.",
+            "BONO 2: Selección para compartir. 8 fotografías marcadas como favoritas para publicar."
+          ],
+          "limit": "Personal de foto/video suficiente; dos cámaras no garantizan dos operadores salvo contrato.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "CINEMA",
+          "price": 2690,
+          "headline": "Cobertura audiovisual completa con recuerdos listos para compartir.",
+          "includes": "Hasta 8 h · 2 cámaras y tomas dinámicas · película 7–10 min · 3 Reels · 120 fotos · teaser 24 h.",
+          "bonuses": [
+            "BONO 1: Portada cinematográfica. 1 arte editorial del evento con fotografía principal.",
+            "BONO 2: Video agradecimiento. Clip adicional 15–20 s derivado de material ya grabado."
+          ],
+          "limit": "Equipo dimensionado para entrega simultánea de foto/video y teaser; drone no incluido.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        }
+      ]
+    },
+    {
+      "id": "marketing",
+      "title": "Marketing mensual y Meta Ads",
+      "slug": "marketing-mensual",
+      "eyebrow": "CONTENIDO + PUBLICIDAD",
+      "headline": "No se trata solo de publicar. Se trata de generar oportunidades.",
+      "sub": "Unimos contenido estratégico, anuncios y una ruta clara hacia WhatsApp para que el negocio pueda responder y dar seguimiento a más consultas.",
+      "purpose": "Coordinar producción y distribución de contenido para captar conversaciones y aprender de los resultados del negocio.",
+      "aim": "Solicitar diagnóstico comercial",
+      "recommended": "CRECIMIENTO COMERCIAL",
+      "publication_status": "draft",
+      "approval_status": "pending",
+      "faqs": [
+        {
+          "question": "¿La inversión de publicidad está incluida?",
+          "answer": "No. La gestión de Meta Ads figura en el paquete, mientras que el dinero que cobra Meta por mostrar anuncios se paga por separado."
+        },
+        {
+          "question": "¿Garantizan clientes o ventas?",
+          "answer": "No ofrecemos cifras garantizadas. Diseñamos, medimos y optimizamos campañas; el resultado depende también de oferta, mercado y atención comercial."
+        },
+        {
+          "question": "¿Necesito tener WhatsApp Business?",
+          "answer": "Es recomendable tenerlo correctamente configurado para responder y organizar consultas; podemos orientar en la ruta de contacto."
+        }
+      ],
+      "benefit_sections": [
+        "Estrategia comercial y creatividades",
+        "Configuración y gestión de Meta Ads",
+        "Seguimiento y optimización"
+      ],
+      "shot_list": [
+        "Hero: dueño de negocio conversando con equipo Crisdal, 16:9",
+        "Proceso: BTS de grabación y pantalla real de campaña con datos sensibles ocultos",
+        "Resultado: anuncios creativos, CTA y flujo a WhatsApp ilustrado",
+        "Prueba: métricas verificadas con fechas, fuente y contexto"
+      ],
+      "portfolio_requirements": [
+        "Casos con descripción del objetivo",
+        "Anuncios y contenidos reales autorizados",
+        "Indicadores con fuente verificable o atribución expresa",
+        "Capturas con números privados ocultos"
+      ],
+      "plans": [
+        {
+          "name": "ACTIVACIÓN COMERCIAL",
+          "price": 690,
+          "headline": "Iniciar publicidad con contenido diseñado para la consulta.",
+          "includes": "2 videos estratégicos · campaña Meta Ads · ruta a WhatsApp · 1 sesión principal · 1 visita breve · acompañamiento digital.",
+          "bonuses": [
+            "BONO 1: Kit de atención inicial. 5 respuestas cortas para nuevos interesados por WhatsApp."
+          ],
+          "limit": "No incluye pauta; no promete cantidad de ventas; 1 campaña sencilla.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "CRECIMIENTO COMERCIAL",
+          "price": 1190,
+          "headline": "Combinar contenido y anuncios con objetivos comerciales claros.",
+          "includes": "4 videos · planificación mensual · 1 jornada de grabación · hasta 2 visitas breves · gestión Meta Ads · reporte.",
+          "bonuses": [
+            "BONO 1: Plantilla de prospectos. Registro sencillo de consultas, estado y seguimiento.",
+            "BONO 2: Guiones de cierre. 5 respuestas para objeciones comerciales recurrentes."
+          ],
+          "limit": "Pauta Meta por separado; 1 marca y 1 sede; soporte digital en horario acordado.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        },
+        {
+          "name": "ESCALA COMERCIAL",
+          "price": 1990,
+          "headline": "Producción y optimización continua para negocios con capacidad de atención.",
+          "includes": "6 videos · 10 fotos · hasta 2 jornadas · gestión Meta Ads · optimización de CTA/perfiles · reporte mensual.",
+          "bonuses": [
+            "BONO 1: Mini manual de atención. Una página con ruta de respuesta y seguimiento comercial.",
+            "BONO 2: Sesión de entrenamiento. Reunión remota de 20 min para explicar el uso de los mensajes."
+          ],
+          "limit": "Pauta aparte; cambios de alcance y jornadas adicionales, cotizados.",
+          "approval_status": "draft",
+          "publication_status": "draft"
+        }
+      ]
+    }
+  ],
+  "kits": [
+    {
+      "name": "KIT PRODUCTO QUE VENDE",
+      "price": 790,
+      "headline": "Comercio y e-commerce",
+      "includes": "1 Reel de hasta 40 s + 15 fotografías + 3 textos comerciales + 2 h de producción.",
+      "bonuses": [
+        "BONO 1: Guía de uso en WhatsApp. guía de 5 usos de las piezas en WhatsApp Business (plantilla).."
+      ],
+      "limit": "1 sede; producción simple; extras y movilidad fuera de zona, aparte.",
+      "approval_status": "draft",
+      "publication_status": "draft"
+    },
+    {
+      "name": "KIT NEGOCIO PROFESIONAL",
+      "price": 1190,
+      "headline": "Clínicas y empresas",
+      "includes": "Video hasta 45 s + 2 clips derivados + 12 fotos + 2,5 h de rodaje.",
+      "bonuses": [
+        "BONO 1: Pitch comercial. pitch institucional de 70 palabras para enviar a prospectos.."
+      ],
+      "limit": "1 sede; producción simple; extras y movilidad fuera de zona, aparte.",
+      "approval_status": "draft",
+      "publication_status": "draft"
+    },
+    {
+      "name": "KIT EVENTO CONECTADO",
+      "price": 1690,
+      "headline": "Instituciones, colegios y congresos",
+      "includes": "Streaming 1 cámara hasta 3 h + 30 fotos editadas + 1 Reel + gráficos del evento.",
+      "bonuses": [
+        "BONO 1: Mensajes de difusión. 2 textos de difusión antes y después del evento.."
+      ],
+      "limit": "1 sede; producción simple; extras y movilidad fuera de zona, aparte.",
+      "approval_status": "draft",
+      "publication_status": "draft"
+    }
+  ],
+  "seed_projects": [
+    {
+      "slug": "personal-training",
+      "title": "Personal Training Perú",
+      "service_ids": [
+        "marketing",
+        "contenido"
+      ],
+      "publication_status": "review_existing",
+      "proof_status": "client_reported",
+      "required_review": "Validar fechas, autorización y atribución de cifras."
+    },
+    {
+      "slug": "corporacion-henko",
+      "title": "Corporación Henko",
+      "service_ids": [
+        "video"
+      ],
+      "publication_status": "review_existing",
+      "proof_status": "not_claimed"
+    },
+    {
+      "slug": "change-the-slim-studio",
+      "title": "Change The Slim Studio",
+      "service_ids": [
+        "contenido"
+      ],
+      "publication_status": "review_existing",
+      "proof_status": "not_claimed"
+    },
+    {
+      "slug": "colegio-san-juan",
+      "title": "Colegio San Juan",
+      "service_ids": [],
+      "suggested_service_tags": [
+        "identidad-institucional"
+      ],
+      "publication_status": "review_existing",
+      "proof_status": "not_claimed",
+      "required_review": "Confirmar relación de servicio; caso actual se concentra en identidad y señalética."
+    }
+  ],
+  "settings_to_confirm": [
+    "official_whatsapp",
+    "official_logo",
+    "brand_colors",
+    "tax_note",
+    "privacy_policy",
+    "portfolio_permissions"
+  ]
+}
+

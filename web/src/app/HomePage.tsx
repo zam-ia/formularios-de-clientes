@@ -31,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 import type { SiteContent } from "@/lib/siteContent";
+import type { WebCatalog } from "@/lib/webCatalog";
 import styles from "./home.module.css";
 
 const serviceIcons = [Compass, BarChart3, Palette, Clapperboard, Code2, Bot];
@@ -72,7 +73,7 @@ function track(event: string, params: Record<string, string> = {}) {
   );
 }
 
-export default function HomePage({ content }: { content: SiteContent }) {
+export default function HomePage({ content, catalog }: { content: SiteContent; catalog: WebCatalog }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
   const [contactState, setContactState] = useState<
@@ -186,11 +187,11 @@ export default function HomePage({ content }: { content: SiteContent }) {
           <Image src={content.logoUrl} alt="Crisdal Agency" width={1080} height={1080} priority unoptimized />
         </a>
         <nav className={menuOpen ? styles.navOpen : ""} aria-label="Navegación principal">
-          <a href="#servicios" onClick={() => setMenuOpen(false)}>Servicios</a>
-          <a href="#casos" onClick={() => setMenuOpen(false)}>Casos</a>
-          <a href="#metodo" onClick={() => setMenuOpen(false)}>Método</a>
-          <a href="#nosotros" onClick={() => setMenuOpen(false)}>Nosotros</a>
-          <a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
+          <Link href="/servicios" onClick={() => setMenuOpen(false)}>Servicios</Link>
+          <Link href="/portafolio" onClick={() => setMenuOpen(false)}>Portafolio</Link>
+          <Link href="/metodo" onClick={() => setMenuOpen(false)}>Método</Link>
+          <Link href="/nosotros" onClick={() => setMenuOpen(false)}>Nosotros</Link>
+          <Link href="/contacto" onClick={() => setMenuOpen(false)}>Contacto</Link>
         </nav>
         <div className={styles.headerActions}>
           <Link className={styles.adminCta} href="/panel/dashboard" aria-label="Abrir panel administrativo de Crisdal Agency">
@@ -259,8 +260,8 @@ export default function HomePage({ content }: { content: SiteContent }) {
         <p>UNA RUTA CONECTADA</p>
         <div className={styles.proofViewport}>
           <div className={styles.proofTrack}>
-            {[...content.services, ...content.services].map((service, index) => (
-              <span key={`${service.id}-${index}`} aria-hidden={index >= content.services.length}>
+            {[...catalog.services.filter((item) => item.visible), ...catalog.services.filter((item) => item.visible)].map((service, index) => (
+              <span key={`${service.id}-${index}`} aria-hidden={index >= catalog.services.filter((item) => item.visible).length}>
                 <i /> {service.title}
               </span>
             ))}
@@ -298,45 +299,44 @@ export default function HomePage({ content }: { content: SiteContent }) {
             {content.metricValue && content.metricLabel ? (
               <div className={styles.caseMetric}><strong>{content.metricValue}</strong><span>{content.metricLabel}</span></div>
             ) : null}
-            <Link href="/brochure" onClick={() => track("case_study_open", { case: content.caseTitle })}>
-              Ver proyectos y brochure <ArrowRight />
+            <Link href="/portafolio" onClick={() => track("case_study_open", { case: content.caseTitle })}>
+              Explorar portafolio <ArrowRight />
             </Link>
           </div>
         </article>
         <div className={styles.caseQuickLinks}>
-          <Link href="/casos/change-the-slim-studio" onClick={() => track("open_case", { case: "Change" })}>
-            <span>Branding + contenido</span><strong>Change The Slim Studio</strong><ArrowRight />
-          </Link>
-          <Link href="/casos/colegio-san-juan" onClick={() => track("open_case", { case: "San Juan" })}>
-            <span>Educación + campaña</span><strong>Colegio San Juan</strong><ArrowRight />
-          </Link>
+          {catalog.projects.filter((project) => project.visible && project.featured && project.slug !== "personal-training").slice(0, 4).map((project) => (
+            <Link key={project.id} href={`/casos/${project.slug}`} onClick={() => track("open_case", { case: project.title })}>
+              <span>{project.industry || "Proyecto real"}</span><strong>{project.title}</strong><ArrowRight />
+            </Link>
+          ))}
         </div>
       </section>
 
       <section id="servicios" className={styles.services}>
-        <SectionHeading kicker="Capacidades" title={content.servicesTitle} text={content.servicesLead} />
+        <SectionHeading kicker="Servicios" title={catalog.servicesTitle} text="Desde una sesión de fotografía hasta una campaña mensual, definimos el objetivo antes de encender la cámara." />
         <div className={styles.serviceGrid}>
-          {content.services.map((service, index) => {
+          {catalog.services.filter((item) => item.visible).map((service, index) => {
             const Icon = serviceIcons[index] || Workflow;
             return (
-              <a
+              <Link
                 key={service.id}
-                href="#contacto"
-                className={`${service.size === "wide" ? styles.serviceWide : service.size === "regular" ? styles.serviceRegular : styles.serviceCompact} ${service.mediaUrl ? styles.serviceWithMedia : ""}`}
+                href={`/servicios/${service.slug}`}
+                className={`${styles.serviceCompact} ${(service.cardMedia || service.heroMedia) ? styles.serviceWithMedia : ""}`}
                 data-reveal
                 onPointerMove={moveServiceCard}
                 onClick={() => track("service_open", { service: service.title })}
               >
-                {service.mediaUrl ? <span className={styles.serviceMedia} aria-hidden="true">
-                  {service.mediaKind === "video" ? <video src={service.mediaUrl} muted autoPlay loop playsInline preload="metadata" /> : <Image src={service.mediaUrl} alt="" fill unoptimized sizes="(max-width:767px) 50vw, 20vw" />}
+                {(service.cardMedia || service.heroMedia) ? <span className={styles.serviceMedia} aria-hidden="true">
+                  {/\.(mp4|webm)(\?|$)/i.test(service.cardMedia || service.heroMedia) ? <video src={service.cardMedia || service.heroMedia} muted autoPlay loop playsInline preload="metadata" /> : <Image src={service.cardMedia || service.heroMedia} alt="" fill unoptimized sizes="(max-width:767px) 50vw, 20vw" />}
                 </span> : null}
-                {service.mediaUrl ? <i className={styles.serviceShade} aria-hidden="true" /> : null}
+                {(service.cardMedia || service.heroMedia) ? <i className={styles.serviceShade} aria-hidden="true" /> : null}
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <Icon />
                 <h3>{service.title}</h3>
-                <p>{service.text}</p>
+                <p>{service.sub}</p>
                 <ArrowDownRight />
-              </a>
+              </Link>
             );
           })}
         </div>
